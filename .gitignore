@@ -1,0 +1,9 @@
+.gradle
+.idea
+.sdkmanrc
+
+build
+gradle
+
+gradlew
+gradlew.bat
