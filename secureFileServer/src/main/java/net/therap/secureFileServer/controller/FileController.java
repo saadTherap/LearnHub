@@ -4,6 +4,7 @@ import net.therap.secureFileServer.dto.StoredFileDto;
 import net.therap.secureFileServer.entity.StoredFile;
 import net.therap.secureFileServer.mapper.StoredFileMapper;
 import net.therap.secureFileServer.service.FileStorageService;
+import net.therap.secureFileServer.validator.FileValidator;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -26,14 +27,21 @@ public class FileController {
 
     private final FileStorageService fileService;
     private final StoredFileMapper fileMapper;
+    private final FileValidator fileValidator;
 
-    public FileController(FileStorageService fileService, StoredFileMapper fileMapper) {
+    public FileController(FileStorageService fileService,
+                          StoredFileMapper fileMapper,
+                          FileValidator fileValidator) {
+
         this.fileService = fileService;
         this.fileMapper = fileMapper;
+        this.fileValidator = fileValidator;
     }
 
     @PostMapping
     public ResponseEntity<StoredFileDto> uploadFile(@RequestParam("file") MultipartFile file) {
+        fileValidator.validate(file);
+
         StoredFile storedFile = fileService.saveFile(file);
         StoredFileDto dto = fileMapper.toDto(storedFile);
 
