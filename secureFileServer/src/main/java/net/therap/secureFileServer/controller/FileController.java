@@ -1,5 +1,8 @@
 package net.therap.secureFileServer.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import net.therap.secureFileServer.dto.StoredFileDto;
 import net.therap.secureFileServer.entity.StoredFile;
 import net.therap.secureFileServer.mapper.StoredFileMapper;
@@ -23,6 +26,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/files")
+@Tag(name = "File API", description = "Endpoints for uploading, downloading, listing and deleting files")
 public class FileController {
 
     private final FileStorageService fileService;
@@ -38,8 +42,12 @@ public class FileController {
         this.fileValidator = fileValidator;
     }
 
-    @PostMapping
-    public ResponseEntity<StoredFileDto> uploadFile(@RequestParam("file") MultipartFile file) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Upload a file")
+    public ResponseEntity<StoredFileDto> uploadFile(
+            @Parameter(description = "The file to upload", required = true)
+            @RequestParam("file") MultipartFile file) {
+
         fileValidator.validate(file);
 
         StoredFile storedFile = fileService.saveFile(file);
@@ -49,7 +57,11 @@ public class FileController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable Long id) {
+    @Operation(summary = "Download a file by ID")
+    public ResponseEntity<Resource> downloadFile(
+            @Parameter(description = "ID of the file to download", required = true)
+            @PathVariable Long id) {
+
         StoredFile storedFile = fileService.getMetadata(id);
         Resource resource = fileService.loadFileAsResource(id);
 
@@ -63,6 +75,7 @@ public class FileController {
     }
 
     @GetMapping
+    @Operation(summary = "List all uploaded files")
     public ResponseEntity<List<StoredFileDto>> listFiles() {
         List<StoredFile> files = fileService.getAllFiles();
 
@@ -72,7 +85,11 @@ public class FileController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFile(@PathVariable Long id) {
+    @Operation(summary = "Delete a file by ID")
+    public ResponseEntity<Void> deleteFile(
+            @Parameter(description = "ID of the file to delete", required = true)
+            @PathVariable Long id) {
+
         fileService.deleteFile(id);
 
         return ResponseEntity.noContent().build();
