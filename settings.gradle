@@ -1,2 +1,3 @@
 rootProject.name = 'LearnHub'
 include('authserver')
+include 'courseConfigurator'
