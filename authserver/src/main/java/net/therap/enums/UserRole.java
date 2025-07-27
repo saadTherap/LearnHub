@@ -1,14 +1,23 @@
 package net.therap.enums;
 
+import lombok.Getter;
+
 /**
  * @author apurboturjo
  * @since 7/24/25
  */
+@Getter
 public enum UserRole {
     
-    STUDENT,
+    STUDENT("Student"),
     
-    INSTRUCTOR,
+    INSTRUCTOR("Instructor"),
     
-    ADMIN
+    ADMIN("Admin");
+    
+    private final String displayName;
+    
+    UserRole(String displayName) {
+        this.displayName = displayName;
+    }
 }
