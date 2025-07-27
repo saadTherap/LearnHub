@@ -1,0 +1,37 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'net.therap'
+version = '0.1-SNAPSHOT'
+
+project.afterEvaluate {
+    publishing {
+        publications {
+            authCommon(MavenPublication) {
+                from components.java
+            }
+        }
+
+        repositories {
+            mavenLocal()
+        }
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.projectlombok:lombok:1.18.32'
+}

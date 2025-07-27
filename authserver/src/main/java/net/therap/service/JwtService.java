@@ -16,15 +16,27 @@ import java.util.Date;
 public class JwtService {
     
     private static final String SECRET = "verysecretkey1234567890verysecretkey1234567890";
-    private static final long EXPIRATION_MS = 86400000;
+    
+    private static final long ACCESS_EXPIRATION_MS = 86400000;
+    
+    private static final long REFRESH_EXPIRATION_MS = 7 * 24 * 60 * 60 * 1000L; // 7 days
     
     private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
     
-    public String generateToken(String username) {
+    public String generateAccessToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_EXPIRATION_MS))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+    
+    public String generateRefreshToken(String username) {
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION_MS))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }

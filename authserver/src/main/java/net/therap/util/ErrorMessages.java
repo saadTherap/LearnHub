@@ -15,4 +15,6 @@ public class ErrorMessages {
     public static final String UPDATE_USER_ERROR = "User cannot be updated: invalid or missing ID";
     
     public static final String DELETE_USER_ERROR = "User cannot be deleted: invalid or missing ID";
+    
+    public static final String REFRESH_TOKEN_ERROR = "Invalid refresh token";
 }
