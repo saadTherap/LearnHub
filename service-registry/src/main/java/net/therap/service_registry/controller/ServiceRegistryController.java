@@ -66,7 +66,7 @@ public class ServiceRegistryController {
 
     @GetMapping("/services/{service}")
     public List<Map<String, Object>> getServiceInstances(@PathVariable String service) {
-        cleanupStale(service);
+        cleanUpStale(service);
         Set<ServiceInstance> instances = registry.getOrDefault(service, Collections.emptySet());
         List<Map<String, Object>> result = new ArrayList<>();
 
@@ -81,7 +81,7 @@ public class ServiceRegistryController {
         return result;
     }
 
-    private void cleanupStale(String service) {
+    private void cleanUpStale(String service) {
         Set<ServiceInstance> instances = registry.get(service);
 
         if (instances != null) {
