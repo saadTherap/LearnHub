@@ -32,8 +32,4 @@ public class User extends Persistence {
     
     @Column(name = "role", nullable = false)
     private UserRole role;
-    
-    public Boolean hasId() {
-        return Objects.nonNull(id);
-    }
 }

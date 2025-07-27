@@ -19,7 +19,7 @@ import static net.therap.util.ErrorMessages.*;
  */
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserDetailsService {
     
     private final UserRepository userRepository;
     
@@ -37,36 +37,39 @@ public class UserService {
                 .orElseThrow(() -> new UserExistenceException(FIND_USER_ERROR));
     }
     
-    
     public User saveUser(User user) {
-        if (user.hasId()) {
-            throw new UserPersistenceException(SAVE_USER_ERROR);
+        if (userExistsByEmail(user.getEmail())) {
+            throw new UserExistenceException(EXIST_USER_ERROR);
         }
         
         return userRepository.save(user);
     }
     
     public User updateUser(User user) {
-        if (exists(user)) {
+        if (!userExistsById(user.getId())) {
             throw new UserPersistenceException(UPDATE_USER_ERROR);
+        }
+        
+        if (userExistsByEmail(user.getEmail())) {
+            throw new UserExistenceException(EXIST_USER_ERROR);
         }
         
         return userRepository.save(user);
     }
     
     public void deleteById(Long id) {
-        if (exists(id)) {
+        if (!userExistsById(id)) {
             throw new UserPersistenceException(DELETE_USER_ERROR);
         }
         
         userRepository.deleteById(id);
     }
     
-    private Boolean exists(User user) {
-        return exists(user.getId());
+    public boolean userExistsById(Long userId) {
+        return Objects.nonNull(userId) && userRepository.existsById(userId);
     }
     
-    private Boolean exists(Long id) {
-        return Objects.nonNull(id) && userRepository.existsById(id);
+    public boolean userExistsByEmail(String email) {
+        return Objects.nonNull(email) && userRepository.existsByEmail(email);
     }
 }

@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import net.therap.entity.User;
-import net.therap.service.UserService;
+import net.therap.service.UserDetailsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -20,37 +20,37 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     
-    private final UserService userService;
+    private final UserDetailsService userDetailsService;
     
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.findAll());
+        return ResponseEntity.ok(userDetailsService.findAll());
     }
     
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<User> getById(@PathVariable @Positive Long id) {
-        return ResponseEntity.ok(userService.findById(id));
+        return ResponseEntity.ok(userDetailsService.findById(id));
     }
     
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<User> create(@Valid @RequestBody User user) {
-        return ResponseEntity.ok(userService.saveUser(user));
+        return ResponseEntity.ok(userDetailsService.saveUser(user));
     }
     
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<User> update(@PathVariable Long id, @Valid @RequestBody User user) {
-        return ResponseEntity.ok(userService.updateUser(user));
+        return ResponseEntity.ok(userDetailsService.updateUser(user));
     }
     
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        userService.deleteById(id);
+        userDetailsService.deleteById(id);
         
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 }

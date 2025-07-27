@@ -5,9 +5,8 @@ import net.therap.dto.JwtResponse;
 import net.therap.dto.LoginRequest;
 import net.therap.dto.RegisterRequest;
 import net.therap.entity.User;
-import net.therap.exception.UserExistenceException;
-import net.therap.respository.UserRepository;
 import net.therap.service.interfaces.AuthService;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,53 +22,63 @@ import static net.therap.util.ServiceUtils.toSystemFormatUserRole;
 @RequiredArgsConstructor
 public abstract class AuthServiceImpl implements AuthService {
     
-    private final UserRepository userRespository;
     private final PasswordEncoder passwordEncoder;
-//    private final AuthenticationManager authManager;
+    
+    private final AuthenticationManager authManager;
+    
     private final JwtService jwtService;
-    private final UserService userService;
+    
+    private final UserDetailsService userDetailsService;
     
     @Override
     public JwtResponse register(RegisterRequest request) {
-        if (userRespository.existsByEmail(request.getEmail())) {
-            throw new UserExistenceException(EXIST_USER_ERROR);
-        }
-        
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(toSystemFormatUserRole(request.getRole()));
-        userRespository.save(user);
+        userDetailsService.saveUser(user);
         
-        return generateTokenPair(user.getEmail());
+        return generateTokenPair(user.getId());
     }
     
     @Override
     public JwtResponse login(LoginRequest request) {
-        authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
-
-        return generateTokenPair(request.getEmail());
+        authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        
+        User user = getUser(request.getEmail());
+        
+        return generateTokenPair(user.getId());
     }
     
     @Override
     public JwtResponse refreshToken(String refreshToken) {
-        String username = jwtService.extractUsername(refreshToken);
+        Long userId = jwtService.extractUserId(refreshToken);
         
-        if (!jwtService.isValid(refreshToken, username)) {
+        if (!jwtService.isValid(refreshToken, userId)) {
             throw new RuntimeException(REFRESH_TOKEN_ERROR);
         }
         
-        String access = jwtService.generateAccessToken(username);
+        User user = getUser(userId);
+        
+        String access = jwtService.generateAccessToken(user);
         
         return new JwtResponse(access, refreshToken);
     }
     
-    private JwtResponse generateTokenPair(String email) {
-        String access = jwtService.generateAccessToken(email);
-        String refresh = jwtService.generateRefreshToken(email);
+    private JwtResponse generateTokenPair(Long userId) {
+        User user = getUser(userId);
+        
+        String access = jwtService.generateAccessToken(user);
+        String refresh = jwtService.generateRefreshToken(user);
         
         return new JwtResponse(access, refresh);
+    }
+    
+    private User getUser(String email) {
+        return userDetailsService.findByEmail(email);
+    }
+    
+    private User getUser(Long userId) {
+        return userDetailsService.findById(userId);
     }
 }
