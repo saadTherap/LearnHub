@@ -1,4 +1,4 @@
-package net.therap.service;
+package net.therap.service.interfaces;
 
 import net.therap.dto.JwtResponse;
 import net.therap.dto.LoginRequest;

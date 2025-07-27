@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import net.therap.dto.JwtResponse;
 import net.therap.dto.LoginRequest;
 import net.therap.dto.RegisterRequest;
-import net.therap.service.AuthService;
+import net.therap.service.interfaces.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

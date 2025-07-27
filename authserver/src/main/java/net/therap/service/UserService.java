@@ -1,7 +1,9 @@
 package net.therap.service;
 
+import lombok.RequiredArgsConstructor;
 import net.therap.entity.User;
 import net.therap.exception.UserNotFoundException;
+import net.therap.exception.UserPersistenceException;
 import net.therap.respository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,14 +19,10 @@ import static net.therap.util.ErrorMessages.*;
  * @since 7/24/25
  */
 @Service
+@RequiredArgsConstructor
 public class UserService {
     
-    private UserRepository userRepository;
-    
-    @Autowired
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private final UserRepository userRepository;
     
     public List<User> findAll() {
         return userRepository.findAll();
@@ -32,18 +30,18 @@ public class UserService {
     
     public User findById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(FIND_USER_ERROR));
+                .orElseThrow(() -> new UserNotFoundException(FIND_USER_ERROR));
     }
     
     public User findByEmail(String email) {
         return Optional.ofNullable(userRepository.findByEmail(email))
-                .orElseThrow(() -> new RuntimeException(FIND_USER_ERROR));
+                .orElseThrow(() -> new UserNotFoundException(FIND_USER_ERROR));
     }
     
     
     public User saveUser(User user) {
         if (user.hasId()) {
-            throw new RuntimeException(SAVE_USER_ERROR);
+            throw new UserPersistenceException(SAVE_USER_ERROR);
         }
         
         return userRepository.save(user);
@@ -51,7 +49,7 @@ public class UserService {
     
     public User updateUser(User user) {
         if (exists(user)) {
-            throw new RuntimeException(UPDATE_USER_ERROR);
+            throw new UserPersistenceException(UPDATE_USER_ERROR);
         }
         
         return userRepository.save(user);
@@ -59,7 +57,7 @@ public class UserService {
     
     public void deleteById(Long id) {
         if (exists(id)) {
-            throw new UserNotFoundException(DELETE_USER_ERROR);
+            throw new UserPersistenceException(DELETE_USER_ERROR);
         }
         
         userRepository.deleteById(id);
