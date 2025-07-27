@@ -5,12 +5,15 @@ import net.therap.dto.JwtResponse;
 import net.therap.dto.LoginRequest;
 import net.therap.dto.RegisterRequest;
 import net.therap.entity.User;
+import net.therap.exception.UserExistenceException;
 import net.therap.respository.UserRepository;
 import net.therap.respository.userRespositorysitory;
 import net.therap.service.interfaces.AuthService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import static net.therap.util.ErrorMessages.*;
 
 /**
  * @author apurboturjo
@@ -29,7 +32,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public JwtResponse register(RegisterRequest request) {
         if (userRespository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new UserExistenceException(EXIST_USER_ERROR);
         }
         
         User user = new User();

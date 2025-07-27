@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.therap.enums.UserRole;
 
 import java.util.Objects;
 
@@ -28,6 +29,9 @@ public class User extends Persistence {
     
     @Column(name = "password", nullable = false, unique = true)
     private String password;
+    
+    @Column(name = "role", nullable = false)
+    private UserRole role;
     
     public Boolean hasId() {
         return Objects.nonNull(id);

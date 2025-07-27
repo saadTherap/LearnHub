@@ -2,10 +2,9 @@ package net.therap.service;
 
 import lombok.RequiredArgsConstructor;
 import net.therap.entity.User;
-import net.therap.exception.UserNotFoundException;
+import net.therap.exception.UserExistenceException;
 import net.therap.exception.UserPersistenceException;
 import net.therap.respository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,12 +29,12 @@ public class UserService {
     
     public User findById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(FIND_USER_ERROR));
+                .orElseThrow(() -> new UserExistenceException(FIND_USER_ERROR));
     }
     
     public User findByEmail(String email) {
         return Optional.ofNullable(userRepository.findByEmail(email))
-                .orElseThrow(() -> new UserNotFoundException(FIND_USER_ERROR));
+                .orElseThrow(() -> new UserExistenceException(FIND_USER_ERROR));
     }
     
     
