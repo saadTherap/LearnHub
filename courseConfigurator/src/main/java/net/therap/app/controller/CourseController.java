@@ -9,16 +9,14 @@ import net.therap.app.model.Instructor;
 import net.therap.app.service.CourseService;
 import net.therap.app.service.HazelcastCacheService;
 import net.therap.app.service.InstructorService;
-import net.therap.app.service.ModuleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.NoSuchElementException;

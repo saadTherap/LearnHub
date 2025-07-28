@@ -29,8 +29,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
-    implementation "com.hazelcast:hazelcast-client:3.12.4"
-    implementation "com.hazelcast:hazelcast-spring:3.12.4"
+    implementation "com.hazelcast:hazelcast:5.3.6"
+    implementation "com.hazelcast:hazelcast-spring:5.3.6"
 //	implementation 'org.flywaydb:flyway-core'
 //	implementation 'org.flywaydb:flyway-database-oracle'
     compileOnly 'org.projectlombok:lombok'

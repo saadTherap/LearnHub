@@ -3,21 +3,3 @@ hazelcast-client:
   network:
     cluster-members:
       - 172.16.2.115:5701
-      - 172.16.2.80:5701
-      - 172.16.2.118:5701
-  near-cache:
-    courseCatalog:
-      invalidate-on-change: true
-      time-to-live-seconds: 1800
-      max-size: 1000
-      eviction-policy: LRU
-    userProfiles:
-      invalidate-on-change: true
-      time-to-live-seconds: 900
-      max-size: 1000
-      eviction-policy: LRU
-    studentProgress:
-      invalidate-on-change: true
-      time-to-live-seconds: 300
-      max-size: 500
-      eviction-policy: LRU
