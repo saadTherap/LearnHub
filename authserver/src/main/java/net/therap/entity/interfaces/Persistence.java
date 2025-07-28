@@ -24,8 +24,8 @@ public abstract class Persistence implements Serializable {
     @Column(name = "updated_at", nullable = false)
     protected LocalDateTime updatedAt;
     
-    @Column(name = "is_deleted", nullable = false)
-    protected Boolean isDeleted;
+    @Column(name = "is_deleted")
+    protected boolean isDeleted;
     
     @Version
     private Integer version;

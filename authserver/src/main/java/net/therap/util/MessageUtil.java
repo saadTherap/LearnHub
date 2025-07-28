@@ -17,7 +17,7 @@ public class MessageUtil {
     private final MessageSource messageSource;
     
     public String getMessage(String code) {
-        return messageSource.getMessage(code, null, Locale.getDefault());
+        return messageSource.getMessage(code, null, Locale.US);
     }
     
     public String getMessage(String code, Locale locale) {

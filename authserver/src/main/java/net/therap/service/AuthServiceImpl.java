@@ -8,11 +8,11 @@ import net.therap.dto.RegisterRequest;
 import net.therap.entity.User;
 import net.therap.service.interfaces.AuthService;
 import net.therap.util.MessageUtil;
-import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -63,14 +63,16 @@ public class AuthServiceImpl implements AuthService {
     
     @Override
     public JwtResponse refreshToken(String refreshToken) {
-        Long userId = jwtService.extractUserId(refreshToken);
+        String email = jwtService.extractEmail(refreshToken);
         
-        if (!jwtService.isValid(refreshToken, userId)) {
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+        
+        if (!jwtService.isValid(refreshToken, userDetails)) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED, messageUtil.getMessage("err.refresh.token.invalid"));
         }
         
-        User user = getUser(userId);
+        User user = getUser(email);
         
         String access = jwtService.generateAccessToken(user);
         

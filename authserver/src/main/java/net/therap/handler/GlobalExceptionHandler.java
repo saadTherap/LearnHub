@@ -1,8 +1,10 @@
 package net.therap.handler;
 
 import lombok.RequiredArgsConstructor;
+import net.therap.exception.InvalidRoleSpecifiedException;
 import net.therap.exception.UserExistenceException;
 import net.therap.exception.UserPersistenceException;
+import net.therap.util.MessageUtil;
 import org.springframework.context.MessageSource;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -16,7 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static net.therap.util.HandlerUtil.buildErrorResponse;
-import static net.therap.util.MessageUtil.getMessage;
 
 /**
  * @author apurboturjo
@@ -29,7 +30,7 @@ public class GlobalExceptionHandler {
     
     private static final String ERROR = "error";
     
-    private final MessageSource messageSource;
+    private final MessageUtil messageUtil;
     
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
@@ -43,7 +44,7 @@ public class GlobalExceptionHandler {
         
         ErrorResponse response = buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
-                getMessage(messageSource, "msg.validation.failed"),
+                messageUtil.getMessage("msg.validation.failed"),
                 fieldErrors
         );
         
@@ -54,7 +55,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUserExistence(UserExistenceException ex) {
         ErrorResponse response = buildErrorResponse(
                 HttpStatus.CONFLICT,
-                getMessage(messageSource, "msg.user.exists"),
+                messageUtil.getMessage("msg.user.exists"),
                 Map.of(ERROR, ex.getMessage())
         );
         
@@ -65,7 +66,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUserPersistence(UserPersistenceException ex) {
         ErrorResponse response = buildErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                getMessage(messageSource, "msg.user.persist.failed"),
+                messageUtil.getMessage("msg.user.persist.failed"),
                 Map.of(ERROR, ex.getMessage())
         );
         

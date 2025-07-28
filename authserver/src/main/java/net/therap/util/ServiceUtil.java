@@ -2,6 +2,7 @@ package net.therap.util;
 
 import lombok.extern.slf4j.Slf4j;
 import net.therap.enums.UserRole;
+import net.therap.exception.InvalidRoleSpecifiedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -14,13 +15,6 @@ import org.springframework.web.server.ResponseStatusException;
 public class ServiceUtil {
     
     public static UserRole toSystemFormatUserRole(String role) {
-        try {
-            return UserRole.valueOf(role.toUpperCase());
-            
-        } catch (IllegalArgumentException ex) {
-            log.error("Invalid user role string: {}", role);
-            
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, getMessage("err.user.role.invalid"));
-        }
+        return UserRole.valueOf(role.toUpperCase());
     }
 }
