@@ -29,7 +29,7 @@ import java.util.Objects;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class JwtAuthFilter extends OncePerRequestFilter {
     
     private final JwtService jwtService;
     
@@ -42,28 +42,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         
         final String authHeader = request.getHeader("Authorization");
-        String username = null;
+        String email = null;
         String jwt = null;
         
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
             try {
-                // Extract username (email) from the token
-                username = jwtService.extractUsername(jwt);
+                email = jwtService.extractEmail(jwt);
                 
             } catch (JwtException ex) {
-                // If token extraction fails (e.g., malformed token), log and let the filter chain proceed
                 log.warn("JWT token parsing failed: {}", ex.getMessage());
             }
         }
         
-        // If a username is found and the SecurityContext is not yet populated
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
-                // Get the UserDetails object using the correct service method
-                UserDetails userDetails = this.customUserDetailsService.loadUserByUsername(username);
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
                 
-                // Validate the token against the user's details
                 if (jwtService.isValid(jwt, userDetails)) {
                     // Create an Authentication object with the correct details and authorities
                     UsernamePasswordAuthenticationToken authToken =
@@ -78,7 +73,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             } catch (UsernameNotFoundException | JwtException ex) {
-                // Handle cases where the username is not found or token validation fails
+                // Handle cases where the email is not found or token validation fails
                 log.warn("Authentication failed for JWT token: {}", ex.getMessage());
             }
         }

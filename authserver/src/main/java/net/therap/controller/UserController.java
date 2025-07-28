@@ -22,20 +22,14 @@ public class UserController {
     
     private final CustomUserDetailsService customUserDetailsService;
     
-    @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<User> create(@Valid @RequestBody User user) {
-        return ResponseEntity.ok(customUserDetailsService.saveUser(user));
-    }
-    
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<User> update(@PathVariable Long id, @Valid @RequestBody User user) {
+    @PutMapping
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<User> update(@Valid @RequestBody User user) {
         return ResponseEntity.ok(customUserDetailsService.updateUser(user));
     }
     
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         customUserDetailsService.deleteById(id);
         

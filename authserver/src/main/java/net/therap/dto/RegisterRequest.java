@@ -5,12 +5,14 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * @author apurboturjo
  * @since 7/24/25
  */
 @Data
-public class RegisterRequest {
+public class RegisterRequest implements Serializable {
     
     @Email(message = "{user.email.invalid}")
     @NotBlank(message = "{user.email.notblank}")
