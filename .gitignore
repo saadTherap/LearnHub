@@ -3,6 +3,5 @@
 .sdkmanrc
 
 build
-gradle
 
 gradlew.bat
