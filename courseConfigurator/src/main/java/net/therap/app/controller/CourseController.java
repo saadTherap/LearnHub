@@ -1,23 +1,27 @@
 package net.therap.app.controller;
 
+import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.CourseCatalogDTO;
 import net.therap.app.dto.CourseDTO;
-import net.therap.app.helper.DtoHelper; // Import DtoHelper
+import net.therap.app.helper.DtoHelper;
 import net.therap.app.model.Course;
-import net.therap.app.model.Instructor; // Assuming Instructor entity is needed for mapping
+import net.therap.app.model.Instructor;
 import net.therap.app.service.CourseService;
-import net.therap.app.service.InstructorService; // Assuming InstructorService is needed to fetch Instructor
-import net.therap.app.service.ModuleService; // Keep this if still used for other logic
+import net.therap.app.service.HazelcastCacheService;
+import net.therap.app.service.InstructorService;
+import net.therap.app.service.ModuleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired; // Can replace with constructor injection
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 
 import java.util.List;
-import java.util.NoSuchElementException; // Added for clarity on exceptions
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -35,16 +39,18 @@ public class CourseController {
     private final ModuleService moduleService; // Keep if used
     private final DtoHelper dtoHelper; // Inject DtoHelper
     private final InstructorService instructorService; // Needed to fetch Instructor entity for Course creation/update
-    
+    private final HazelcastCacheService hazelcastCacheService;
+
     // Use constructor injection for all dependencies
     public CourseController(CourseService courseService,
                             ModuleService moduleService,
                             DtoHelper dtoHelper,
-                            InstructorService instructorService) {
+                            InstructorService instructorService, HazelcastCacheService hazelcastCacheService) {
         this.courseService = courseService;
         this.moduleService = moduleService;
         this.dtoHelper = dtoHelper;
         this.instructorService = instructorService;
+        this.hazelcastCacheService = hazelcastCacheService;
     }
     
     @GetMapping
@@ -78,11 +84,19 @@ public class CourseController {
     
     @GetMapping("/{id}")
     public ResponseEntity<CourseDTO> getCourseById(@PathVariable Long id) {
+        Course cached = hazelcastCacheService.get(CacheConstants.COURSES, id);
+        if (cached != null) {
+            return ResponseEntity.ok(dtoHelper.toCourseDTO(cached));
+        }
+
         Optional<Course> courseOptional = courseService.findById(id);
-        return courseOptional
-                .map(dtoHelper::toCourseDTO) // <<< CHANGED: Use DtoHelper
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+
+        if (courseOptional.isPresent()) {
+            Course course = courseOptional.get();
+            hazelcastCacheService.put("courses", course.getId(), course); // Add to cache
+            return ResponseEntity.ok(dtoHelper.toCourseDTO(course));
+        }
+        return ResponseEntity.notFound().build();
     }
     
     @PostMapping
@@ -102,6 +116,14 @@ public class CourseController {
         }
         
         Course savedCourse = courseService.save(course);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                hazelcastCacheService.remove(CacheConstants.COURSES, savedCourse.getId());
+            }
+        });
+
         return new ResponseEntity<>(dtoHelper.toCourseDTO(savedCourse), HttpStatus.CREATED); // <<< CHANGED: Use DtoHelper
     }
     
@@ -126,6 +148,14 @@ public class CourseController {
             }
             
             Course updatedCourse = courseService.save(existingCourse);
+
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    hazelcastCacheService.remove(CacheConstants.COURSES, updatedCourse.getId());
+                }
+            });
+
             return ResponseEntity.ok(dtoHelper.toCourseDTO(updatedCourse)); // <<< CHANGED: Use DtoHelper
         }
         return ResponseEntity.notFound().build();
@@ -135,6 +165,14 @@ public class CourseController {
     public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
         if (courseService.findById(id).isPresent()) {
             courseService.deleteById(id);
+
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    hazelcastCacheService.remove(CacheConstants.COURSES, id);
+                }
+            });
+
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
