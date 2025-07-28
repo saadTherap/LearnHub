@@ -1,0 +1,101 @@
+version: '3.9'
+
+services:
+
+  generate-cluster-id:
+      image: ubuntu:latest
+      container_name: generate-cluster-id
+      user: root
+      volumes:
+        - ./kafka:/kafka
+      entrypoint: ["/bin/bash", "-c"]
+      command: >
+        "chmod +x kafka/generate-cluster-id.sh && kafka/generate-cluster-id.sh"
+      restart: "no"
+
+  broker-1:
+    image: apache/kafka:latest
+    container_name: broker-1
+    depends_on:
+      - generate-cluster-id
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://broker-1:9092,CONTROLLER://broker-1:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://172.16.2.114:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker-1:9093,2@broker-2:9093,3@broker-3:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
+    volumes:
+      - ./Kafka-Cluster/kafka:/kafka
+      - broker1-data:/var/lib/kafka/data
+    env_file:
+      - ./kafka/cluster-id.env
+
+  broker-2:
+    image: apache/kafka:latest
+    container_name: broker-2
+    depends_on:
+      - generate-cluster-id
+    ports:
+      - "9094:9092"
+      - "9095:9093"
+    environment:
+      KAFKA_NODE_ID: 2
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://broker-2:9092,CONTROLLER://broker-2:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://172.16.2.114:9094
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker-1:9093,2@broker-2:9093,3@broker-3:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
+    volumes:
+      - ./kafka:/kafka
+      - broker2-data:/var/lib/kafka/data
+    env_file:
+      - ./kafka/cluster-id.env
+
+  broker-3:
+    image: apache/kafka:latest
+    container_name: broker-3
+    depends_on:
+      - generate-cluster-id
+    ports:
+      - "9096:9092"
+      - "9097:9093"
+    environment:
+      KAFKA_NODE_ID: 3
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://broker-3:9092,CONTROLLER://broker-3:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://172.16.2.114:9096
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker-1:9093,2@broker-2:9093,3@broker-3:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
+    volumes:
+      - ./kafka:/kafka
+      - broker3-data:/var/lib/kafka/data
+    env_file:
+      - ./kafka/cluster-id.env
+
+volumes:
+  kafka:
+  broker1-data:
+  broker2-data:
+  broker3-data:
