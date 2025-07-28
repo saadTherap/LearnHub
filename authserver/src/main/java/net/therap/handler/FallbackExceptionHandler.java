@@ -1,5 +1,7 @@
 package net.therap.handler;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.core.annotation.Order;
@@ -15,16 +17,17 @@ import java.util.Locale;
  * @since 7/28/25
  */
 @Order(2)
+@Slf4j
+@RequiredArgsConstructor
 @ControllerAdvice()
 public class FallbackExceptionHandler {
     
-    @Autowired
-    private MessageSource messageSource;
+    private final MessageSource messageSource;
     
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleAllExceptions(Exception ex) {
-        System.err.println("An unexpected error occurred: " + ex.getMessage());
-        ex.printStackTrace();
+        
+        log.error("An unexpected error occurred: {}", ex.getMessage(), ex);
         
         String errorMessage = messageSource.getMessage("app.global.error", null, Locale.getDefault());
         
