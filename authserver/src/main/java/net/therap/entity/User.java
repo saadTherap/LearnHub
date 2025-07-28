@@ -1,9 +1,7 @@
 package net.therap.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import net.therap.entity.interfaces.Persistence;
 import net.therap.enums.UserRole;
 
@@ -13,7 +11,8 @@ import net.therap.enums.UserRole;
  */
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class User extends Persistence {

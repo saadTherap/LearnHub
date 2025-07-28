@@ -6,12 +6,13 @@ import net.therap.dto.LoginRequest;
 import net.therap.dto.RegisterRequest;
 import net.therap.entity.User;
 import net.therap.service.interfaces.AuthService;
+import org.springframework.context.MessageSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import static net.therap.util.ErrorMessages.REFRESH_TOKEN_ERROR;
+import static net.therap.util.MessageUtils.getMessage;
 import static net.therap.util.ServiceUtils.toSystemFormatUserRole;
 
 /**
@@ -28,7 +29,9 @@ public abstract class AuthServiceImpl implements AuthService {
     
     private final JwtService jwtService;
     
-    private final UserDetailsService userDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
+    
+    private final MessageSource messageSource;
     
     @Override
     public JwtResponse register(RegisterRequest request) {
@@ -36,7 +39,7 @@ public abstract class AuthServiceImpl implements AuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(toSystemFormatUserRole(request.getRole()));
-        userDetailsService.saveUser(user);
+        customUserDetailsService.saveUser(user);
         
         return generateTokenPair(user.getId());
     }
@@ -55,7 +58,7 @@ public abstract class AuthServiceImpl implements AuthService {
         Long userId = jwtService.extractUserId(refreshToken);
         
         if (!jwtService.isValid(refreshToken, userId)) {
-            throw new RuntimeException(REFRESH_TOKEN_ERROR);
+            throw new RuntimeException(getMessage(messageSource, "err.refresh.token.invalid"));
         }
         
         User user = getUser(userId);
@@ -75,10 +78,10 @@ public abstract class AuthServiceImpl implements AuthService {
     }
     
     private User getUser(String email) {
-        return userDetailsService.findByEmail(email);
+        return customUserDetailsService.findByEmail(email);
     }
     
     private User getUser(Long userId) {
-        return userDetailsService.findById(userId);
+        return customUserDetailsService.findById(userId);
     }
 }

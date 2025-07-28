@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.therap.entity.User;
 import net.therap.service.JwtService;
-import net.therap.service.UserDetailsService;
+import net.therap.service.CustomUserDetailsService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -27,7 +27,7 @@ import java.util.Objects;
 public class JwtAuthFilter extends OncePerRequestFilter {
     
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
     
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -46,7 +46,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final Long userId = jwtService.extractUserId(token);
         
         if (Objects.nonNull(userId) && SecurityContextHolder.getContext().getAuthentication() == null) {
-            User user = userDetailsService.findById(userId);
+            User user = customUserDetailsService.findById(userId);
             
             if (jwtService.isValid(token, user.getId())) {
                 UsernamePasswordAuthenticationToken authToken =
