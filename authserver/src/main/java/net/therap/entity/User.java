@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.therap.entity.interfaces.Persistence;
 import net.therap.enums.UserRole;
 
 /**

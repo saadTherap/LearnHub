@@ -2,13 +2,12 @@ package net.therap.handler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Locale;
 
@@ -19,7 +18,7 @@ import java.util.Locale;
 @Order(2)
 @Slf4j
 @RequiredArgsConstructor
-@ControllerAdvice()
+@RestControllerAdvice
 public class FallbackExceptionHandler {
     
     private final MessageSource messageSource;

@@ -1,4 +1,4 @@
-package net.therap.entity;
+package net.therap.entity.interfaces;
 
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -5,13 +5,14 @@ import net.therap.entity.User;
 import net.therap.exception.UserExistenceException;
 import net.therap.exception.UserPersistenceException;
 import net.therap.respository.UserRepository;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static net.therap.util.ErrorMessages.*;
+import static net.therap.util.MessageUtils.getMessage;
 
 /**
  * @author apurboturjo
@@ -22,6 +23,7 @@ import static net.therap.util.ErrorMessages.*;
 public class UserDetailsService {
     
     private final UserRepository userRepository;
+    private final MessageSource messageSource;
     
     public List<User> findAll() {
         return userRepository.findAll();
@@ -29,39 +31,35 @@ public class UserDetailsService {
     
     public User findById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new UserExistenceException(FIND_USER_ERROR));
+                .orElseThrow(() -> new UserExistenceException(getMessage(messageSource, "err.user.not.found")));
     }
     
     public User findByEmail(String email) {
         return Optional.ofNullable(userRepository.findByEmail(email))
-                .orElseThrow(() -> new UserExistenceException(FIND_USER_ERROR));
+                .orElseThrow(() -> new UserExistenceException(getMessage(messageSource, "err.user.not.found")));
     }
     
     public User saveUser(User user) {
         if (userExistsByEmail(user.getEmail())) {
-            throw new UserExistenceException(EXIST_USER_ERROR);
+            throw new UserExistenceException(getMessage(messageSource, "err.user.exists"));
         }
-        
         return userRepository.save(user);
     }
     
     public User updateUser(User user) {
         if (!userExistsById(user.getId())) {
-            throw new UserPersistenceException(UPDATE_USER_ERROR);
+            throw new UserPersistenceException(getMessage(messageSource, "err.user.update.missing_id"));
         }
-        
         if (userExistsByEmail(user.getEmail())) {
-            throw new UserExistenceException(EXIST_USER_ERROR);
+            throw new UserExistenceException(getMessage(messageSource, "err.user.exists"));
         }
-        
         return userRepository.save(user);
     }
     
     public void deleteById(Long id) {
         if (!userExistsById(id)) {
-            throw new UserPersistenceException(DELETE_USER_ERROR);
+            throw new UserPersistenceException(getMessage(messageSource, "err.user.delete.missing_id"));
         }
-        
         userRepository.deleteById(id);
     }
     

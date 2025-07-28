@@ -2,6 +2,7 @@ package net.therap.handler;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
@@ -10,6 +11,10 @@ import java.util.Map;
  */
 @Data
 public class ErrorResponse {
+    
+    private LocalDateTime timestamp;
+    
+    private int status;
     
     private String message;
     
