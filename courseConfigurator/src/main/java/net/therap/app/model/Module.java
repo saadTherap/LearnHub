@@ -1,10 +1,9 @@
 package net.therap.app.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
 import java.util.List;
 
@@ -25,7 +24,7 @@ public class Module extends Persistent {
             "final_learnhub_module_seq")
     private long id;
     
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 128)
     private String title;
     
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "module")

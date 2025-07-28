@@ -12,8 +12,5 @@ import java.util.Optional;
  */
 @Repository
 public interface InstructorRepository extends JpaRepository<Instructor, Long> {
-    
-    // You can add custom query methods here if needed,
-    // e.g., findByName(String name), findByEmail(String email)
-    Optional<Instructor> findByName(String name);
+
 }

@@ -36,33 +36,29 @@ public class CourseController {
     private final Logger logger = LoggerFactory.getLogger(CourseController.class);
     
     private final CourseService courseService;
-    private final ModuleService moduleService; // Keep if used
     private final DtoHelper dtoHelper; // Inject DtoHelper
     private final InstructorService instructorService; // Needed to fetch Instructor entity for Course creation/update
     private final HazelcastCacheService hazelcastCacheService;
-
-    // Use constructor injection for all dependencies
+    
     public CourseController(CourseService courseService,
-                            ModuleService moduleService,
                             DtoHelper dtoHelper,
                             InstructorService instructorService, HazelcastCacheService hazelcastCacheService) {
         this.courseService = courseService;
-        this.moduleService = moduleService;
         this.dtoHelper = dtoHelper;
         this.instructorService = instructorService;
         this.hazelcastCacheService = hazelcastCacheService;
     }
     
     @GetMapping
-    public ResponseEntity<List<CourseDTO>> getAllCourses() {
+    public ResponseEntity<List<CourseCatalogDTO>> getAllCourses() {
         List<Course> courses = courseService.findAll();
-        List<CourseDTO> courseDTOs = courses.stream()
-                .map(dtoHelper::toCourseDTO)
+        List<CourseCatalogDTO> courseDTOs = courses.stream()
+                .map(dtoHelper::toDetailedCourseCatalogDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(courseDTOs);
     }
     
-    @GetMapping("/catalog")
+    @GetMapping("/public")
     public ResponseEntity<List<CourseCatalogDTO>> getAllCoursesCatalog() {
         List<Course> courses = courseService.findAll();
         List<CourseCatalogDTO> courseCatalogDTOs = courses.stream()
@@ -72,7 +68,7 @@ public class CourseController {
         return ResponseEntity.ok(courseCatalogDTOs);
     }
     
-    @GetMapping("/catalog/{id}")
+    @GetMapping("/public/{id}")
     public ResponseEntity<CourseCatalogDTO> getCourseByIdPublic(@PathVariable Long id) {
         Optional<Course> courseOptional = courseService.findById(id);
         return courseOptional

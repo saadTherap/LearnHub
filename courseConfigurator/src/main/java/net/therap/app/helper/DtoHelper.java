@@ -25,12 +25,13 @@ public class DtoHelper {
             return null;
         }
         InstructorDTO dto = new InstructorDTO();
-        BeanUtils.copyProperties(instructor, dto, "courses"); // Exclude 'courses' to avoid direct recursion
-        if (instructor.getCourses() != null && !instructor.getCourses().isEmpty()) {
-            dto.setCourses(instructor.getCourses().stream()
-                                   .map(this::toCourseDTOWithoutInstructor) // Use a specialized mapping method
-                                   .collect(Collectors.toList()));
-        }
+        BeanUtils.copyProperties(instructor, dto); // Exclude 'courses' to avoid direct recursion
+        
+//        if (instructor.getCourses() != null && !instructor.getCourses().isEmpty()) {
+//            dto.setCourses(instructor.getCourses().stream()
+//                                   .map(this::toCourseDTOWithoutInstructor) // Use a specialized mapping method
+//                                   .collect(Collectors.toList()));
+//        }
         return dto;
     }
     
@@ -81,6 +82,26 @@ public class DtoHelper {
         return dto;
     }
     
+    public CourseCatalogDTO toDetailedCourseCatalogDTO(Course course) {
+        if (course == null) {
+            return null;
+        }
+        
+        CourseCatalogDTO dto = new CourseCatalogDTO();
+        dto.setCourseId(course.getId());
+        dto.setName(course.getName());
+        dto.setDescription(course.getDescription());
+        dto.setCurrentPublishedVersion(course.getCurrentRelease());
+        
+        Optional.ofNullable(course.getInstructor()).ifPresent(instructor -> {
+            dto.setInstructorName(instructor.getName());
+        });
+        
+        dto.setModules(course.getModules().stream().map(this::toModuleCatalogueDTO).collect(Collectors.toList()));
+        
+        return dto;
+    }
+    
     // Specialized CourseDTO mapping to avoid instructor recursion when called from InstructorDTO
     private CourseDTO toCourseDTOWithoutInstructor(Course course) {
         if (course == null) {
@@ -97,6 +118,21 @@ public class DtoHelper {
         return dto;
     }
     
+    public ModuleCatalogDTO toModuleCatalogueDTO(Module module) {
+        ModuleCatalogDTO dto = getModuleCatalogueDTO(module);
+        if (isNull(dto)) {
+            return null;
+        }
+        
+        if (module.getContents() != null && !module.getContents().isEmpty()) {
+            dto.setContents(module.getContents().stream()
+                                    .map(this::toContentCatalogueDTO)
+                                    .collect(Collectors.toList()));
+        }
+        
+        return dto;
+    }
+    
     public ModuleDTO toModuleDTO(Module module) {
         ModuleDTO dto = getModuleDTO(module);
         if (isNull(dto)) {
@@ -105,7 +141,7 @@ public class DtoHelper {
         
         if (module.getContents() != null && !module.getContents().isEmpty()) {
             dto.setContents(module.getContents().stream()
-                                    .map(this::toContentDTO)
+                                    .map(this::toDetailedContentDTO)
                                     .collect(Collectors.toList()));
         }
         
@@ -125,7 +161,7 @@ public class DtoHelper {
     }
     
     // --- Content Mapping (Logical Lesson) ---
-    public ContentDTO toContentDTO(Content content) {
+    public ContentDTO toDetailedContentDTO(Content content) {
         if (content == null) {
             return null;
         }
@@ -225,6 +261,34 @@ public class DtoHelper {
         return dto;
     }
     
+    public ContentDTO toContentDTO(ContentRelease contentRelease) {
+        if (isNull(contentRelease)) {
+            return null;
+        }
+        
+        ContentDTO dto = new ContentDTO();
+        
+        dto.setId(contentRelease.getId());
+        dto.setTitle(contentRelease.getContent().getTitle());
+//        dto.setOrderIndex(contentRelease.getOrderIndex());
+        dto.setModuleId(contentRelease.getContent().getModule().getId());
+        
+//        if (contentRelease instanceof Lecture) {
+//            dto.setType("LECTURE");
+//
+//        } else if (contentRelease instanceof Quiz) {
+//            dto.setType("QUIZ");
+//
+//        } else if (contentRelease instanceof Submission) {
+//            dto.setType("SUBMISSION");
+//
+//        } else {
+//            dto.setType(null); // Fallback
+//        }
+        
+        return dto;
+    }
+    
     public ContentCatalogueDTO toContentCatalogueDTO(Content content) {
         return toContentCatalogueDTO(content.getCurrentContentRelease());
     }
@@ -314,6 +378,18 @@ public class DtoHelper {
         }
         
         ModuleDTO dto = new ModuleDTO();
+        BeanUtils.copyProperties(module, dto, "course", "contents");
+        
+        Optional.ofNullable(module.getCourse()).ifPresent(course -> dto.setCourseId(course.getId()));
+        return dto;
+    }
+    
+    private static ModuleCatalogDTO getModuleCatalogueDTO(Module module) {
+        if (module == null) {
+            return null;
+        }
+        
+        ModuleCatalogDTO dto = new ModuleCatalogDTO();
         BeanUtils.copyProperties(module, dto, "course", "contents");
         
         Optional.ofNullable(module.getCourse()).ifPresent(course -> dto.setCourseId(course.getId()));

@@ -15,9 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping
 public class MainController {
     
-    @Value("${custom.property.1}")
-    String string;
-    
     @GetMapping("/")
     public ResponseEntity<String> hello() {
         return ResponseEntity.ok("bye bye");
@@ -26,6 +23,6 @@ public class MainController {
     @GetMapping("/hi")
     public ResponseEntity<String> hi() {
         
-        return ResponseEntity.ok(string);
+        return ResponseEntity.ok("hello world");
     }
 }

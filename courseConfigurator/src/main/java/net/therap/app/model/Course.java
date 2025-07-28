@@ -1,6 +1,8 @@
 package net.therap.app.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,16 +26,19 @@ public class Course extends Persistent {
     @SequenceGenerator(name = "final_learnhub_course_seq_gen", sequenceName = "final_learnhub_course_seq", allocationSize = 1)
     private long id;
     
-    @Column(nullable = false)
+    @Column(length = 128, nullable = false)
     private String name;
     
-    @Column(nullable = false, length = 512)
+    @Column(length = 512, nullable = false)
     private String description;
     
     @Column(nullable = false, name = "current_release")
     private long currentRelease;
     
-    @ManyToOne
+    @Column(name = "image_url")
+    private String imageUrl;
+    
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "instructor_id", referencedColumnName = "id")
     private Instructor instructor;
     

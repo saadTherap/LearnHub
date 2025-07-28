@@ -1,16 +1,28 @@
 package net.therap.app.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.therap.app.dto.InstructorDTO; // Import InstructorDTO
+import net.therap.app.mapper.InstructorMapper;
 import net.therap.app.model.Instructor;
 import net.therap.app.service.InstructorService;
 import net.therap.app.helper.DtoHelper; // Import DtoHelper
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 /**
  * REST Controller for managing Instructor data.
@@ -21,16 +33,21 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/instructors") // Base path for instructor-related APIs
 public class InstructorController {
     
-    private final InstructorService instructorService;
-    private final DtoHelper dtoHelper; // Inject DtoHelper
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     
-    public InstructorController(InstructorService instructorService, DtoHelper dtoHelper) { // Constructor injection
+    private final InstructorService instructorService;
+    private final DtoHelper dtoHelper;
+    private final ObjectMapper objectMapper;
+    private final InstructorMapper instructorMapper;
+    
+    @Autowired
+    public InstructorController(InstructorService instructorService, DtoHelper dtoHelper, ObjectMapper objectMapper, InstructorMapper instructorMapper) { // Constructor injection
         this.instructorService = instructorService;
         this.dtoHelper = dtoHelper;
+        this.objectMapper = objectMapper;
+        this.instructorMapper = instructorMapper;
     }
-    
-    // API to fetch a single instructor by ID
-    // Example: GET /api/instructors/1
+
     @GetMapping("/{id}")
     public ResponseEntity<InstructorDTO> getInstructorById(@PathVariable Long id) {
         return instructorService.getInstructorById(id)
@@ -39,8 +56,6 @@ public class InstructorController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
     
-    // API to fetch all instructors
-    // Example: GET /api/instructors
     @GetMapping
     public ResponseEntity<List<InstructorDTO>> getAllInstructors() {
         List<Instructor> instructors = instructorService.getAllInstructors();
@@ -50,45 +65,34 @@ public class InstructorController {
         return ResponseEntity.ok(instructorDTOs);
     }
     
-    // API to create a new instructor
-    // Example: POST /api/instructors
     @PostMapping
     public ResponseEntity<InstructorDTO> createInstructor(@RequestBody InstructorDTO instructorDTO) {
-        // --- DTO to Entity Mapping for Creation ---
-        Instructor instructorToCreate = new Instructor();
-        // BeanUtils.copyProperties can be used for simple fields, but be careful with IDs/timestamps
-        instructorToCreate.setName(instructorDTO.getName());
-        // instructorToCreate.setEmail(instructorDTO.getEmail()); // Set other fields if present in DTO
-        
+        Instructor instructorToCreate = instructorMapper.toInstructor(instructorDTO);
         Instructor createdInstructor = instructorService.createInstructor(instructorToCreate);
-        return new ResponseEntity<>(dtoHelper.toInstructorDTO(createdInstructor), HttpStatus.CREATED); // <<< CHANGED: Use DtoHelper
+        
+        return new ResponseEntity<>(dtoHelper.toInstructorDTO(createdInstructor), HttpStatus.CREATED);
     }
     
-    // API to update an instructor
-    // Example: PUT /api/instructors/1
-    @PutMapping("/{id}")
-    public ResponseEntity<InstructorDTO> updateInstructor(@PathVariable Long id, @RequestBody InstructorDTO instructorDTO) {
-        try {
-            // --- DTO to Entity Mapping for Update ---
-            // Fetch existing entity and update its fields from DTO
-            // Instructor existingInstructor = instructorService.getInstructorById(id)
-            //                                   .orElseThrow(() -> new NoSuchElementException("Instructor not found"));
-            // existingInstructor.setName(instructorDTO.getName());
-            // Instructor updatedInstructor = instructorService.updateInstructor(id, existingInstructor);
+    @PatchMapping("/{id}")
+    public ResponseEntity<InstructorDTO> updateInstructor(@PathVariable long id, @RequestBody InstructorDTO instructorDTO) {
+        Optional<Instructor> instructorToUpdate = instructorService.getInstructorById(id);
+        
+        if (instructorToUpdate.isPresent()) {
+            if (instructorDTO.getId() != id && instructorDTO.getId() != 0) {
+                return ResponseEntity.badRequest().build();
+            }
             
-            // Using the simplified update from previous example:
-            Instructor instructorToUpdate = new Instructor();
-            instructorToUpdate.setName(instructorDTO.getName());
+            instructorDTO.setId(instructorToUpdate.get().getId());
+            instructorMapper.updateInstructorFromDto(instructorDTO, instructorToUpdate.get());
+            Instructor updatedInstructor = instructorService.updateInstructor(instructorToUpdate.get());
             
-            Instructor updatedInstructor = instructorService.updateInstructor(id, instructorToUpdate);
-            return ResponseEntity.ok(dtoHelper.toInstructorDTO(updatedInstructor)); // <<< CHANGED: Use DtoHelper
-        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(dtoHelper.toInstructorDTO(updatedInstructor), HttpStatus.OK);
+            
+        } else {
             return ResponseEntity.notFound().build();
         }
     }
-    
-    // API to soft delete an instructor
-    // Example: DELETE /api/instructors/1
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> softDeleteInstructor(@PathVariable Long id) {
         try {

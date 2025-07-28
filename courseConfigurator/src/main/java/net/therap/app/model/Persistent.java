@@ -42,5 +42,4 @@ public abstract class Persistent implements Serializable {
     protected void onUpdate() {
         updated = new Date();
     }
-    
 }

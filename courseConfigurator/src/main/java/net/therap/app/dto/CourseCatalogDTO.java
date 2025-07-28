@@ -1,9 +1,6 @@
 package net.therap.app.dto;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -18,11 +15,12 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 public class CourseCatalogDTO {
     private long courseId;
     private String name;
     private String description;
     private String instructorName;
     private long currentPublishedVersion;
-//    private List<String> modules;
+    private List<ModuleCatalogDTO> modules;
 }

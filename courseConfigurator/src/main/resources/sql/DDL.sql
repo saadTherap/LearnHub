@@ -557,3 +557,41 @@ WHERE id = 1003;
 -- It does not have a 'current' active release for any version >= 2.
 -- So, its current_content_release_id remains NULL as per initial insert.
 -- Do NOT update it to point to a deleted/ended release unless specifically required.
+
+-- Add 'email' column to final_learnhub_instructor (initially nullable)
+ALTER TABLE final_learnhub_instructor
+    ADD (
+        email           VARCHAR2(255), -- <<< REMOVED NOT NULL
+        CONSTRAINT uq_instructor_email UNIQUE (email)
+        );
+
+-- Add 'date_of_birth' column to final_learnhub_instructor (initially nullable)
+ALTER TABLE final_learnhub_instructor
+    ADD (
+        date_of_birth   DATE -- <<< REMOVED NOT NULL
+        );
+
+-- Or update specific rows based on their IDs
+UPDATE final_learnhub_instructor
+SET
+    email = 'alice@example.com',
+    date_of_birth = TO_DATE('1985-05-15', 'YYYY-MM-DD')
+WHERE id = 1;
+
+UPDATE final_learnhub_instructor
+SET
+    email = 'bob@example.com',
+    date_of_birth = TO_DATE('1978-11-22', 'YYYY-MM-DD')
+WHERE id = 2;
+
+UPDATE final_learnhub_instructor
+SET
+    email = 'test@example.com',
+    date_of_birth = TO_DATE('2001-11-22', 'YYYY-MM-DD')
+WHERE id = 3;
+
+ALTER TABLE final_learnhub_instructor
+    MODIFY (
+        email           VARCHAR2(255) NOT NULL,
+        date_of_birth   DATE NOT NULL
+        );
