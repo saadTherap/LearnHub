@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Handles user authentication requests.
  * @author apurbo
  * @since 7/24/25
  */

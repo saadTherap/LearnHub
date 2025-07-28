@@ -11,7 +11,6 @@ import net.therap.service.JwtService;
 import net.therap.service.UserDetailsService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -38,7 +37,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         
         final String authHeader = request.getHeader("Authorization");
         
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (Objects.isNull(authHeader) || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }

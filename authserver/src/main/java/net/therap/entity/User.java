@@ -6,8 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.therap.enums.UserRole;
 
-import java.util.Objects;
-
 /**
  * @author apurboturjo
  * @since 7/24/25

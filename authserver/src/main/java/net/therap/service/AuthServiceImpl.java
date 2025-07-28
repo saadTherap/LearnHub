@@ -11,7 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import static net.therap.util.ErrorMessages.*;
+import static net.therap.util.ErrorMessages.REFRESH_TOKEN_ERROR;
 import static net.therap.util.ServiceUtils.toSystemFormatUserRole;
 
 /**

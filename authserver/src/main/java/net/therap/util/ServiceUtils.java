@@ -1,13 +1,6 @@
 package net.therap.util;
 
-import net.therap.entity.User;
 import net.therap.enums.UserRole;
-import net.therap.exception.UserExistenceException;
-import net.therap.respository.UserRepository;
-
-import java.util.Optional;
-
-import static net.therap.util.ErrorMessages.FIND_USER_ERROR;
 
 /**
  * @author apurboturjo
