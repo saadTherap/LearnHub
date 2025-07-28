@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 
@@ -38,7 +39,9 @@ public class FileStorageService {
     }
 
     public StoredFile saveFile(MultipartFile multipartFile) {
-        String storedFilename = UUID.randomUUID() + "_" + multipartFile.getOriginalFilename();
+        String extension = getFileExtension(multipartFile.getOriginalFilename());
+        String storedFilename = UUID.randomUUID() + extension;
+
         Path targetPath = storagePath.resolve(storedFilename);
 
         try {
@@ -104,5 +107,13 @@ public class FileStorageService {
         storedFile.setUploadTime(LocalDateTime.now());
 
         return storedFile;
+    }
+
+    private String getFileExtension(String filename) {
+        if (Objects.nonNull(filename) && filename.contains(".")) {
+            return filename.substring(filename.lastIndexOf("."));
+        }
+
+        return "";
     }
 }

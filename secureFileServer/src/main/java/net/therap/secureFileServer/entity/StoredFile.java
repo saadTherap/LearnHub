@@ -20,9 +20,9 @@ import java.time.LocalDateTime;
 public class StoredFile {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "avi_stored_file_seq_gen")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "stored_file_seq_gen")
     @SequenceGenerator(
-            name = "avi_stored_file_seq_gen",
+            name = "stored_file_seq_gen",
             sequenceName = "avi_stored_file_seq",
             allocationSize = 1
     )
