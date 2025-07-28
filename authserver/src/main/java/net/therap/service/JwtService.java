@@ -3,7 +3,9 @@ package net.therap.service;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import net.therap.entity.User;
+import net.therap.util.MessageUtil;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -14,19 +16,21 @@ import java.util.Date;
  * @since 7/27/25
  */
 @Service
+@RequiredArgsConstructor
 public class JwtService {
     
-    private static final String SECRET = "verysecretkey1234567890verysecretkey1234567890";
+    private final MessageUtil messageUtil;
     
     private static final long ACCESS_EXPIRATION_MS = 86400000;
     
     private static final long REFRESH_EXPIRATION_MS = 7 * 24 * 60 * 60 * 1000L;
     
-    private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
+    private final Key key = Keys.hmacShaKeyFor(messageUtil.getMessage("token.secret.key").getBytes());
     
     public String generateAccessToken(User user) {
         return Jwts.builder()
                 .setSubject(String.valueOf(user.getId()))
+                .claim("email", user.getEmail())
                 .claim("role", user.getRole().name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_EXPIRATION_MS))
@@ -37,6 +41,7 @@ public class JwtService {
     public String generateRefreshToken(User user) {
         return Jwts.builder()
                 .setSubject(String.valueOf(user.getId()))
+                .claim("email", user.getEmail())
                 .claim("role", user.getRole().name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION_MS))
@@ -53,6 +58,15 @@ public class JwtService {
                 .getSubject();
         
         return Long.parseLong(sub);
+    }
+    
+    public String extractEmail(String jwtToken) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(jwtToken)
+                .getBody()
+                .get("email", String.class);
     }
     
     public boolean isValid(String jwtToken, Long userId) {

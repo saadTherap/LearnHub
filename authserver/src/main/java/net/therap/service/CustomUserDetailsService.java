@@ -5,6 +5,7 @@ import net.therap.entity.User;
 import net.therap.exception.UserExistenceException;
 import net.therap.exception.UserPersistenceException;
 import net.therap.respository.UserRepository;
+import net.therap.util.MessageUtil;
 import org.springframework.context.MessageSource;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,6 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+
 
 /**
  * @author apurboturjo
@@ -23,14 +25,15 @@ import java.util.*;
 public class CustomUserDetailsService implements UserDetailsService {
     
     private final UserRepository userRepository;
-    private final MessageSource messageSource;
+    
+    private final MessageUtil messageUtil;
     
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email);
         
         if (Objects.isNull(user)) {
-            throw new UsernameNotFoundException(getMessage("err.user.not.found"));
+            throw new UsernameNotFoundException(messageUtil.getMessage("err.user.not.found"));
         }
         
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
@@ -48,35 +51,39 @@ public class CustomUserDetailsService implements UserDetailsService {
     
     public User findById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new UserExistenceException(getMessage("err.user.not.found")));
+                .orElseThrow(() -> new UserExistenceException(messageUtil.getMessage("err.user.not.found")));
     }
     
     public User findByEmail(String email) {
         return Optional.ofNullable(userRepository.findByEmail(email))
-                .orElseThrow(() -> new UserExistenceException(getMessage("err.user.not.found")));
+                .orElseThrow(() -> new UserExistenceException(messageUtil.getMessage("err.user.not.found")));
     }
     
     public User saveUser(User user) {
         if (userExistsByEmail(user.getEmail())) {
-            throw new UserExistenceException(getMessage("err.user.exists"));
+            throw new UserExistenceException(messageUtil.getMessage("err.user.exists"));
         }
+        
         return userRepository.save(user);
     }
     
     public User updateUser(User user) {
         if (!userExistsById(user.getId())) {
-            throw new UserPersistenceException(getMessage("err.user.update.missing_id"));
+            throw new UserPersistenceException(messageUtil.getMessage("err.user.update.missing_id"));
         }
+        
         if (userExistsByEmail(user.getEmail())) {
-            throw new UserExistenceException(getMessage("err.user.exists"));
+            throw new UserExistenceException(messageUtil.getMessage("err.user.exists"));
         }
+        
         return userRepository.save(user);
     }
     
     public void deleteById(Long id) {
         if (!userExistsById(id)) {
-            throw new UserPersistenceException(getMessage("err.user.delete.missing_id"));
+            throw new UserPersistenceException(messageUtil.getMessage("err.user.delete.missing_id"));
         }
+        
         userRepository.deleteById(id);
     }
     
@@ -86,9 +93,5 @@ public class CustomUserDetailsService implements UserDetailsService {
     
     public boolean userExistsByEmail(String email) {
         return Objects.nonNull(email) && userRepository.existsByEmail(email);
-    }
-    
-    private String getMessage(String key) {
-        return messageSource.getMessage(key, null, Locale.getDefault());
     }
 }

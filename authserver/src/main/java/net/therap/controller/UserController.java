@@ -22,18 +22,6 @@ public class UserController {
     
     private final CustomUserDetailsService customUserDetailsService;
     
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(customUserDetailsService.findAll());
-    }
-    
-    @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<User> getById(@PathVariable @Positive Long id) {
-        return ResponseEntity.ok(customUserDetailsService.findById(id));
-    }
-    
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<User> create(@Valid @RequestBody User user) {

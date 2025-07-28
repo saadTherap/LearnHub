@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.therap.util.HandlerUtils.buildErrorResponse;
-import static net.therap.util.MessageUtils.getMessage;
+import static net.therap.util.HandlerUtil.buildErrorResponse;
+import static net.therap.util.MessageUtil.getMessage;
 
 /**
  * @author apurboturjo

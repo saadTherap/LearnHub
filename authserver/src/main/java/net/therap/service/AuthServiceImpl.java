@@ -1,19 +1,24 @@
 package net.therap.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.therap.dto.JwtResponse;
 import net.therap.dto.LoginRequest;
 import net.therap.dto.RegisterRequest;
 import net.therap.entity.User;
 import net.therap.service.interfaces.AuthService;
+import net.therap.util.MessageUtil;
 import org.springframework.context.MessageSource;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import static net.therap.util.MessageUtils.getMessage;
-import static net.therap.util.ServiceUtils.toSystemFormatUserRole;
+
+import static net.therap.util.ServiceUtil.toSystemFormatUserRole;
 
 /**
  * @author apurboturjo
@@ -21,7 +26,8 @@ import static net.therap.util.ServiceUtils.toSystemFormatUserRole;
  */
 @Service
 @RequiredArgsConstructor
-public abstract class AuthServiceImpl implements AuthService {
+@Slf4j // Using Lombok for logging
+public class AuthServiceImpl implements AuthService {
     
     private final PasswordEncoder passwordEncoder;
     
@@ -31,7 +37,7 @@ public abstract class AuthServiceImpl implements AuthService {
     
     private final CustomUserDetailsService customUserDetailsService;
     
-    private final MessageSource messageSource;
+    private final MessageUtil messageUtil;
     
     @Override
     public JwtResponse register(RegisterRequest request) {
@@ -39,6 +45,7 @@ public abstract class AuthServiceImpl implements AuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(toSystemFormatUserRole(request.getRole()));
+        
         customUserDetailsService.saveUser(user);
         
         return generateTokenPair(user.getId());
@@ -46,9 +53,10 @@ public abstract class AuthServiceImpl implements AuthService {
     
     @Override
     public JwtResponse login(LoginRequest request) {
-        authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        Authentication authentication = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         
-        User user = getUser(request.getEmail());
+        User user = getUser(authentication.getName());
         
         return generateTokenPair(user.getId());
     }
@@ -58,7 +66,8 @@ public abstract class AuthServiceImpl implements AuthService {
         Long userId = jwtService.extractUserId(refreshToken);
         
         if (!jwtService.isValid(refreshToken, userId)) {
-            throw new RuntimeException(getMessage(messageSource, "err.refresh.token.invalid"));
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, messageUtil.getMessage("err.refresh.token.invalid"));
         }
         
         User user = getUser(userId);

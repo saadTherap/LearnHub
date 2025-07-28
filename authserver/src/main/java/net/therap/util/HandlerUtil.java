@@ -10,7 +10,7 @@ import java.util.Map;
  * @author apurboturjo
  * @since 7/28/25
  */
-public class HandlerUtils {
+public class HandlerUtil {
     
     public static ErrorResponse buildErrorResponse(HttpStatus status, String message, Map<String, String> errors) {
         ErrorResponse response = new ErrorResponse();
