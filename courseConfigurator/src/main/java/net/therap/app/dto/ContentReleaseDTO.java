@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import java.io.Serializable;
+
 /**
  * @author gazizafor
  * @since 21/7/25
@@ -25,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = QuizDTO.class, name = "QUIZ"),
         @JsonSubTypes.Type(value = SubmissionDTO.class, name = "SUBMISSION")
 })
-public abstract class ContentReleaseDTO {
+public abstract class ContentReleaseDTO implements Serializable {
     
     private long id;
     private long releaseNum;

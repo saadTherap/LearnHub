@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
  * @since 21/7/25
  */
 @Data
-public class InstructorDTO {
+public class InstructorDTO implements Serializable {
     
     private long id;
     

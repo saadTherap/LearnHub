@@ -2,6 +2,7 @@ package net.therap.app.dto;
 
 import lombok.*;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -13,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class ModuleDTO {
+public class ModuleDTO implements Serializable {
     
     private long id;
     private String title;

@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -16,7 +18,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ContentDTO {
+public class ContentDTO implements Serializable {
     private long id;
     private String title;
     private long moduleId;

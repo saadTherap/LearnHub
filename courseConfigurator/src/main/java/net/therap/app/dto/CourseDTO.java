@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -14,7 +16,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CourseDTO {
+public class CourseDTO implements Serializable {
     private long id;
     private String name;
     private String description;

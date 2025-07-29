@@ -5,6 +5,8 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * @author gazizafor
  * @since 21/7/25
@@ -13,7 +15,7 @@ import lombok.AllArgsConstructor;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LectureDTO extends ContentReleaseDTO {
+public class LectureDTO extends ContentReleaseDTO implements Serializable {
     private String description;
     private String videoUrl;
     private String resourceLink;
