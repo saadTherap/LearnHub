@@ -30,4 +30,7 @@ public class User extends Persistence {
     
     @Column(name = "role", nullable = false)
     private UserRole role;
+    
+    @Column(name = "enabled", nullable = false)
+    private boolean enabled;
 }

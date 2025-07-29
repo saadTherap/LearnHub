@@ -40,4 +40,11 @@ public class AuthController {
         
         return ResponseEntity.ok(response);
     }
+    
+    @GetMapping("/verify-email") // Or @PostMapping if you prefer
+    public ResponseEntity<ApiResponse> verifyEmail(@RequestParam String token) {
+        authService.verifyEmail(token);
+        // Return a generic success message
+        return ResponseEntity.ok(new ApiResponse(true, "Email verified successfully!"));
+    }
 }

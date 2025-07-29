@@ -6,6 +6,8 @@ import net.therap.dto.JwtResponse;
 import net.therap.dto.LoginRequest;
 import net.therap.dto.RegisterRequest;
 import net.therap.entity.User;
+import net.therap.entity.VerificationToken;
+import net.therap.respository.VerificationTokenRepository;
 import net.therap.service.interfaces.AuthService;
 import net.therap.util.MessageUtil;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+
+import java.util.UUID;
 
 import static net.therap.util.ServiceUtil.toSystemFormatUserRole;
 
@@ -37,6 +41,10 @@ public class AuthServiceImpl implements AuthService {
     
     private final CustomUserDetailsService customUserDetailsService;
     
+    private final EmailServiceImpl emailService;
+    
+    private final VerificationTokenRepository verificationTokenRepository;
+    
     private final MessageUtil messageUtil;
     
     @Override
@@ -45,8 +53,11 @@ public class AuthServiceImpl implements AuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(toSystemFormatUserRole(request.getRole()));
+        user.setEnabled(false);
         
         customUserDetailsService.saveUser(user);
+        
+        generateAndSendVerificationToken(savedUser);
         
         return generateTokenPair(user.getId());
     }
@@ -57,6 +68,10 @@ public class AuthServiceImpl implements AuthService {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         
         User user = getUser(authentication.getName());
+        
+        if (!user.isEnabled()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.getMessage("err.user.not_enabled"));
+        }
         
         return generateTokenPair(user.getId());
     }
@@ -74,10 +89,50 @@ public class AuthServiceImpl implements AuthService {
         
         User user = getUser(email);
         
+        if (!user.isEnabled()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.getMessage("err.user.not_enabled"));
+        }
+        
         String access = jwtService.generateAccessToken(user);
         
         return new JwtResponse(access, refreshToken);
     }
+    
+    @Transactional
+    public void verifyEmail(String token) {
+        VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        messageUtil.getMessage("err.verify.token.invalid")));
+        
+        if (verificationToken.isExpired()) {
+            // Optionally, delete the expired token to clean up
+            verificationTokenRepository.delete(verificationToken);
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    messageUtil.getMessage("err.verify.token.expired"));
+        }
+        
+        // Activate the user
+        User userToVerify = verificationToken.getUser();
+        userToVerify.setEnabled(true);
+        customUserDetailsService.saveUser(userToVerify); // Save the updated user
+        
+        // Invalidate/delete the verification token after successful use
+        verificationTokenRepository.delete(verificationToken);
+    }
+    
+    private void generateAndSendVerificationToken(User user) {
+        // First, delete any existing unverified tokens for this user to prevent clutter
+        verificationTokenRepository.deleteByUser(user);
+        
+        String token = UUID.randomUUID().toString();
+        VerificationToken verificationToken = new VerificationToken(token, user);
+        verificationTokenRepository.save(verificationToken);
+        
+        emailService.sendVerificationEmail(user.getEmail(), token);
+    }
+    
     
     private JwtResponse generateTokenPair(Long userId) {
         User user = getUser(userId);
