@@ -19,7 +19,7 @@ public class User extends Persistence {
     
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_generator")
-    @SequenceGenerator(name = "users_generator", initialValue = 1, allocationSize = 5)
+    @SequenceGenerator(name = "users_generator", sequenceName = "users_seq", initialValue = 1, allocationSize = 5)
     private Long id;
     
     @Column(name = "email", nullable = false, unique = true)
@@ -29,6 +29,7 @@ public class User extends Persistence {
     private String password;
     
     @Column(name = "role", nullable = false)
+    @Enumerated(EnumType.STRING)
     private UserRole role;
     
     @Column(name = "enabled", nullable = false)
