@@ -59,7 +59,7 @@ public class AuthServiceImpl implements AuthService {
         
         generateAndSendVerificationToken(savedUser);
         
-        return generateTokenPair(user.getId());
+        return new JwtResponse(messageUtil.getMessage("reg.success.verify_pending"));
     }
     
     @Override
