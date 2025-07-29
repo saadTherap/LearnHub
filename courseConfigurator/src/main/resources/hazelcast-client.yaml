@@ -1,5 +1,0 @@
-hazelcast-client:
-  cluster-name: learnhub
-  network:
-    cluster-members:
-      - 172.16.2.115:5701

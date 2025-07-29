@@ -78,17 +78,19 @@ public class CourseController {
     
     @GetMapping("/{id}")
     public ResponseEntity<CourseDTO> getCourseById(@PathVariable Long id) {
-        Course cached = hazelcastCacheService.get(CacheConstants.COURSES, id);
+        CourseDTO cached = hazelcastCacheService.get(CacheConstants.COURSES, id);
         if (cached != null) {
-            return ResponseEntity.ok(dtoHelper.toCourseDTO(cached));
+            return ResponseEntity.ok(cached);
         }
 
         Optional<Course> courseOptional = courseService.findById(id);
 
         if (courseOptional.isPresent()) {
             Course course = courseOptional.get();
-            hazelcastCacheService.put("courses", course.getId(), course); // Add to cache
-            return ResponseEntity.ok(dtoHelper.toCourseDTO(course));
+            CourseDTO dto = dtoHelper.toCourseDTO(course);
+            hazelcastCacheService.put(CacheConstants.COURSES, course.getId(), dto);
+
+            return ResponseEntity.ok(dto);
         }
         return ResponseEntity.notFound().build();
     }
@@ -150,7 +152,7 @@ public class CourseController {
                 }
             });
 
-            return ResponseEntity.ok(dtoHelper.toCourseDTO(updatedCourse)); // <<< CHANGED: Use DtoHelper
+            return ResponseEntity.ok(dtoHelper.toCourseDTO(updatedCourse));
         }
         return ResponseEntity.notFound().build();
     }
