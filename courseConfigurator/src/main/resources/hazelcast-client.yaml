@@ -1,0 +1,17 @@
+hazelcast-client:
+  cluster-name: learnhub
+  network:
+    cluster-members:
+      - 172.16.2.115:5701
+    smart-routing: true
+    redo-operation: true
+    connection-timeout: 60000
+
+  near-cache:
+    courses:
+      time-to-live-seconds: 1800
+      invalidate-on-change: true
+      eviction:
+        eviction-policy: LRU
+        max-size-policy: ENTRY_COUNT
+        size: 1000

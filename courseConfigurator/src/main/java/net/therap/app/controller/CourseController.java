@@ -82,6 +82,8 @@ public class CourseController {
     
     @GetMapping("/{id}")
     public ResponseEntity<CourseDTO> getCourseById(@PathVariable Long id) {
+//        hazelcastCacheService.clear(CacheConstants.COURSES);
+
         CourseDTO cached = hazelcastCacheService.get(CacheConstants.COURSES, id);
         if (cached != null) {
             return ResponseEntity.ok(cached);
