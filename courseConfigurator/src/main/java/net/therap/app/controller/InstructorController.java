@@ -40,7 +40,6 @@ public class InstructorController {
     public InstructorController(InstructorService instructorService, DtoHelper dtoHelper, ObjectMapper objectMapper, InstructorMapper instructorMapper) { // Constructor injection
         this.instructorService = instructorService;
         this.dtoHelper = dtoHelper;
-        this.objectMapper = objectMapper;
         this.instructorMapper = instructorMapper;
     }
 
