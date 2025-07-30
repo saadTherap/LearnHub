@@ -30,6 +30,6 @@ public class FallbackExceptionHandler {
         
         String errorMessage = messageSource.getMessage("app.global.error", null, Locale.getDefault());
         
-        return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
     }
 }

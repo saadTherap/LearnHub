@@ -1,4 +1,4 @@
-package net.therap.handler;
+package net.therap.dto;
 
 import lombok.Data;
 
@@ -13,8 +13,6 @@ import java.util.Map;
 public class ErrorResponse {
     
     private LocalDateTime timestamp;
-    
-    private int status;
     
     private String message;
     

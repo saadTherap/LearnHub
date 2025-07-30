@@ -8,6 +8,7 @@ import net.therap.dto.LoginRequest;
 import net.therap.dto.RegisterRequest;
 import net.therap.entity.User;
 import net.therap.entity.VerificationToken;
+import net.therap.exception.RegistrationTokenVerificationException;
 import net.therap.respository.VerificationTokenRepository;
 import net.therap.service.interfaces.AuthService;
 import net.therap.service.interfaces.EmailService;
@@ -72,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
         User user = getUser(authentication.getName());
         
         if (!user.isEnabled()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.getMessage("err.user.not_enabled"));
+            throw new RegistrationTokenVerificationException(messageUtil.getMessage("err.user.not_enabled"));
         }
         
         return generateTokenPair(user.getId());
@@ -85,14 +86,13 @@ public class AuthServiceImpl implements AuthService {
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
         
         if (!jwtService.isValid(refreshToken, userDetails)) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED, messageUtil.getMessage("err.refresh.token.invalid"));
+            throw new RegistrationTokenVerificationException(messageUtil.getMessage("err.refresh.token.invalid"));
         }
         
         User user = getUser(email);
         
         if (!user.isEnabled()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.getMessage("err.user.not_enabled"));
+            throw new RegistrationTokenVerificationException(messageUtil.getMessage("err.user.not_enabled"));
         }
         
         String access = jwtService.generateAccessToken(user);
@@ -105,16 +105,14 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public void verifyEmail(String token) {
         VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
+                .orElseThrow(() -> new RegistrationTokenVerificationException(
                         messageUtil.getMessage("err.verify.token.invalid"))
                 );
         
         if (verificationToken.isExpired()) {
             verificationTokenRepository.delete(verificationToken);
             
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
+            throw new RegistrationTokenVerificationException(
                     messageUtil.getMessage("err.verify.token.expired"));
         }
         

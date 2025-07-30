@@ -1,11 +1,11 @@
 package net.therap.handler;
 
 import lombok.RequiredArgsConstructor;
-import net.therap.exception.InvalidRoleSpecifiedException;
+import net.therap.dto.ErrorResponse;
+import net.therap.exception.RegistrationTokenVerificationException;
 import net.therap.exception.UserExistenceException;
 import net.therap.exception.UserPersistenceException;
 import net.therap.util.MessageUtil;
-import org.springframework.context.MessageSource;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,7 +43,6 @@ public class GlobalExceptionHandler {
         });
         
         ErrorResponse response = buildErrorResponse(
-                HttpStatus.BAD_REQUEST,
                 messageUtil.getMessage("msg.validation.failed"),
                 fieldErrors
         );
@@ -54,7 +53,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserExistenceException.class)
     public ResponseEntity<ErrorResponse> handleUserExistence(UserExistenceException ex) {
         ErrorResponse response = buildErrorResponse(
-                HttpStatus.CONFLICT,
                 messageUtil.getMessage("msg.user.exists"),
                 Map.of(ERROR, ex.getMessage())
         );
@@ -65,11 +63,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserPersistenceException.class)
     public ResponseEntity<ErrorResponse> handleUserPersistence(UserPersistenceException ex) {
         ErrorResponse response = buildErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR,
                 messageUtil.getMessage("msg.user.persist.failed"),
                 Map.of(ERROR, ex.getMessage())
         );
         
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+    
+    @ExceptionHandler(RegistrationTokenVerificationException.class)
+    public ResponseEntity<ErrorResponse> handleRegistrationTokenVerification(RegistrationTokenVerificationException ex) {
+        ErrorResponse response = buildErrorResponse(
+                messageUtil.getMessage(messageUtil.getMessage("err.verify.token.failed")),
+                Map.of(ERROR, ex.getMessage())
+        );
+        
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 }

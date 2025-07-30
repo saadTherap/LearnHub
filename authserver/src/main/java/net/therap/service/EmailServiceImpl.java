@@ -48,6 +48,7 @@ public class EmailServiceImpl implements EmailService {
             log.info("Verification email sent to: {}", to);
             
         } catch (MessagingException e) {
+            
             log.error("Failed to send verification email to {}: {}", to, e.getMessage());
             
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Failed to send verification email.");
