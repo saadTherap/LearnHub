@@ -2,6 +2,7 @@ package net.therap.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.therap.dto.ApiResponse;
 import net.therap.dto.JwtResponse;
 import net.therap.dto.LoginRequest;
 import net.therap.dto.RegisterRequest;
@@ -44,7 +45,7 @@ public class AuthController {
     @GetMapping("/verify-email") // Or @PostMapping if you prefer
     public ResponseEntity<ApiResponse> verifyEmail(@RequestParam String token) {
         authService.verifyEmail(token);
-        // Return a generic success message
+        
         return ResponseEntity.ok(new ApiResponse(true, "Email verified successfully!"));
     }
 }

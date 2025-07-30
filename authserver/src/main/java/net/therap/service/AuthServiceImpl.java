@@ -1,5 +1,6 @@
 package net.therap.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.dto.JwtResponse;
@@ -9,6 +10,7 @@ import net.therap.entity.User;
 import net.therap.entity.VerificationToken;
 import net.therap.respository.VerificationTokenRepository;
 import net.therap.service.interfaces.AuthService;
+import net.therap.service.interfaces.EmailService;
 import net.therap.util.MessageUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -41,7 +43,7 @@ public class AuthServiceImpl implements AuthService {
     
     private final CustomUserDetailsService customUserDetailsService;
     
-    private final EmailServiceImpl emailService;
+    private final EmailService emailService;
     
     private final VerificationTokenRepository verificationTokenRepository;
     
@@ -55,7 +57,7 @@ public class AuthServiceImpl implements AuthService {
         user.setRole(toSystemFormatUserRole(request.getRole()));
         user.setEnabled(false);
         
-        customUserDetailsService.saveUser(user);
+        User savedUser = customUserDetailsService.saveUser(user);
         
         generateAndSendVerificationToken(savedUser);
         
@@ -100,7 +102,7 @@ public class AuthServiceImpl implements AuthService {
     
     
 // ***** Notes for my future self **********
-//    @Transactional
+    @Transactional
     public void verifyEmail(String token) {
         VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -109,7 +111,6 @@ public class AuthServiceImpl implements AuthService {
                 );
         
         if (verificationToken.isExpired()) {
-            // Optionally, delete the expired token to clean up
             verificationTokenRepository.delete(verificationToken);
             
             throw new ResponseStatusException(
@@ -125,7 +126,6 @@ public class AuthServiceImpl implements AuthService {
     }
     
     private void generateAndSendVerificationToken(User user) {
-        // First, delete any existing unverified tokens for this user to prevent clutter
         verificationTokenRepository.deleteByUser(user);
         
         String token = UUID.randomUUID().toString();
