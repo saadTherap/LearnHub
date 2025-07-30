@@ -1,13 +1,22 @@
 package net.therap.app.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import net.therap.app.dto.ErrorResponse;
 import net.therap.app.dto.ModuleDTO;
 import net.therap.app.helper.DtoHelper;
+import net.therap.app.mapper.ModuleMapper;
+import net.therap.app.model.Course;
 import net.therap.app.model.Module;
+import net.therap.app.service.CourseService;
 import net.therap.app.service.ModuleService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,18 +31,29 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/modules")
 public class ModuleController {
     
-    @Autowired
+    Logger logger = LoggerFactory.getLogger(this.getClass());
+    
     private ModuleService moduleService;
+    private DtoHelper dtoHelper;
+    private ModuleMapper moduleMapper;
+    private CourseService courseService;
+    private MessageSource messageSource;
     
     @Autowired
-    private DtoHelper dtoHelper;
+    public ModuleController(CourseService courseService, ModuleMapper moduleMapper, DtoHelper dtoHelper,
+                            ModuleService moduleService, MessageSource messageSource) {
+        this.courseService = courseService;
+        this.moduleMapper = moduleMapper;
+        this.dtoHelper = dtoHelper;
+        this.moduleService = moduleService;
+        this.messageSource = messageSource;
+    }
     
     @GetMapping
     public ResponseEntity<List<ModuleDTO>> getAllModules() {
         List<Module> modules = moduleService.findAll();
-        List<ModuleDTO> moduleDTOs = modules.stream()
-                .map(module -> dtoHelper.toModuleDTO(module))
-                .collect(Collectors.toList());
+        List<ModuleDTO> moduleDTOs =
+                modules.stream().map(module -> dtoHelper.toModuleDTO(module)).collect(Collectors.toList());
         
         return ResponseEntity.ok(moduleDTOs);
     }
@@ -41,9 +61,8 @@ public class ModuleController {
     @GetMapping("/byCourse/{courseId}")
     public ResponseEntity<List<ModuleDTO>> getModulesByCourse(@PathVariable long courseId) {
         List<Module> modules = moduleService.findByCourseId(courseId);
-        List<ModuleDTO> moduleDTOs = modules.stream()
-                .map(module -> dtoHelper.toModuleDtoLazy(module))
-                .collect(Collectors.toList());
+        List<ModuleDTO> moduleDTOs =
+                modules.stream().map(module -> dtoHelper.toModuleDtoLazy(module)).collect(Collectors.toList());
         
         return ResponseEntity.ok(moduleDTOs);
     }
@@ -59,13 +78,27 @@ public class ModuleController {
     }
     
     @PostMapping
-    public ResponseEntity<ModuleDTO> createModule(@RequestBody ModuleDTO moduleDTO) {
-        Module module = new Module();
-        BeanUtils.copyProperties(moduleDTO, module);
+    public ResponseEntity<ModuleDTO> createModule(@RequestBody @Validated ModuleDTO moduleDTO, HttpServletRequest request) {
+        logger.info("Creating new module {}", moduleDTO);
+        
+        if (moduleDTO.getId() != 0) {
+            moduleDTO.setId(0);
+        }
+        
+        Optional<Course> courseOptional = courseService.findById(moduleDTO.getCourseId());
+        
+        if (courseOptional.isEmpty()) {
+            return new ResponseEntity(new ErrorResponse(HttpStatus.NOT_FOUND, messageSource.getMessage("error.course" +
+                                                                                                               ".not" +
+                                                                                                               ".found", null, request.getLocale()), request.getRequestURI()), HttpStatus.BAD_REQUEST);
+        }
+        
+        Module module = moduleMapper.toModule(moduleDTO);
+        
+        logger.info("Module from DTO: {}", module);
         Module savedModule = moduleService.save(module);
-        ModuleDTO responseDTO = new ModuleDTO();
-        BeanUtils.copyProperties(savedModule, responseDTO);
-        return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
+        
+        return new ResponseEntity<>(moduleMapper.toModuleDTO(savedModule), HttpStatus.CREATED);
     }
     
     @PutMapping("/{id}")

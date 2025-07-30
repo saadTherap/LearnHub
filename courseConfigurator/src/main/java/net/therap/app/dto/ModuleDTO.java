@@ -1,5 +1,6 @@
 package net.therap.app.dto;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -26,6 +27,8 @@ public class ModuleDTO implements Serializable {
     @NotBlank(message = "{validation.title.notblank}", groups = {OnUpdate.class})
     private String title;
     
+    // cannot be zero or less
+    @Min(value = 1, message = "{validation.course.id.null}")
     private long courseId;
     
     private List<ContentDTO> contents;
