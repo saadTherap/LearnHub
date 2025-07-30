@@ -44,7 +44,7 @@ public class Instructor extends Persistent {
 
     @Column(name = "image_url")
     private String imageUrl;
-//
+
     @ToString.Exclude
     @OneToMany(orphanRemoval = true, mappedBy = "instructor")
     private List<Course> courses;

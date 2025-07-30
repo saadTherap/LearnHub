@@ -40,7 +40,7 @@ public class InstructorService {
     }
     
     @Transactional
-    public void softDeleteInstructor(Long id) {
+    public void deleteInstructor(Long id) {
         Instructor instructor = instructorRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Instructor not found with ID: " + id));
         instructor.setDeleted(true);

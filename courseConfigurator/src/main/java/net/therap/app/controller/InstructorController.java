@@ -1,12 +1,13 @@
 package net.therap.app.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.therap.app.dto.InstructorDTO; // Import InstructorDTO
 import net.therap.app.mapper.InstructorMapper;
 import net.therap.app.model.Instructor;
 import net.therap.app.service.InstructorService;
 import net.therap.app.helper.DtoHelper; // Import DtoHelper
+import net.therap.app.validation.OnCreate;
+import net.therap.app.validation.OnUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,16 +15,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 /**
  * REST Controller for managing Instructor data.
@@ -31,14 +27,13 @@ import static java.util.Objects.nonNull;
  * @since 21/7/25
  */
 @RestController
-@RequestMapping("/api/instructors") // Base path for instructor-related APIs
+@RequestMapping("/api/instructors")
 public class InstructorController {
     
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     
     private final InstructorService instructorService;
     private final DtoHelper dtoHelper;
-    private final ObjectMapper objectMapper;
     private final InstructorMapper instructorMapper;
     
     @Autowired
@@ -52,7 +47,7 @@ public class InstructorController {
     @GetMapping("/{id}")
     public ResponseEntity<InstructorDTO> getInstructorById(@PathVariable Long id) {
         return instructorService.getInstructorById(id)
-                .map(dtoHelper::toInstructorDTO) // <<< CHANGED: Use DtoHelper
+                .map(dtoHelper::toInstructorDTO) 
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -61,13 +56,13 @@ public class InstructorController {
     public ResponseEntity<List<InstructorDTO>> getAllInstructors() {
         List<Instructor> instructors = instructorService.getAllInstructors();
         List<InstructorDTO> instructorDTOs = instructors.stream()
-                .map(dtoHelper::toInstructorDTO) // <<< CHANGED: Use DtoHelper
+                .map(dtoHelper::toInstructorDTO) 
                 .collect(Collectors.toList());
         return ResponseEntity.ok(instructorDTOs);
     }
     
     @PostMapping
-    public ResponseEntity<InstructorDTO> createInstructor(@RequestBody @Validated InstructorDTO instructorDTO) {
+    public ResponseEntity<InstructorDTO> createInstructor(@RequestBody @Validated(OnCreate.class) InstructorDTO instructorDTO) {
         Instructor instructorToCreate = instructorMapper.toInstructor(instructorDTO);
         instructorToCreate.setId(0);
         Instructor createdInstructor = instructorService.createInstructor(instructorToCreate);
@@ -76,7 +71,7 @@ public class InstructorController {
     }
     
     @PatchMapping("/{id}")
-    public ResponseEntity<InstructorDTO> updateInstructor(@PathVariable long id, @RequestBody InstructorDTO instructorDTO) {
+    public ResponseEntity<InstructorDTO> updateInstructor(@PathVariable long id, @RequestBody @Validated(OnUpdate.class) InstructorDTO instructorDTO) {
         Optional<Instructor> instructorToUpdate = instructorService.getInstructorById(id);
         
         if (instructorToUpdate.isPresent()) {
@@ -98,7 +93,7 @@ public class InstructorController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> softDeleteInstructor(@PathVariable Long id) {
         try {
-            instructorService.softDeleteInstructor(id);
+            instructorService.deleteInstructor(id);
             return ResponseEntity.noContent().build();
         } catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
