@@ -42,6 +42,11 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.PAYLOAD_TOO_LARGE, "Payload Too Large", "Uploaded file exceeds the configured maximum upload size.");
     }
 
+    @ExceptionHandler(MaliciousFileDetectedException.class)
+    public ResponseEntity<?> handleMalware(MaliciousFileDetectedException ex) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Malicious File", ex.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGenericException(Exception ex) {
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", ex.getMessage());

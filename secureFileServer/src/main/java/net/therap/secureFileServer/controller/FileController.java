@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -46,7 +47,7 @@ public class FileController {
     @Operation(summary = "Upload a file")
     public ResponseEntity<StoredFileDto> uploadFile(
             @Parameter(description = "The file to upload", required = true)
-            @RequestParam("file") MultipartFile file) {
+            @RequestParam("file") MultipartFile file) throws IOException {
 
         fileValidator.validate(file);
 
