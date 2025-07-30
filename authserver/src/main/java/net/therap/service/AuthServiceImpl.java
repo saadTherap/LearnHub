@@ -98,27 +98,29 @@ public class AuthServiceImpl implements AuthService {
         return new JwtResponse(access, refreshToken);
     }
     
-    @Transactional
+    
+// ***** Notes for my future self **********
+//    @Transactional
     public void verifyEmail(String token) {
         VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        messageUtil.getMessage("err.verify.token.invalid")));
+                        messageUtil.getMessage("err.verify.token.invalid"))
+                );
         
         if (verificationToken.isExpired()) {
             // Optionally, delete the expired token to clean up
             verificationTokenRepository.delete(verificationToken);
+            
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     messageUtil.getMessage("err.verify.token.expired"));
         }
         
-        // Activate the user
         User userToVerify = verificationToken.getUser();
         userToVerify.setEnabled(true);
-        customUserDetailsService.saveUser(userToVerify); // Save the updated user
+        customUserDetailsService.saveUser(userToVerify);
         
-        // Invalidate/delete the verification token after successful use
         verificationTokenRepository.delete(verificationToken);
     }
     
