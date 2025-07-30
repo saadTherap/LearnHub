@@ -9,8 +9,4 @@ public class FileNotFoundException extends RuntimeException {
     public FileNotFoundException(String message) {
         super(message);
     }
-
-    public FileNotFoundException(Long id) {
-        super("File with ID " + id + " not found.");
-    }
 }

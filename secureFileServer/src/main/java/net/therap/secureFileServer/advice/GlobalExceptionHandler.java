@@ -1,6 +1,8 @@
 package net.therap.secureFileServer.advice;
 
+import lombok.RequiredArgsConstructor;
 import net.therap.secureFileServer.exception.*;
+import net.therap.secureFileServer.util.MessageUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,46 +17,65 @@ import java.util.Map;
  * @since 7/22/25
  */
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final MessageUtil messageUtil;
 
     @ExceptionHandler(FileNotFoundException.class)
     public ResponseEntity<?> handleFileNotFound(FileNotFoundException ex) {
-        return buildErrorResponse(HttpStatus.NOT_FOUND, "Not Found", ex.getMessage());
+        return buildErrorResponse(HttpStatus.NOT_FOUND,
+                messageUtil.getMessage("error.file-not-found.title"),
+                ex.getMessage());
     }
 
     @ExceptionHandler(EmptyFileException.class)
     public ResponseEntity<?> handleEmptyFile(EmptyFileException ex) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Empty File", ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST,
+                messageUtil.getMessage("error.empty-file.title"),
+                ex.getMessage());
     }
 
     @ExceptionHandler(FileSizeExceededException.class)
     public ResponseEntity<?> handleFileSizeExceeded(FileSizeExceededException ex) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "File Too Large", ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST,
+                messageUtil.getMessage("error.file-too-large.title"),
+                ex.getMessage());
     }
 
     @ExceptionHandler(UnsupportedFileTypeException.class)
     public ResponseEntity<?> handleUnsupportedFileType(UnsupportedFileTypeException ex) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Unsupported File Type", ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST,
+                messageUtil.getMessage("error.unsupported-file-type.title"),
+                ex.getMessage());
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<?> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex) {
-        return buildErrorResponse(HttpStatus.PAYLOAD_TOO_LARGE, "Payload Too Large", "Uploaded file exceeds the configured maximum upload size.");
+        return buildErrorResponse(HttpStatus.PAYLOAD_TOO_LARGE,
+                messageUtil.getMessage("error.file-too-large.title"),
+                messageUtil.getMessage("error.file-too-large.message"));
     }
 
     @ExceptionHandler(MaliciousFileDetectedException.class)
     public ResponseEntity<?> handleMalware(MaliciousFileDetectedException ex) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Malicious File", ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST,
+                messageUtil.getMessage("error.malicious-file.title"),
+                ex.getMessage());
     }
 
     @ExceptionHandler(ServiceUnavailableException.class)
     public ResponseEntity<?> handleServiceUnavailable(ServiceUnavailableException ex) {
-        return buildErrorResponse(HttpStatus.SERVICE_UNAVAILABLE, "Service Unavailable", "A required service is currently unavailable. Please try again later.");
+        return buildErrorResponse(HttpStatus.SERVICE_UNAVAILABLE,
+                messageUtil.getMessage("error.service-unavailable.title"),
+                messageUtil.getMessage("error.service-unavailable.message"));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGenericException(Exception ex) {
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", ex.getMessage());
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+                messageUtil.getMessage("error.internal-server-error.title"),
+                messageUtil.getMessage("error.internal-server-error.message"));
     }
 
     private ResponseEntity<Map<String, Object>> buildErrorResponse(HttpStatus status, String error, String message) {

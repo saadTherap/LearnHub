@@ -4,6 +4,7 @@ import net.therap.secureFileServer.config.StorageProperties;
 import net.therap.secureFileServer.entity.StoredFile;
 import net.therap.secureFileServer.exception.FileNotFoundException;
 import net.therap.secureFileServer.repository.FileRepository;
+import net.therap.secureFileServer.util.MessageUtil;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -28,11 +29,14 @@ public class FileStorageService {
 
     private final Path storagePath;
     private final FileRepository fileRepository;
+    private final MessageUtil messageUtil;
 
     public FileStorageService(FileRepository fileRepository,
-                              StorageProperties storageProperties) throws IOException {
+                              StorageProperties storageProperties,
+                              MessageUtil messageUtil) throws IOException {
 
         this.fileRepository = fileRepository;
+        this.messageUtil = messageUtil;
         this.storagePath = Paths.get(storageProperties.getUploadDir());
 
         Files.createDirectories(storagePath);
@@ -47,8 +51,8 @@ public class FileStorageService {
         try {
             Files.copy(multipartFile.getInputStream(), targetPath);
 
-        } catch (IOException ex) {
-            throw new RuntimeException("Failed to store file: " + multipartFile.getOriginalFilename(), ex);
+        } catch (IOException e) {
+            throw new RuntimeException(messageUtil.getMessage("error.file.store-failed", multipartFile.getOriginalFilename()), e);
         }
 
         StoredFile storedFile = mapToStoredFile(multipartFile, storedFilename);
@@ -65,11 +69,11 @@ public class FileStorageService {
             resource = new UrlResource(path.toUri());
 
             if (!resource.exists() || !resource.isReadable()) {
-                throw new FileNotFoundException("File not readable: " + file.getStoredFilename());
+                throw new FileNotFoundException(messageUtil.getMessage("error.file.not-readable", file.getStoredFilename()));
             }
 
         } catch (IOException e) {
-            throw new RuntimeException("Could not read file: " + file.getStoredFilename(), e);
+            throw new RuntimeException(messageUtil.getMessage("error.file.read-failed", file.getStoredFilename()), e);
         }
 
         return resource;
@@ -77,7 +81,7 @@ public class FileStorageService {
 
     public StoredFile getMetadata(Long id) {
         return fileRepository.findById(id)
-                .orElseThrow(() -> new FileNotFoundException(id));
+                .orElseThrow(() -> new FileNotFoundException(messageUtil.getMessage("error.file.not-found", id)));
     }
 
     public List<StoredFile> getAllFiles() {
@@ -86,13 +90,13 @@ public class FileStorageService {
 
     public void deleteFile(Long id) {
         StoredFile file = fileRepository.findById(id)
-                .orElseThrow(() -> new FileNotFoundException(id));
+                .orElseThrow(() -> new FileNotFoundException(messageUtil.getMessage("error.file.not-found", id)));
 
         try {
             Files.deleteIfExists(storagePath.resolve(file.getStoredFilename()));
 
         } catch (IOException e) {
-            throw new RuntimeException("Failed to delete physical file: " + file.getStoredFilename(), e);
+            throw new RuntimeException(messageUtil.getMessage("error.file.delete-failed", file.getStoredFilename()), e);
         }
 
         fileRepository.deleteById(id);
@@ -111,6 +115,7 @@ public class FileStorageService {
 
     private String getFileExtension(String filename) {
         if (Objects.nonNull(filename) && filename.contains(".")) {
+
             return filename.substring(filename.lastIndexOf("."));
         }
 
