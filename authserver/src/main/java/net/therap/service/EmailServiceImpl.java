@@ -3,6 +3,7 @@ package net.therap.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.service.interfaces.EmailService;
+import net.therap.util.MessageUtil;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -25,9 +26,8 @@ import java.util.Locale;
 public class EmailServiceImpl implements EmailService {
     
     private final JavaMailSender mailSender;
-    private final MessageSource messageSource;
     
-    private final String frontendVerificationUrl = "http://localhost:3000/verify";
+    private final MessageUtil messageUtil;
     
     @Override
     public void sendVerificationEmail(String to, String token) {
@@ -35,9 +35,10 @@ public class EmailServiceImpl implements EmailService {
         MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
         
         try {
-            String subject = messageSource.getMessage("email.verification.subject", null, Locale.getDefault());
-            String body = messageSource.getMessage("email.verification.body",
-                    new Object[]{frontendVerificationUrl + "?token=" + token}, Locale.getDefault());
+            String subject = messageUtil.getMessage("email.verification.subject", null, Locale.getDefault());
+            String body = messageUtil.getMessage("email.verification.body",
+                    new Object[]{messageUtil.getMessage("frontend.verification.url") + "?token=" + token},
+                    Locale.getDefault());
             
             helper.setFrom("apurbo.turjo@therapservices.net");
             helper.setTo(to);
@@ -51,7 +52,7 @@ public class EmailServiceImpl implements EmailService {
             
             log.error("Failed to send verification email to {}: {}", to, e.getMessage());
             
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Failed to send verification email.");
+            throw new RuntimeException("Failed to send verification email.");
         }
     }
 }

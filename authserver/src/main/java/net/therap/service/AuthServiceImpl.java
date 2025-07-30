@@ -101,7 +101,6 @@ public class AuthServiceImpl implements AuthService {
     }
     
     
-// ***** Notes for my future self **********
     @Transactional
     public void verifyEmail(String token) {
         VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
