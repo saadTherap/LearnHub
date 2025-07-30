@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -66,8 +67,9 @@ public class InstructorController {
     }
     
     @PostMapping
-    public ResponseEntity<InstructorDTO> createInstructor(@RequestBody InstructorDTO instructorDTO) {
+    public ResponseEntity<InstructorDTO> createInstructor(@RequestBody @Validated InstructorDTO instructorDTO) {
         Instructor instructorToCreate = instructorMapper.toInstructor(instructorDTO);
+        instructorToCreate.setId(0);
         Instructor createdInstructor = instructorService.createInstructor(instructorToCreate);
         
         return new ResponseEntity<>(dtoHelper.toInstructorDTO(createdInstructor), HttpStatus.CREATED);

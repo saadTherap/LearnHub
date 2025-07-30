@@ -2,11 +2,9 @@ package net.therap.app.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.List;
 
 /**
  * @author gazizafor
@@ -17,20 +15,19 @@ public class InstructorDTO implements Serializable {
     
     private long id;
     
-    @NotBlank
-    @Size(min = 1, max = 10, message = "name length must be between {2} and {1}")
+    @NotBlank(message = "{validation.name.notblank}")
+    @Size(min = 2, max = 30, message = "{validation.name.size}")
     private String name;
     
-    @Email
-    @NotBlank
+    @Email(message = "{validation.email.format}")
+    @NotBlank(message = "{validation.email.notblank}")
+    @Size(max = 255, message = "{validation.email.size}")
     private String email;
     
-    @NotNull
-    @Past
+    @NotNull(message = "{validation.dateOfBirth.notnull}")
+    @Past(message = "{validation.dateOfBirth.past}")
     private LocalDate dateOfBirth;
     
-    @Size(max = 255)
+    @Size(max = 255, message = "{validation.url.size}")
     private String imageUrl;
- 
-//    List<CourseDTO> courses;
 }

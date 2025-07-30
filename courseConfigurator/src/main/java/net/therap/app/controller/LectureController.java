@@ -7,6 +7,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,8 +21,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/lectures")
 public class LectureController {
     
+    private final LectureService lectureService;
+    
     @Autowired
-    private LectureService lectureService;
+    public LectureController(LectureService lectureService) {
+        this.lectureService = lectureService;
+    }
     
     @GetMapping
     public ResponseEntity<List<LectureDTO>> getAllLectures() {
@@ -52,7 +57,7 @@ public class LectureController {
     }
     
     @PostMapping
-    public ResponseEntity<LectureDTO> createLecture(@RequestBody LectureDTO LectureDTO) {
+    public ResponseEntity<LectureDTO> createLecture(@RequestBody @Validated LectureDTO LectureDTO) {
         Lecture lecture = new Lecture();
         BeanUtils.copyProperties(LectureDTO, lecture);
         try {
