@@ -19,7 +19,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class LectureDTO extends ContentReleaseDTO implements Serializable {
     
-    @NotBlank(message = "{validation.lecture.description.notblank}")
+    @NotBlank(message = "{validation.description.notblank}")
     @Size(min = 1, max = 250, message = "{validation.description.size}")
     private String description;
     

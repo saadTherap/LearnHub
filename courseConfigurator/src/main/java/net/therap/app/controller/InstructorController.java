@@ -1,11 +1,12 @@
 package net.therap.app.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.therap.app.dto.InstructorDTO; // Import InstructorDTO
+import net.therap.app.dto.InstructorDTO;
+import net.therap.app.dto.InstructorDtoPublic;
 import net.therap.app.mapper.InstructorMapper;
 import net.therap.app.model.Instructor;
 import net.therap.app.service.InstructorService;
-import net.therap.app.helper.DtoHelper; // Import DtoHelper
+import net.therap.app.helper.DtoHelper;
 import net.therap.app.validation.OnCreate;
 import net.therap.app.validation.OnUpdate;
 import org.slf4j.Logger;
@@ -22,7 +23,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * REST Controller for managing Instructor data.
  * @author gazizafor
  * @since 21/7/25
  */
@@ -44,7 +44,7 @@ public class InstructorController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<InstructorDTO> getInstructorById(@PathVariable Long id) {
+    public ResponseEntity<InstructorDTO> getInstructorById(@PathVariable long id) {
         return instructorService.getInstructorById(id)
                 .map(dtoHelper::toInstructorDTO) 
                 .map(ResponseEntity::ok)
@@ -57,7 +57,26 @@ public class InstructorController {
         List<InstructorDTO> instructorDTOs = instructors.stream()
                 .map(dtoHelper::toInstructorDTO) 
                 .collect(Collectors.toList());
+        
         return ResponseEntity.ok(instructorDTOs);
+    }
+    
+    @GetMapping("/public")
+    public ResponseEntity<List<InstructorDtoPublic>> getAllInstructorsPublic() {
+        List<Instructor> instructors = instructorService.getAllInstructors();
+        List<InstructorDtoPublic> instructorDTOs = instructors.stream()
+                .map(instructorMapper::toInstructorDtoPublic)
+                .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(instructorDTOs);
+    }
+    
+    @GetMapping("/public/{id}")
+    public ResponseEntity<InstructorDtoPublic> getInstructorByIdPublic(@PathVariable long id) {
+        return instructorService.getInstructorById(id)
+                .map(instructorMapper::toInstructorDtoPublic)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
     
     @PostMapping
@@ -90,7 +109,7 @@ public class InstructorController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> softDeleteInstructor(@PathVariable Long id) {
+    public ResponseEntity<Void> softDeleteInstructor(@PathVariable long id) {
         try {
             instructorService.deleteInstructor(id);
             return ResponseEntity.noContent().build();

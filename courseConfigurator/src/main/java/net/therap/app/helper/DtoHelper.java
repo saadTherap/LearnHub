@@ -237,8 +237,7 @@ public class DtoHelper {
         BeanUtils.copyProperties(question, dto, "quizRelease", "options");
         
         Optional.ofNullable(question.getQuiz()).ifPresent(quizRelease -> {
-            dto.setQuizReleaseId(quizRelease.getId());
-            dto.setQuizReleaseNum(quizRelease.getRelease());
+            dto.setQuizId(quizRelease.getId());
         });
         
         if (question.getOptions() != null && !question.getOptions().isEmpty()) {

@@ -1,7 +1,7 @@
 package net.therap.app.service;
 
 import net.therap.app.model.Content;
-import net.therap.app.model.ContentRelease;
+import net.therap.app.model.enums.ReleaseStatus;
 import net.therap.app.repository.ContentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,4 +27,7 @@ public class ContentService {
         return contentRepository.findContentByContentReleaseId(contentReleaseId);
     }
     
+    public boolean isPublishable(Content content) {
+        return content.getCurrentContentRelease().getRelease() != ReleaseStatus.DRAFT.getReleaseNumber();
+    }
 }
