@@ -1,23 +1,28 @@
 package net.therap.app.service;
 
 import net.therap.app.model.Content;
+import net.therap.app.model.ContentRelease;
 import net.therap.app.model.enums.ReleaseStatus;
 import net.therap.app.repository.ContentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author gazizafor
  * @since 27/7/25
  */
 @Service
+@Transactional(readOnly = true)
 public class ContentService {
     
-    @Autowired
-    private ContentRepository contentRepository;
+    private final ContentRepository contentRepository;
+    
+    public ContentService(ContentRepository contentRepository) {
+        this.contentRepository = contentRepository;
+    }
     
     public List<Content> findByModuleId(long moduleId) {
         return contentRepository.findContentReleaseByModuleId(moduleId);
@@ -25,6 +30,38 @@ public class ContentService {
     
     public Optional<Content> findContentByContentReleaseId(long contentReleaseId) {
         return contentRepository.findContentByContentReleaseId(contentReleaseId);
+    }
+    
+    public List<ContentRelease> findAllContents() {
+        List<Content> contents = contentRepository.findAll();
+        
+        return contents.stream().map(Content::getCurrentContentRelease).collect(Collectors.toList());
+    }
+    
+    public List<ContentRelease> findAllReleases(long contentReleaseId) throws NoSuchElementException {
+        Optional<Content> contentOptional = findContentByContentReleaseId(contentReleaseId);
+        
+        if (contentOptional.isEmpty()) {
+            throw new NoSuchElementException();
+        }
+        
+        return contentOptional.get().getContentReleases();
+    }
+    
+    public ContentRelease findSpecificContentRelease(long contentReleaseId, long releaseNum) throws NoSuchElementException {
+        Optional<Content> contentOptional = findContentByContentReleaseId(contentReleaseId);
+        
+        if (contentOptional.isEmpty()) {
+            throw new NoSuchElementException();
+        }
+        
+        for (ContentRelease contentRelease : contentOptional.get().getContentReleases()) {
+            if (contentRelease.getRelease() == releaseNum) {
+                return contentRelease;
+            }
+        }
+        
+        throw new NoSuchElementException();
     }
     
     public boolean isPublishable(Content content) {

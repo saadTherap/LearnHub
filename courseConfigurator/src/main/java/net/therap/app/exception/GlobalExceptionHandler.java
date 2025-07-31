@@ -15,6 +15,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.*;
 
@@ -22,7 +23,7 @@ import java.util.*;
  * @author gazizafor
  * @since 21/7/25
  */
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
     
     private final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
@@ -107,7 +108,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, httpStatus);
     }
     
-    @ExceptionHandler(RuntimeException.class)
+    @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex, HttpServletRequest request) {
         Locale currentLocale = LocaleContextHolder.getLocale();
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, messageSource.getMessage(

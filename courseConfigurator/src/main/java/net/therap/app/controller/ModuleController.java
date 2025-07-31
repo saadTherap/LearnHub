@@ -31,13 +31,13 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/modules")
 public class ModuleController {
     
-    Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     
-    private ModuleService moduleService;
-    private DtoHelper dtoHelper;
-    private ModuleMapper moduleMapper;
-    private CourseService courseService;
-    private MessageSource messageSource;
+    private final ModuleService moduleService;
+    private final DtoHelper dtoHelper;
+    private final ModuleMapper moduleMapper;
+    private final CourseService courseService;
+    private final MessageSource messageSource;
     
     @Autowired
     public ModuleController(CourseService courseService, ModuleMapper moduleMapper, DtoHelper dtoHelper,
@@ -53,7 +53,7 @@ public class ModuleController {
     public ResponseEntity<List<ModuleDTO>> getAllModules() {
         List<Module> modules = moduleService.findAll();
         List<ModuleDTO> moduleDTOs =
-                modules.stream().map(module -> dtoHelper.toModuleDTO(module)).collect(Collectors.toList());
+                modules.stream().map(dtoHelper::toModuleDTO).collect(Collectors.toList());
         
         return ResponseEntity.ok(moduleDTOs);
     }
@@ -62,7 +62,7 @@ public class ModuleController {
     public ResponseEntity<List<ModuleDTO>> getModulesByCourse(@PathVariable long courseId) {
         List<Module> modules = moduleService.findByCourseId(courseId);
         List<ModuleDTO> moduleDTOs =
-                modules.stream().map(module -> dtoHelper.toModuleDtoLazy(module)).collect(Collectors.toList());
+                modules.stream().map(dtoHelper::toModuleDtoLazy).collect(Collectors.toList());
         
         return ResponseEntity.ok(moduleDTOs);
     }
@@ -70,9 +70,11 @@ public class ModuleController {
     @GetMapping("/{id}")
     public ResponseEntity<ModuleDTO> getModuleById(@PathVariable long id) {
         Optional<Module> moduleOptional = moduleService.findById(id);
+        
         return moduleOptional.map(module -> {
             ModuleDTO dto = new ModuleDTO();
             BeanUtils.copyProperties(module, dto);
+            
             return ResponseEntity.ok(dto);
         }).orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -101,17 +103,19 @@ public class ModuleController {
         return new ResponseEntity<>(moduleMapper.toModuleDTO(savedModule), HttpStatus.CREATED);
     }
     
-    @PutMapping("/{id}")
-    public ResponseEntity<ModuleDTO> updateModule(@PathVariable long id, @RequestBody ModuleDTO moduleDTO) {
+    @PatchMapping("/{id}")
+    public ResponseEntity<ModuleDTO> updateModule(@PathVariable long id, @RequestBody @Validated ModuleDTO moduleDTO) {
         Optional<Module> moduleOptional = moduleService.findById(id);
+        
         if (moduleOptional.isPresent()) {
             Module existingModule = moduleOptional.get();
             existingModule.setTitle(moduleDTO.getTitle());
             Module updatedModule = moduleService.save(existingModule);
-            ModuleDTO responseDTO = new ModuleDTO();
-            BeanUtils.copyProperties(updatedModule, responseDTO);
+            ModuleDTO responseDTO = moduleMapper.toModuleDTO(updatedModule);
+            
             return ResponseEntity.ok(responseDTO);
         }
+        
         return ResponseEntity.notFound().build();
     }
     
@@ -119,8 +123,10 @@ public class ModuleController {
     public ResponseEntity<Void> deleteModule(@PathVariable long id) {
         if (moduleService.findById(id).isPresent()) {
             moduleService.deleteById(id);
+        
             return ResponseEntity.noContent().build();
         }
+        
         return ResponseEntity.notFound().build();
     }
 }

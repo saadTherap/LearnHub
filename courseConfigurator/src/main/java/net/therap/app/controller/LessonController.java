@@ -48,7 +48,7 @@ package net.therap.app.controller;//package net.therap.app.controller;
 //
 //    @GetMapping
 //    public ResponseEntity<List<ContentDTO>> getAllLessons() {
-//        List<ContentRelease> contentReleases = lessonService.findAll(); // Assuming findAll returns all BaseLesson types
+//        List<ContentRelease> contentReleases = lessonService.findAllContentReleases(); // Assuming findAllContentReleases returns all BaseLesson types
 //        List<ContentDTO> lessonDTOs = contentReleases.stream()
 //                .map(dtoHelper::toContentReleaseDTO)
 //                .collect(Collectors.toList());

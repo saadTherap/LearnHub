@@ -158,7 +158,6 @@ public class CourseController {
                 return new ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST);
             }
             
-            // validate publishable or not
             if (!isPublishable(course)) {
                 ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, messageSource.getMessage("error.course.not.publishable", null, request.getLocale()), request.getRequestURI());
                 return new ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST);

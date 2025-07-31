@@ -9,8 +9,6 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * DTO for a logical content unit (formerly Lesson).
- *
  * @author gazizafor
  * @since 21/7/25
  */
