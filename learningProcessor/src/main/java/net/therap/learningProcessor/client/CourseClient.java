@@ -18,10 +18,10 @@ import java.util.List;
 @FeignClient(name = "course-configurator", url = "http://172.16.2.118:8082/myApp/api")
 public interface CourseClient {
 
-    @GetMapping("/courses/public/catalog")
+    @GetMapping("/courses/public/")
     List<CourseCatalogDto> getAllCourseCatalogs();
 
-    @GetMapping("/courses/catalog/{courseId}")
+    @GetMapping("/courses/public/{courseId}")
     CourseCatalogDto getCourseCatalog(@PathVariable("courseId") Long courseId);
 
     @GetMapping("/courses/{courseId}")
