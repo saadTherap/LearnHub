@@ -31,6 +31,8 @@ dependencies {
 
     implementation "com.hazelcast:hazelcast:5.3.6"
     implementation "com.hazelcast:hazelcast-spring:5.3.6"
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+
 //	implementation 'org.flywaydb:flyway-core'
 //	implementation 'org.flywaydb:flyway-database-oracle'
     compileOnly 'org.projectlombok:lombok'
