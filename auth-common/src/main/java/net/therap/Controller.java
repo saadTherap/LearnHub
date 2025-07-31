@@ -15,7 +15,7 @@ public class Controller {
     }
 
     @GetMapping("/test-mail")
-    public ResponseEntity<String> mailController(@RequestParam String email) {
+    public ResponseEntity<String> mailController(@RequestParam("email") String email) {
         emailService.sendVerificationEmail(email, "Hello from Apurbo!");
 
         return ResponseEntity.ok("Done - VERIFIED!!");
