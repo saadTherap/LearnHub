@@ -5,15 +5,15 @@ package net.therap.util;
  * @since 7/28/25
  */
 public class PublicEndpoints {
-    
+
     public static final String[] WHITELIST = {
-            "/api/auth/login",
-            "/api/auth/register",
-            "/api/auth/refresh",
-            "/swagger-ui.html",
+            "/api/auth/**",
             "/swagger-ui/**",
+            "/swagger-ui.html",
             "/v3/api-docs/**",
             "/swagger-resources/**",
-            "/webjars/**"
+            "/webjars/**",
+            "/favicon.ico",
+            "/error"
     };
 }
