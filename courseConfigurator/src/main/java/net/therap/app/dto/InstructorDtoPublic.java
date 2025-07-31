@@ -9,7 +9,7 @@ import java.io.Serializable;
  * @since 30/7/25
  */
 @Data
-public class InstructorDtoPublic implements Serializable {
+public class InstructorDtoCatalog implements Serializable {
     
     private long id;
     

@@ -1,7 +1,7 @@
 package net.therap.app.mapper;
 
 import net.therap.app.dto.InstructorDTO;
-import net.therap.app.dto.InstructorDtoPublic;
+import net.therap.app.dto.InstructorDtoCatalog;
 import net.therap.app.model.Instructor;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -26,5 +26,5 @@ public interface InstructorMapper {
     @Mapping(target = "email", ignore = true)
     void updateInstructorFromDto(InstructorDTO instructorDTO, @MappingTarget Instructor instructor);
     
-    InstructorDtoPublic toInstructorDtoPublic(Instructor instructor);
+    InstructorDtoCatalog toInstructorDtoCatalog(Instructor instructor);
 }

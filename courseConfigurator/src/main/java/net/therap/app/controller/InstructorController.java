@@ -1,10 +1,13 @@
 package net.therap.app.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hazelcast.core.HazelcastInstance;
+import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.InstructorDTO;
-import net.therap.app.dto.InstructorDtoPublic;
+import net.therap.app.dto.InstructorDtoCatalog;
 import net.therap.app.mapper.InstructorMapper;
 import net.therap.app.model.Instructor;
+import net.therap.app.service.HazelcastCacheService;
 import net.therap.app.service.InstructorService;
 import net.therap.app.helper.DtoHelper;
 import net.therap.app.validation.OnCreate;
@@ -35,19 +38,29 @@ public class InstructorController {
     private final InstructorService instructorService;
     private final DtoHelper dtoHelper;
     private final InstructorMapper instructorMapper;
+    private final HazelcastCacheService hazelcastCacheService;
     
     @Autowired
-    public InstructorController(InstructorService instructorService, DtoHelper dtoHelper, ObjectMapper objectMapper, InstructorMapper instructorMapper) { // Constructor injection
+    public InstructorController(InstructorService instructorService, DtoHelper dtoHelper, ObjectMapper objectMapper, InstructorMapper instructorMapper, HazelcastCacheService hazelcastCacheService) { // Constructor injection
         this.instructorService = instructorService;
         this.dtoHelper = dtoHelper;
         this.instructorMapper = instructorMapper;
+        this.hazelcastCacheService = hazelcastCacheService;
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<InstructorDTO> getInstructorById(@PathVariable long id) {
+        InstructorDTO cached = hazelcastCacheService.get(CacheConstants.INSTRUCTORS, id);
+        if (cached != null) {
+            return ResponseEntity.ok(cached);
+        }
+
         return instructorService.getInstructorById(id)
-                .map(dtoHelper::toInstructorDTO) 
-                .map(ResponseEntity::ok)
+                .map(instructor -> {
+                    InstructorDTO dto = dtoHelper.toInstructorDTO(instructor);
+                    hazelcastCacheService.put(CacheConstants.INSTRUCTORS, id, dto);
+                    return ResponseEntity.ok(dto);
+                })
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
     
@@ -62,20 +75,28 @@ public class InstructorController {
     }
     
     @GetMapping("/public")
-    public ResponseEntity<List<InstructorDtoPublic>> getAllInstructorsPublic() {
+    public ResponseEntity<List<InstructorDtoCatalog>> getAllInstructorsPublic() {
         List<Instructor> instructors = instructorService.getAllInstructors();
-        List<InstructorDtoPublic> instructorDTOs = instructors.stream()
-                .map(instructorMapper::toInstructorDtoPublic)
+        List<InstructorDtoCatalog> instructorDTOs = instructors.stream()
+                .map(instructorMapper::toInstructorDtoCatalog)
                 .collect(Collectors.toList());
         
         return ResponseEntity.ok(instructorDTOs);
     }
-    
+
     @GetMapping("/public/{id}")
-    public ResponseEntity<InstructorDtoPublic> getInstructorByIdPublic(@PathVariable long id) {
+    public ResponseEntity<InstructorDtoCatalog> getInstructorByIdPublic(@PathVariable long id) {
+        InstructorDtoCatalog cached = hazelcastCacheService.get(CacheConstants.INSTRUCTOR_CATALOG, id);
+        if (cached != null) {
+            return ResponseEntity.ok(cached);
+        }
+
         return instructorService.getInstructorById(id)
-                .map(instructorMapper::toInstructorDtoPublic)
-                .map(ResponseEntity::ok)
+                .map(instructor -> {
+                    InstructorDtoCatalog dto = instructorMapper.toInstructorDtoCatalog(instructor);
+                    hazelcastCacheService.put(CacheConstants.INSTRUCTOR_CATALOG, id, dto);
+                    return ResponseEntity.ok(dto);
+                })
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
     

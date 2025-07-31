@@ -20,8 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -73,16 +71,29 @@ public class CourseController {
                 courses.stream().filter(course -> course.getCurrentRelease() > ReleaseStatus.DRAFT.getReleaseNumber()).map(dtoHelper::toCourseCatalogDTO).collect(Collectors.toList());
         return ResponseEntity.ok(courseCatalogDTOs);
     }
-    
+
     @GetMapping("/public/{id}")
     public ResponseEntity<CourseCatalogDTO> getCourseByIdPublic(@PathVariable Long id) {
+
+        CourseCatalogDTO cached = hazelcastCacheService.get(CacheConstants.COURSE_CATALOG, id);
+        if (cached != null) {
+            return ResponseEntity.ok(cached);
+        }
+
         Optional<Course> courseOptional = courseService.findById(id);
-        return courseOptional.filter(course -> course.getCurrentRelease() > ReleaseStatus.DRAFT.getReleaseNumber()).map(dtoHelper::toCourseCatalogDTO).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+
+        if (courseOptional.isPresent() && courseOptional.get().getCurrentRelease() > ReleaseStatus.DRAFT.getReleaseNumber()) {
+            CourseCatalogDTO dto = dtoHelper.toCourseCatalogDTO(courseOptional.get());
+            hazelcastCacheService.put(CacheConstants.COURSE_CATALOG, id, dto);
+            return ResponseEntity.ok(dto);
+        }
+
+        return ResponseEntity.notFound().build();
     }
-    
+
+
     @GetMapping("/{id}")
     public ResponseEntity<CourseDTO> getCourseById(@PathVariable Long id) {
-//        hazelcastCacheService.clear(CacheConstants.COURSES);
 
         CourseDTO cached = hazelcastCacheService.get(CacheConstants.COURSES, id);
         if (cached != null) {
@@ -108,31 +119,10 @@ public class CourseController {
         
         course.setCurrentRelease(0L); // Set an initial release number
 
-//        BeanUtils.copyProperties(courseDTO, course, "instructorId", "instructorName", "modules"); // Exclude
-//        relational fields
-        
-        // Fetch and set the Instructor entity based on instructorId from DTO
-//        if (courseDTO.getInstructorId() != 0) {
-//            Instructor instructor = instructorService.getInstructorById(courseDTO.getInstructorId())
-//                    .orElseThrow(() -> new NoSuchElementException("Instructor not found with ID: " + courseDTO
-//                    .getInstructorId()));
-//            course.setInstructor(instructor);
-//        } else {
-//            // Handle case where instructorId is not provided (e.g., throw error or assign default)
-//            return ResponseEntity.badRequest().body(null); // Or a more specific error DTO
-//        }
-        
         Course savedCourse = courseService.save(course);
 
-//        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-//            @Override
-//            public void afterCommit() {
-//                hazelcastCacheService.remove(CacheConstants.COURSES, savedCourse.getId());
-//            }
-//        });
-        
-        return new ResponseEntity<>(dtoHelper.toCourseDTO(savedCourse), HttpStatus.CREATED); // <<< CHANGED: Use
-        // DtoHelper
+        return new ResponseEntity<>(dtoHelper.toCourseDTO(savedCourse), HttpStatus.CREATED);
+
     }
     
     @PatchMapping("/{id}")
@@ -208,13 +198,6 @@ public class CourseController {
             
             Course updatedCourse = courseService.save(existingCourse);
             
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    hazelcastCacheService.remove(CacheConstants.COURSES, updatedCourse.getId());
-                }
-            });
-            
             return ResponseEntity.ok(dtoHelper.toCourseDTO(updatedCourse));
         }
         return ResponseEntity.notFound().build();
@@ -224,13 +207,6 @@ public class CourseController {
     public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
         if (courseService.findById(id).isPresent()) {
             courseService.deleteById(id);
-            
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    hazelcastCacheService.remove(CacheConstants.COURSES, id);
-                }
-            });
             
             return ResponseEntity.noContent().build();
         }
