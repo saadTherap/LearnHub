@@ -3,7 +3,6 @@ package net.therap.learningProcessor.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import net.therap.learningProcessor.eum.CompletionStatus;
 
 /**
  * @author avidewan
@@ -13,8 +12,8 @@ import net.therap.learningProcessor.eum.CompletionStatus;
 @Getter
 @Setter
 @Entity
-@Table(name = "avi_student_content")
-public class StudentContent extends Persistent {
+@Table(name = "avi_student_content_completion")
+public class StudentContentCompletion extends Persistent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "student_content_seq_gen")
@@ -31,8 +30,4 @@ public class StudentContent extends Persistent {
 
     @Column(name = "content_id", nullable = false)
     private long contentId;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
-    private CompletionStatus status;
 }

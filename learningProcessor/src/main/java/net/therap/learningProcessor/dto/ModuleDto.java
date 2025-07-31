@@ -18,8 +18,8 @@ public class ModuleDto {
     private String title;
     private long courseId;
 
+    private int completedContentCount;
+
     private long numberOfContents;
     private List<BaseContentDto> contents;
-
-    private int completedContentCount;
 }

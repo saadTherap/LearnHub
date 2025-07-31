@@ -3,16 +3,18 @@ package net.therap.learningProcessor.service;
 import lombok.RequiredArgsConstructor;
 import net.therap.learningProcessor.client.CourseClient;
 import net.therap.learningProcessor.dto.CourseDetailDto;
-import net.therap.learningProcessor.dto.StudentContentStatusDto;
+import net.therap.learningProcessor.dto.StudentContentCompletionDto;
 import net.therap.learningProcessor.dto.StudentCourseProgressDto;
+import net.therap.learningProcessor.dto.StudentDto;
 import net.therap.learningProcessor.entity.CourseEnrollment;
 import net.therap.learningProcessor.entity.Student;
-import net.therap.learningProcessor.entity.StudentContent;
+import net.therap.learningProcessor.entity.StudentContentCompletion;
 import net.therap.learningProcessor.entity.StudentSubmission;
 import net.therap.learningProcessor.eum.CompletionStatus;
 import net.therap.learningProcessor.mapper.StudentCourseProgressMapper;
+import net.therap.learningProcessor.mapper.StudentMapper;
 import net.therap.learningProcessor.repository.CourseEnrollmentRepository;
-import net.therap.learningProcessor.repository.StudentContentRepository;
+import net.therap.learningProcessor.repository.StudentContentCompletionRepository;
 import net.therap.learningProcessor.repository.StudentRepository;
 import net.therap.learningProcessor.repository.StudentSubmissionRepository;
 import net.therap.learningProcessor.util.CourseProgressUtil;
@@ -21,7 +23,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -34,11 +35,12 @@ public class CourseStudentServiceImpl implements CourseStudentService {
 
     private final StudentRepository studentRepository;
     private final CourseEnrollmentRepository courseEnrollmentRepository;
-    private final StudentContentRepository studentContentRepository;
+    private final StudentContentCompletionRepository studentContentCompletionRepository;
     private final StudentSubmissionRepository studentSubmissionRepository;
 
     private final CourseClient courseClient;
 
+    private final StudentMapper studentMapper;
     private final StudentCourseProgressMapper studentCourseProgressMapper;
 
     @Override
@@ -57,30 +59,29 @@ public class CourseStudentServiceImpl implements CourseStudentService {
     }
 
     @Override
-    public List<Student> getStudentsEnrolledInCourse(Long courseId) {
+    public List<StudentDto> getStudentsEnrolledInCourse(Long courseId) {
         return courseEnrollmentRepository.findByCourseId(courseId).stream()
                 .map(CourseEnrollment::getStudent)
-                .collect(Collectors.toList());
+                .map(studentMapper::toDto)
+                .toList();
     }
 
     @Override
     public List<Long> getEnrolledCourseIdsByStudent(Long studentId) {
         return courseEnrollmentRepository.findByStudentId(studentId).stream()
                 .map(CourseEnrollment::getCourseId)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
-    public boolean markContentCompleted(Long studentId, Long contentId) {
-        StudentContent studentContent = studentContentRepository.findByStudentIdAndContentId(studentId, contentId)
-                .orElse(null);
+    public boolean completeContent(Long studentId, Long contentId) {
+        Student student = studentRepository.findById(studentId).orElseThrow();
 
-        if(Objects.isNull(studentContent)) {
-            return false;
-        }
+        StudentContentCompletion completion = new StudentContentCompletion();
+        completion.setContentId(contentId);
+        completion.setStudent(student);
 
-        studentContent.setStatus(CompletionStatus.COMPLETED);
-        studentContentRepository.save(studentContent);
+        studentContentCompletionRepository.save(completion);
 
         return true;
     }
@@ -101,16 +102,16 @@ public class CourseStudentServiceImpl implements CourseStudentService {
     }
 
     @Override
-    public List<StudentContentStatusDto> getContentStatusByStudentId(Long studentId) {
-        return studentContentRepository.getStudentContentStatusByStudentId(studentId);
+    public List<StudentContentCompletionDto> getContentStatusByStudentId(Long studentId) {
+        return studentContentCompletionRepository.getStudentContentStatusByStudentId(studentId);
     }
 
     @Override
     public CourseDetailDto getCourseDetailWithProgress(Long studentId, Long courseId) {
         CourseDetailDto courseDetail = courseClient.getCourseDetail(courseId);
-        Map<Long, CompletionStatus> contentStatusMap = getContentStatusMap(studentId);
+        List<StudentContentCompletionDto> completedContentDtos = studentContentCompletionRepository.getStudentContentStatusByStudentId(studentId);
 
-        CourseProgressUtil.enrichCourseDetailWithProgress(courseDetail, contentStatusMap);
+        CourseProgressUtil.addProgressDetailsToCourse(courseDetail, completedContentDtos);
 
         return courseDetail;
     }
@@ -126,24 +127,24 @@ public class CourseStudentServiceImpl implements CourseStudentService {
     @Override
     public List<StudentCourseProgressDto> getAllStudentProgressForCourse(Long courseId) {
         CourseDetailDto courseDetail = courseClient.getCourseDetail(courseId);
-        List<Student> students = getStudentsEnrolledInCourse(courseId);
+        List<Student> students = getEnrolledStudents(courseId);
 
         return students.stream()
                 .map(student -> createStudentCourseProgressDto(student, courseDetail))
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    private Map<Long, CompletionStatus> getContentStatusMap(Long studentId) {
-        List<StudentContentStatusDto> contentStatuses =
-                studentContentRepository.getStudentContentStatusByStudentId(studentId);
-
-        return contentStatuses.stream()
-                .collect(Collectors.toMap(StudentContentStatusDto::getContentId, StudentContentStatusDto::getStatus));
+    private List<Student> getEnrolledStudents(Long courseId) {
+        return courseEnrollmentRepository.findByCourseId(courseId).stream()
+                .map(CourseEnrollment::getStudent)
+                .toList();
     }
 
     private StudentCourseProgressDto createStudentCourseProgressDto(Student student, CourseDetailDto courseDetail) {
-        Map<Long, CompletionStatus> statusMap = getContentStatusMap(student.getId());
-        double progress = CourseProgressUtil.calculateCourseProgress(statusMap, courseDetail.getModules());
+
+        List<StudentContentCompletionDto> completedContentDtos = studentContentCompletionRepository.getStudentContentStatusByStudentId(student.getId());
+
+        double progress = CourseProgressUtil.calculateCourseProgress(completedContentDtos, courseDetail.getModules());
 
         return studentCourseProgressMapper.toDto(student, courseDetail, progress);
     }

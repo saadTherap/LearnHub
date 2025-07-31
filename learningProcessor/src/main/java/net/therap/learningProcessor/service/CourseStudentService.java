@@ -1,9 +1,9 @@
 package net.therap.learningProcessor.service;
 
 import net.therap.learningProcessor.dto.CourseDetailDto;
-import net.therap.learningProcessor.dto.StudentContentStatusDto;
+import net.therap.learningProcessor.dto.StudentContentCompletionDto;
 import net.therap.learningProcessor.dto.StudentCourseProgressDto;
-import net.therap.learningProcessor.entity.Student;
+import net.therap.learningProcessor.dto.StudentDto;
 
 import java.util.List;
 
@@ -15,15 +15,15 @@ public interface CourseStudentService {
 
     void enrollInCourse(Long studentId, Long courseId);
 
-    List<Student> getStudentsEnrolledInCourse(Long courseId);
+    List<StudentDto> getStudentsEnrolledInCourse(Long courseId);
 
     List<Long> getEnrolledCourseIdsByStudent(Long studentId);
 
-    boolean markContentCompleted(Long studentId, Long contentId);
+    boolean completeContent(Long studentId, Long contentId);
 
     void submitAssignment(Long studentId, Long contentId, String downloadUrl);
 
-    List<StudentContentStatusDto> getContentStatusByStudentId(Long studentId);
+    List<StudentContentCompletionDto> getContentStatusByStudentId(Long studentId);
 
     public CourseDetailDto getCourseDetailWithProgress(Long studentId, Long courseId);
 

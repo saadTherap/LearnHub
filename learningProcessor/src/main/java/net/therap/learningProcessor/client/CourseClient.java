@@ -18,7 +18,7 @@ import java.util.List;
 @FeignClient(name = "course-configurator", url = "http://172.16.2.118:8082/myApp/api")
 public interface CourseClient {
 
-    @GetMapping("/courses/public/")
+    @GetMapping("/courses/public")
     List<CourseCatalogDto> getAllCourseCatalogs();
 
     @GetMapping("/courses/public/{courseId}")

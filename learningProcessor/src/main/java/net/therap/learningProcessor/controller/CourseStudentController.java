@@ -1,9 +1,10 @@
 package net.therap.learningProcessor.controller;
 
 import lombok.RequiredArgsConstructor;
-import net.therap.learningProcessor.dto.StudentContentStatusDto;
+import net.therap.learningProcessor.dto.CourseDetailDto;
+import net.therap.learningProcessor.dto.StudentContentCompletionDto;
 import net.therap.learningProcessor.dto.StudentCourseProgressDto;
-import net.therap.learningProcessor.entity.Student;
+import net.therap.learningProcessor.dto.StudentDto;
 import net.therap.learningProcessor.service.CourseStudentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class CourseStudentController {
     }
 
     @GetMapping("/enrollments/course/{courseId}")
-    public ResponseEntity<List<Student>> getStudentsEnrolledInCourse(@PathVariable Long courseId) {
+    public ResponseEntity<List<StudentDto>> getStudentsEnrolledInCourse(@PathVariable Long courseId) {
         return ResponseEntity.ok(courseStudentService.getStudentsEnrolledInCourse(courseId));
     }
 
@@ -42,7 +43,7 @@ public class CourseStudentController {
 
     @PatchMapping("/student-contents/{studentId}/{contentId}/complete")
     public ResponseEntity<Void> markContentCompleted(@PathVariable Long studentId, @PathVariable Long contentId) {
-        boolean success = courseStudentService.markContentCompleted(studentId, contentId);
+        boolean success = courseStudentService.completeContent(studentId, contentId);
 
         if (!success) {
             return ResponseEntity.notFound().build();
@@ -62,9 +63,14 @@ public class CourseStudentController {
     }
 
     @GetMapping("/content-status/{studentId}")
-    public ResponseEntity<List<StudentContentStatusDto>> getContentStatus(@PathVariable Long studentId) {
+    public ResponseEntity<List<StudentContentCompletionDto>> getContentStatus(@PathVariable Long studentId) {
 
         return ResponseEntity.ok(courseStudentService.getContentStatusByStudentId(studentId));
+    }
+
+    @GetMapping("/progress/detailed/{studentId}/{courseId}")
+    public ResponseEntity<CourseDetailDto> getStudentCourseProgressDetail(@PathVariable Long studentId, @PathVariable Long courseId) {
+        return ResponseEntity.ok(courseStudentService.getCourseDetailWithProgress(studentId, courseId));
     }
 
     @GetMapping("/progress/{studentId}/{courseId}")

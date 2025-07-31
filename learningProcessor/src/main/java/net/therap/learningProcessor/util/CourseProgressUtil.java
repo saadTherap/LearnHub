@@ -2,12 +2,13 @@ package net.therap.learningProcessor.util;
 
 import net.therap.learningProcessor.dto.CourseDetailDto;
 import net.therap.learningProcessor.dto.ModuleDto;
+import net.therap.learningProcessor.dto.StudentContentCompletionDto;
 import net.therap.learningProcessor.dto.content.BaseContentDto;
-import net.therap.learningProcessor.eum.CompletionStatus;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author avidewan
@@ -15,11 +16,16 @@ import java.util.Objects;
  */
 public class CourseProgressUtil {
 
-    public static double calculateCourseProgress(Map<Long, CompletionStatus> statusMap, List<ModuleDto> modules) {
+    public static double calculateCourseProgress(List<StudentContentCompletionDto> completedContentDtos,
+                                                 List<ModuleDto> modules) {
 
         if (Objects.isNull(modules) || modules.isEmpty()) {
             return 0.0;
         }
+
+        Set<Long> completedContentIds = completedContentDtos.stream()
+                .map(StudentContentCompletionDto::getContentId)
+                .collect(Collectors.toSet());
 
         int total = 0, completed = 0;
 
@@ -32,7 +38,7 @@ public class CourseProgressUtil {
 
             total += contents.size();
             completed += (int) contents.stream()
-                    .filter(content -> statusMap.getOrDefault(content.getId(), CompletionStatus.NOT_COMPLETED) == CompletionStatus.COMPLETED)
+                    .filter(content -> completedContentIds.contains(content.getId()))
                     .count();
         }
 
@@ -41,7 +47,11 @@ public class CourseProgressUtil {
         return progress;
     }
 
-    public static void enrichCourseDetailWithProgress(CourseDetailDto courseDetail, Map<Long, CompletionStatus> statusMap) {
+    public static void addProgressDetailsToCourse(CourseDetailDto courseDetail, List<StudentContentCompletionDto> completedContentDtos) {
+
+        Set<Long> completedContentIds = completedContentDtos.stream()
+                .map(StudentContentCompletionDto::getContentId)
+                .collect(Collectors.toSet());
 
         int total = 0, completed = 0;
 
@@ -57,15 +67,16 @@ public class CourseProgressUtil {
             int moduleCompleted = 0;
 
             for (BaseContentDto content : contents) {
-                CompletionStatus status = statusMap.getOrDefault(content.getId(), CompletionStatus.NOT_COMPLETED);
-                content.setStatus(status);
+                boolean isCompleted = completedContentIds.contains(content.getId());
 
-                if (status == CompletionStatus.COMPLETED) {
+                if (isCompleted) {
                     moduleCompleted++;
                 }
             }
 
             module.setCompletedContentCount(moduleCompleted);
+            module.setNumberOfContents(contents.size());
+
             total += contents.size();
             completed += moduleCompleted;
         }

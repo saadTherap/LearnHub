@@ -22,7 +22,7 @@ public class CourseDetailDto {
     private long instructorId;
     private String instructorName;
 
-    private List<ModuleDto> modules;
-
     private double progress;
+
+    private List<ModuleDto> modules;
 }

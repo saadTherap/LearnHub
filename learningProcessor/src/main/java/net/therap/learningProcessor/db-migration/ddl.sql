@@ -31,11 +31,10 @@ CREATE TABLE avi_course_enrollment (
     CONSTRAINT fk_enrollment_student FOREIGN KEY (student_id) REFERENCES  avi_student(id)
 );
 
-CREATE TABLE avi_student_content (
+CREATE TABLE avi_student_content_completion (
     id              NUMBER(19) PRIMARY KEY,
     student_id      NUMBER(19) NOT NULL,
     content_id      NUMBER(19) NOT NULL,
-    status          VARCHAR2(30) NOT NULL,
     is_deleted      NUMBER(1) DEFAULT 0 NOT NULL,
     created_at      TIMESTAMP NOT NULL,
     updated_at      TIMESTAMP NOT NULL,
