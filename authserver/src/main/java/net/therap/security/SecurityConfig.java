@@ -69,18 +69,4 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("https://192.168.0.215")
-                        .allowedMethods("*")
-                        .allowedHeaders("*")
-                        .allowCredentials(true);
-            }
-        };
-    }
 }

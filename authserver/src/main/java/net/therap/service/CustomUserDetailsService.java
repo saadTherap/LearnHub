@@ -72,10 +72,6 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UserPersistenceException(messageUtil.getMessage("err.user.update.missing_id"));
         }
         
-        if (userExistsByEmail(user.getEmail())) {
-            throw new UserExistenceException(messageUtil.getMessage("err.user.exists"));
-        }
-        
         return userRepository.save(user);
     }
     

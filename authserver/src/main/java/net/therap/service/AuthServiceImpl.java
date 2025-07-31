@@ -117,7 +117,7 @@ public class AuthServiceImpl implements AuthService {
         
         User userToVerify = verificationToken.getUser();
         userToVerify.setEnabled(true);
-        customUserDetailsService.saveUser(userToVerify);
+        customUserDetailsService.updateUser(userToVerify);
         
         verificationTokenRepository.delete(verificationToken);
     }
@@ -128,7 +128,7 @@ public class AuthServiceImpl implements AuthService {
         String token = UUID.randomUUID().toString();
         VerificationToken verificationToken = new VerificationToken(token, user);
         verificationTokenRepository.save(verificationToken);
-        
+
         emailService.sendVerificationEmail(user.getEmail(), token);
     }
     
