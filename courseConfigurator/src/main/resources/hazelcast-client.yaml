@@ -3,12 +3,15 @@ hazelcast-client:
   network:
     cluster-members:
       - 172.16.2.115:5701
+      - 172.16.2.115:5702
+      - 172.16.2.115:5703
     smart-routing: true
     redo-operation: true
-    connection-timeout: 60000
+    connection-timeout: 10000
 
   near-cache:
     courses:
+      in-memory-format: OBJECT
       time-to-live-seconds: 1800
       invalidate-on-change: true
       eviction:
