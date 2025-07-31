@@ -21,3 +21,30 @@ hazelcast-client:
         eviction-policy: LRU
         max-size-policy: ENTRY_COUNT
         size: 1000
+
+    courseCatalog:
+      in-memory-format: OBJECT
+      time-to-live-seconds: 1800
+      invalidate-on-change: true
+      eviction:
+        eviction-policy: LRU
+        max-size-policy: ENTRY_COUNT
+        size: 1000
+
+    instructors:
+      in-memory-format: OBJECT
+      time-to-live-seconds: 900
+      invalidate-on-change: true
+      eviction:
+        eviction-policy: LRU
+        max-size-policy: ENTRY_COUNT
+        size: 500
+
+    instructorCatalog:
+      in-memory-format: OBJECT
+      time-to-live-seconds: 900
+      invalidate-on-change: true
+      eviction:
+        eviction-policy: LRU
+        max-size-policy: ENTRY_COUNT
+        size: 500
