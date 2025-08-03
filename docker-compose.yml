@@ -8,11 +8,12 @@ services:
       - "9090:8080"
     environment:
       DYNAMIC_CONFIG_ENABLED: 'true'
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: broker-1:9092,broker-2:9094,broker-3:9096
     extra_hosts:
       - "broker-1:host-gateway"
       - "broker-2:host-gateway"
       - "broker-3:host-gateway"
-      
+
   generate-cluster-id:
     image: ubuntu:latest
     container_name: generate-cluster-id
