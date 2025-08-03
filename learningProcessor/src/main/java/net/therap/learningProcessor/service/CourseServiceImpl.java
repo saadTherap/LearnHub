@@ -1,14 +1,18 @@
 package net.therap.learningProcessor.service;
 
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import net.therap.learningProcessor.client.CourseClient;
 import net.therap.learningProcessor.dto.CourseCatalogDto;
 import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
 import net.therap.learningProcessor.dto.content.BaseContentDto;
 import net.therap.learningProcessor.dto.content.ContentDetailDto;
+import net.therap.learningProcessor.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * @author avidewan
@@ -16,6 +20,7 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CourseServiceImpl implements CourseService {
 
     private final CourseClient courseClient;
@@ -27,12 +32,16 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseCatalogDto getCourseCatalogByID(long courseId) {
-        return courseClient.getCourseCatalog(courseId);
+        return wrapFeignCall(() -> courseClient.getCourseCatalog(courseId),
+                "error.course.notFound",
+                courseId);
     }
 
     @Override
     public CourseDetailWithProgressDto getCourseDetail(long courseId) {
-        return courseClient.getCourseDetail(courseId);
+        return wrapFeignCall(() -> courseClient.getCourseDetail(courseId),
+                "error.course.notFound",
+                courseId);
     }
 
     @Override
@@ -42,6 +51,19 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public ContentDetailDto getContentDetail(long contentId) {
-        return courseClient.getContentDetail(contentId);
+        return wrapFeignCall(() -> courseClient.getContentDetail(contentId),
+                "error.content.notFound",
+                contentId);
+    }
+
+    private <T> T wrapFeignCall(Supplier<T> feignCall,
+                                String messageKey,
+                                Object... args) {
+        try {
+            return feignCall.get();
+
+        } catch (FeignException.NotFound ex) {
+            throw new ResourceNotFoundException(messageKey, args);
+        }
     }
 }

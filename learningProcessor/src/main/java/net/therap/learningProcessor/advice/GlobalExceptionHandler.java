@@ -5,16 +5,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import net.therap.learningProcessor.dto.ErrorResponse;
+import net.therap.learningProcessor.exception.ResourceAlreadyExistsException;
+import net.therap.learningProcessor.exception.ResourceNotFoundException;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,6 +53,35 @@ public class GlobalExceptionHandler {
                 errors);
 
         return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
+
+        String errorMessage = messageSource.getMessage(
+                ex.getMessageKey(),
+                ex.getArgs(),
+                request.getLocale()
+        );
+
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.NOT_FOUND,
+                errorMessage,
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleResourceAlreadyExists(ResourceAlreadyExistsException ex, HttpServletRequest request) {
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.CONFLICT,
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
     @ExceptionHandler(Exception.class)
