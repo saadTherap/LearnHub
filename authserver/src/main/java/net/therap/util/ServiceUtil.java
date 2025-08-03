@@ -14,7 +14,14 @@ import org.springframework.web.server.ResponseStatusException;
 @Slf4j
 public class ServiceUtil {
     
+    public static final String USER_ROLE_ERROR = "No such user role exists";
+    
     public static UserRole toSystemFormatUserRole(String role) {
-        return UserRole.valueOf(role.toUpperCase());
+        try {
+            return UserRole.valueOf(role.toUpperCase());
+        
+        } catch (IllegalArgumentException e) {
+            throw new InvalidRoleSpecifiedException(USER_ROLE_ERROR + ": " + role);
+        }
     }
 }

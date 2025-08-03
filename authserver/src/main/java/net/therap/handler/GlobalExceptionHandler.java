@@ -2,6 +2,7 @@ package net.therap.handler;
 
 import lombok.RequiredArgsConstructor;
 import net.therap.dto.ErrorResponse;
+import net.therap.exception.InvalidRoleSpecifiedException;
 import net.therap.exception.RegistrationTokenVerificationException;
 import net.therap.exception.UserExistenceException;
 import net.therap.exception.UserPersistenceException;
@@ -73,10 +74,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RegistrationTokenVerificationException.class)
     public ResponseEntity<ErrorResponse> handleRegistrationTokenVerification(RegistrationTokenVerificationException ex) {
         ErrorResponse response = buildErrorResponse(
-                messageUtil.getMessage(messageUtil.getMessage("err.verify.token.failed")),
+                messageUtil.getMessage("err.verify.token.failed"),
                 Map.of(ERROR, ex.getMessage())
         );
         
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+    
+    @ExceptionHandler(InvalidRoleSpecifiedException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidRoleSpecification(InvalidRoleSpecifiedException ex) {
+        ErrorResponse response = buildErrorResponse(
+                messageUtil.getMessage("err.user.role.invalid"),
+                Map.of(ERROR, ex.getMessage())
+        );
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 }

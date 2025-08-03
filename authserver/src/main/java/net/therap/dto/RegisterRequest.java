@@ -2,6 +2,7 @@ package net.therap.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -18,8 +19,7 @@ public class RegisterRequest implements Serializable {
     @NotBlank(message = "{user.email.notblank}")
     private String email;
     
-    @NotBlank(message = "{user.password.notblank}")
-    @Size(min = 6, message = "{user.password.size}")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*#?&]).{8,}$", message = "{user.password.strong}")
     private String password;
     
     @NotBlank(message = "{user.role.notblank}")
