@@ -20,6 +20,7 @@ public class HazelcastConfig {
     @Bean
     public HazelcastInstance hazelcastInstance() {
         try (InputStream configStream = getClass().getClassLoader().getResourceAsStream("hazelcast-client.yaml")) {
+
             ClientConfig clientConfig = new YamlClientConfigBuilder(configStream).build();
 
             return HazelcastClient.newHazelcastClient(clientConfig);

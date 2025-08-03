@@ -1,5 +1,10 @@
 hazelcast-client:
   cluster-name: learnhub
+
+  connection-strategy:
+    async-start: true
+    reconnect-mode: ASYNC
+
   network:
     cluster-members:
       - 172.16.2.115:5701
@@ -7,10 +12,6 @@ hazelcast-client:
       - 172.16.2.115:5703
     smart-routing: true
     redo-operation: true
-  connection-strategy:
-    async-start: true
-    reconnect-mode: ASYNCHRONOUS
-    connection-timeout: 10000
 
   near-cache:
     courses:
