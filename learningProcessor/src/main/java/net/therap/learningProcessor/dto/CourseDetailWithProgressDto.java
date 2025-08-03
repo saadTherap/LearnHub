@@ -12,7 +12,7 @@ import java.util.List;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CourseDetailDto {
+public class CourseDetailWithProgressDto {
 
     private long id;
     private String name;
@@ -24,5 +24,5 @@ public class CourseDetailDto {
 
     private double progress;
 
-    private List<ModuleDto> modules;
+    private List<ModuleWithProgressDto> modules;
 }

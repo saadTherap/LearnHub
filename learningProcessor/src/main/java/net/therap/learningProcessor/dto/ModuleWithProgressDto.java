@@ -12,7 +12,7 @@ import java.util.List;
  */
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ModuleDto {
+public class ModuleWithProgressDto {
 
     private long id;
     private String title;

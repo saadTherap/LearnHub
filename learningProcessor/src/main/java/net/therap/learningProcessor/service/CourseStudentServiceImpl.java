@@ -2,7 +2,7 @@ package net.therap.learningProcessor.service;
 
 import lombok.RequiredArgsConstructor;
 import net.therap.learningProcessor.client.CourseClient;
-import net.therap.learningProcessor.dto.CourseDetailDto;
+import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
 import net.therap.learningProcessor.dto.StudentContentCompletionDto;
 import net.therap.learningProcessor.dto.StudentCourseProgressDto;
 import net.therap.learningProcessor.dto.StudentDto;
@@ -10,7 +10,6 @@ import net.therap.learningProcessor.entity.CourseEnrollment;
 import net.therap.learningProcessor.entity.Student;
 import net.therap.learningProcessor.entity.StudentContentCompletion;
 import net.therap.learningProcessor.entity.StudentSubmission;
-import net.therap.learningProcessor.eum.CompletionStatus;
 import net.therap.learningProcessor.mapper.StudentCourseProgressMapper;
 import net.therap.learningProcessor.mapper.StudentMapper;
 import net.therap.learningProcessor.repository.CourseEnrollmentRepository;
@@ -22,8 +21,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author avidewan
@@ -107,8 +104,8 @@ public class CourseStudentServiceImpl implements CourseStudentService {
     }
 
     @Override
-    public CourseDetailDto getCourseDetailWithProgress(Long studentId, Long courseId) {
-        CourseDetailDto courseDetail = courseClient.getCourseDetail(courseId);
+    public CourseDetailWithProgressDto getCourseDetailWithProgress(Long studentId, Long courseId) {
+        CourseDetailWithProgressDto courseDetail = courseClient.getCourseDetail(courseId);
         List<StudentContentCompletionDto> completedContentDtos = studentContentCompletionRepository.getStudentContentStatusByStudentId(studentId);
 
         CourseProgressUtil.addProgressDetailsToCourse(courseDetail, completedContentDtos);
@@ -119,14 +116,14 @@ public class CourseStudentServiceImpl implements CourseStudentService {
     @Override
     public StudentCourseProgressDto getStudentCourseProgress(Long studentId, Long courseId) {
         Student student = studentRepository.findById(studentId).orElseThrow();
-        CourseDetailDto courseDetail = courseClient.getCourseDetail(courseId);
+        CourseDetailWithProgressDto courseDetail = courseClient.getCourseDetail(courseId);
 
         return createStudentCourseProgressDto(student, courseDetail);
     }
 
     @Override
     public List<StudentCourseProgressDto> getAllStudentProgressForCourse(Long courseId) {
-        CourseDetailDto courseDetail = courseClient.getCourseDetail(courseId);
+        CourseDetailWithProgressDto courseDetail = courseClient.getCourseDetail(courseId);
         List<Student> students = getEnrolledStudents(courseId);
 
         return students.stream()
@@ -140,7 +137,7 @@ public class CourseStudentServiceImpl implements CourseStudentService {
                 .toList();
     }
 
-    private StudentCourseProgressDto createStudentCourseProgressDto(Student student, CourseDetailDto courseDetail) {
+    private StudentCourseProgressDto createStudentCourseProgressDto(Student student, CourseDetailWithProgressDto courseDetail) {
 
         List<StudentContentCompletionDto> completedContentDtos = studentContentCompletionRepository.getStudentContentStatusByStudentId(student.getId());
 

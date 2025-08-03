@@ -2,7 +2,6 @@ package net.therap.learningProcessor.dto.content;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-import net.therap.learningProcessor.eum.CompletionStatus;
 
 /**
  * @author avidewan
@@ -17,5 +16,4 @@ public class BaseContentDto {
     private Long moduleId;
     private long orderIndex;
     private String type;
-    private CompletionStatus status;
 }

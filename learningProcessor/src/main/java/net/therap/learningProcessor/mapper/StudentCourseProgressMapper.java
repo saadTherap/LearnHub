@@ -1,6 +1,6 @@
 package net.therap.learningProcessor.mapper;
 
-import net.therap.learningProcessor.dto.CourseDetailDto;
+import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
 import net.therap.learningProcessor.dto.StudentCourseProgressDto;
 import net.therap.learningProcessor.entity.Student;
 import org.mapstruct.Mapper;
@@ -20,5 +20,5 @@ public interface StudentCourseProgressMapper {
     @Mapping(source = "course.id", target = "courseId")
     @Mapping(source = "course.name", target = "courseName")
     @Mapping(source = "progress", target = "progress")
-    StudentCourseProgressDto toDto(Student student, CourseDetailDto course, double progress);
+    StudentCourseProgressDto toDto(Student student, CourseDetailWithProgressDto course, double progress);
 }

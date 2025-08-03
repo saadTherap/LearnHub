@@ -3,8 +3,11 @@ package net.therap.learningProcessor.controller;
 import lombok.RequiredArgsConstructor;
 import net.therap.learningProcessor.dto.StudentDto;
 import net.therap.learningProcessor.service.StudentService;
+import net.therap.learningProcessor.validator.group.OnCreate;
+import net.therap.learningProcessor.validator.group.OnUpdate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +20,7 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/api/students")
 @RequiredArgsConstructor
+@Validated
 public class StudentController {
 
     private final StudentService studentService;
@@ -38,7 +42,7 @@ public class StudentController {
     }
 
     @PostMapping
-    public ResponseEntity<StudentDto> createStudent(@RequestBody StudentDto studentDto) {
+    public ResponseEntity<StudentDto> createStudent(@Validated(OnCreate.class) @RequestBody StudentDto studentDto) {
         StudentDto created = studentService.createStudent(studentDto);
 
         return new ResponseEntity<>(created, HttpStatus.CREATED);
@@ -46,7 +50,7 @@ public class StudentController {
 
     @PutMapping("/{id}")
     public ResponseEntity<StudentDto> updateStudent(@PathVariable Long id,
-                                                    @RequestBody StudentDto studentDto) {
+                                                    @Validated(OnUpdate.class) @RequestBody StudentDto studentDto) {
         studentDto.setId(id);
         StudentDto updatedStudent = studentService.updateStudent(studentDto);
 

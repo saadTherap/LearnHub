@@ -1,7 +1,7 @@
 package net.therap.learningProcessor.util;
 
-import net.therap.learningProcessor.dto.CourseDetailDto;
-import net.therap.learningProcessor.dto.ModuleDto;
+import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
+import net.therap.learningProcessor.dto.ModuleWithProgressDto;
 import net.therap.learningProcessor.dto.StudentContentCompletionDto;
 import net.therap.learningProcessor.dto.content.BaseContentDto;
 
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class CourseProgressUtil {
 
     public static double calculateCourseProgress(List<StudentContentCompletionDto> completedContentDtos,
-                                                 List<ModuleDto> modules) {
+                                                 List<ModuleWithProgressDto> modules) {
 
         if (Objects.isNull(modules) || modules.isEmpty()) {
             return 0.0;
@@ -29,7 +29,7 @@ public class CourseProgressUtil {
 
         int total = 0, completed = 0;
 
-        for (ModuleDto module : modules) {
+        for (ModuleWithProgressDto module : modules) {
             List<BaseContentDto> contents = module.getContents();
 
             if (Objects.isNull(contents) || contents.isEmpty()) {
@@ -47,7 +47,7 @@ public class CourseProgressUtil {
         return progress;
     }
 
-    public static void addProgressDetailsToCourse(CourseDetailDto courseDetail, List<StudentContentCompletionDto> completedContentDtos) {
+    public static void addProgressDetailsToCourse(CourseDetailWithProgressDto courseDetail, List<StudentContentCompletionDto> completedContentDtos) {
 
         Set<Long> completedContentIds = completedContentDtos.stream()
                 .map(StudentContentCompletionDto::getContentId)
@@ -55,7 +55,7 @@ public class CourseProgressUtil {
 
         int total = 0, completed = 0;
 
-        for (ModuleDto module : courseDetail.getModules()) {
+        for (ModuleWithProgressDto module : courseDetail.getModules()) {
             List<BaseContentDto> contents = module.getContents();
 
             if (Objects.isNull(contents) || contents.isEmpty()) {

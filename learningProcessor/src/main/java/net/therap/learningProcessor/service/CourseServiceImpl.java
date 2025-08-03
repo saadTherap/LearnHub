@@ -3,7 +3,7 @@ package net.therap.learningProcessor.service;
 import lombok.RequiredArgsConstructor;
 import net.therap.learningProcessor.client.CourseClient;
 import net.therap.learningProcessor.dto.CourseCatalogDto;
-import net.therap.learningProcessor.dto.CourseDetailDto;
+import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
 import net.therap.learningProcessor.dto.content.BaseContentDto;
 import net.therap.learningProcessor.dto.content.ContentDetailDto;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public CourseDetailDto getCourseDetail(long courseId) {
+    public CourseDetailWithProgressDto getCourseDetail(long courseId) {
         return courseClient.getCourseDetail(courseId);
     }
 

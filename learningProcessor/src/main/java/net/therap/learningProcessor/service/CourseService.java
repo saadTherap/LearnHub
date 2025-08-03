@@ -1,7 +1,7 @@
 package net.therap.learningProcessor.service;
 
 import net.therap.learningProcessor.dto.CourseCatalogDto;
-import net.therap.learningProcessor.dto.CourseDetailDto;
+import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
 import net.therap.learningProcessor.dto.content.BaseContentDto;
 import net.therap.learningProcessor.dto.content.ContentDetailDto;
 
@@ -17,7 +17,7 @@ public interface CourseService {
 
     CourseCatalogDto getCourseCatalogByID(long courseId);
 
-    CourseDetailDto getCourseDetail(long courseId);
+    CourseDetailWithProgressDto getCourseDetail(long courseId);
 
     List<BaseContentDto> getContentsByModuleId(long moduleId);
 

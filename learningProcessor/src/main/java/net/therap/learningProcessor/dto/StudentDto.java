@@ -3,6 +3,7 @@ package net.therap.learningProcessor.dto;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.NonNull;
+import net.therap.learningProcessor.annotation.EnumValidator;
 import net.therap.learningProcessor.eum.Gender;
 import net.therap.learningProcessor.validator.group.OnCreate;
 import net.therap.learningProcessor.validator.group.OnUpdate;
@@ -26,8 +27,9 @@ public class StudentDto {
     @Size(min = 3, max = 50, message = "{student.lastName.size}", groups = {OnCreate.class, OnUpdate.class})
     private String lastName;
 
-    @NotNull(message = "{student.gender.notNull}", groups = OnCreate.class)
-    private Gender gender;
+    @NotBlank(message = "{student.gender.notBlank}", groups = OnCreate.class)
+    @EnumValidator(enumClass = Gender.class, message = "{student.gender.invalid}", groups = {OnCreate.class, OnUpdate.class})
+    private String gender;
 
     @Past(message = "{student.dateOfBirth.past}", groups = {OnCreate.class, OnUpdate.class})
     private LocalDate dateOfBirth;

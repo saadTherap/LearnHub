@@ -2,7 +2,7 @@ package net.therap.learningProcessor.controller;
 
 import lombok.RequiredArgsConstructor;
 import net.therap.learningProcessor.dto.CourseCatalogDto;
-import net.therap.learningProcessor.dto.CourseDetailDto;
+import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
 import net.therap.learningProcessor.dto.content.BaseContentDto;
 import net.therap.learningProcessor.dto.content.ContentDetailDto;
 import net.therap.learningProcessor.service.CourseService;
@@ -35,7 +35,7 @@ public class CourseController {
     }
 
     @GetMapping("/auth/courses/{courseId}")
-    public CourseDetailDto getCourseDetail(@PathVariable long courseId) {
+    public CourseDetailWithProgressDto getCourseDetail(@PathVariable long courseId) {
         return courseService.getCourseDetail(courseId);
     }
 

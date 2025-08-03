@@ -3,8 +3,8 @@ package net.therap.learningProcessor.controller;
 import lombok.RequiredArgsConstructor;
 import net.therap.learningProcessor.client.CourseClient;
 import net.therap.learningProcessor.dto.CourseCatalogDto;
-import net.therap.learningProcessor.dto.CourseDetailDto;
-import net.therap.learningProcessor.dto.ModuleDto;
+import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
+import net.therap.learningProcessor.dto.ModuleWithProgressDto;
 import net.therap.learningProcessor.dto.content.BaseContentDto;
 import net.therap.learningProcessor.dto.content.ContentDetailDto;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,12 +36,12 @@ public class TestController {
     }
 
     @GetMapping("/courses/{courseId}")
-    public CourseDetailDto getCourseDetail(@PathVariable("courseId") Long courseId) {
+    public CourseDetailWithProgressDto getCourseDetail(@PathVariable("courseId") Long courseId) {
         return courseClient.getCourseDetail(courseId);
     }
 
     @GetMapping("/modules/byCourse/{courseId}")
-    public List<ModuleDto> testModulesByCourse(@PathVariable Long courseId) {
+    public List<ModuleWithProgressDto> testModulesByCourse(@PathVariable Long courseId) {
         return courseClient.getModulesByCourse(courseId);
     }
 

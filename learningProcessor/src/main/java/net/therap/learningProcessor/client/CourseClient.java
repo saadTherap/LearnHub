@@ -1,8 +1,8 @@
 package net.therap.learningProcessor.client;
 
 import net.therap.learningProcessor.dto.CourseCatalogDto;
-import net.therap.learningProcessor.dto.CourseDetailDto;
-import net.therap.learningProcessor.dto.ModuleDto;
+import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
+import net.therap.learningProcessor.dto.ModuleWithProgressDto;
 import net.therap.learningProcessor.dto.content.BaseContentDto;
 import net.therap.learningProcessor.dto.content.ContentDetailDto;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -25,10 +25,10 @@ public interface CourseClient {
     CourseCatalogDto getCourseCatalog(@PathVariable("courseId") Long courseId);
 
     @GetMapping("/courses/{courseId}")
-    CourseDetailDto getCourseDetail(@PathVariable("courseId") Long courseId);
+    CourseDetailWithProgressDto getCourseDetail(@PathVariable("courseId") Long courseId);
 
     @GetMapping("/modules/byCourse/{courseId}")
-    List<ModuleDto> getModulesByCourse(@PathVariable("courseId") Long courseId);
+    List<ModuleWithProgressDto> getModulesByCourse(@PathVariable("courseId") Long courseId);
 
     @GetMapping("/contents/byModule/{moduleId}")
     List<BaseContentDto> getContentsByModule(@PathVariable("moduleId") Long moduleId);

@@ -1,6 +1,6 @@
 package net.therap.learningProcessor.service;
 
-import net.therap.learningProcessor.dto.CourseDetailDto;
+import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
 import net.therap.learningProcessor.dto.StudentContentCompletionDto;
 import net.therap.learningProcessor.dto.StudentCourseProgressDto;
 import net.therap.learningProcessor.dto.StudentDto;
@@ -25,7 +25,7 @@ public interface CourseStudentService {
 
     List<StudentContentCompletionDto> getContentStatusByStudentId(Long studentId);
 
-    public CourseDetailDto getCourseDetailWithProgress(Long studentId, Long courseId);
+    public CourseDetailWithProgressDto getCourseDetailWithProgress(Long studentId, Long courseId);
 
     public StudentCourseProgressDto getStudentCourseProgress(Long studentId, Long courseId);
 

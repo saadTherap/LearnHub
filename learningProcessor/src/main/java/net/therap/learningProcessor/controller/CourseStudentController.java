@@ -1,7 +1,7 @@
 package net.therap.learningProcessor.controller;
 
 import lombok.RequiredArgsConstructor;
-import net.therap.learningProcessor.dto.CourseDetailDto;
+import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
 import net.therap.learningProcessor.dto.StudentContentCompletionDto;
 import net.therap.learningProcessor.dto.StudentCourseProgressDto;
 import net.therap.learningProcessor.dto.StudentDto;
@@ -69,7 +69,7 @@ public class CourseStudentController {
     }
 
     @GetMapping("/progress/detailed/{studentId}/{courseId}")
-    public ResponseEntity<CourseDetailDto> getStudentCourseProgressDetail(@PathVariable Long studentId, @PathVariable Long courseId) {
+    public ResponseEntity<CourseDetailWithProgressDto> getStudentCourseProgressDetail(@PathVariable Long studentId, @PathVariable Long courseId) {
         return ResponseEntity.ok(courseStudentService.getCourseDetailWithProgress(studentId, courseId));
     }
 
