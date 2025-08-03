@@ -49,6 +49,9 @@ dependencies {
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 
     implementation  'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
+
+    // kafka dependencies
+    implementation 'org.springframework.kafka:spring-kafka:3.3.0'
 }
 
 tasks.named('test') {
