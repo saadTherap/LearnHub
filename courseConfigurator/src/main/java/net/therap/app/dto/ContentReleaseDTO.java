@@ -20,7 +20,7 @@ import java.io.Serializable;
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
-        property = "type" // This field will indicate the actual type (LECTURE, QUIZ, SUBMISSION)
+        property = "type"
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = LectureDTO.class, name = "LECTURE"),

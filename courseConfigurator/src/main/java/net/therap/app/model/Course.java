@@ -1,12 +1,12 @@
 package net.therap.app.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.util.List;
 
@@ -19,6 +19,8 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
+@SQLDelete(sql = "UPDATE final_learnhub_course SET is_deleted = 1 WHERE id = ?")
+@Where(clause = "is_deleted = 0")
 public class Course extends Persistent {
     
     @Id
@@ -29,7 +31,8 @@ public class Course extends Persistent {
     @Column(length = 128, nullable = false)
     private String name;
     
-    @Column(length = 512, nullable = false)
+    @Lob
+    @Column
     private String description;
     
     @Column(nullable = false, name = "current_release")

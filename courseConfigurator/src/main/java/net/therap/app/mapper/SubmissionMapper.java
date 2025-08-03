@@ -22,5 +22,5 @@ public interface SubmissionMapper {
     
     @Mapping(target = "id", ignore = true)
     void updateSubmissionFromSubmissionCatalogDto(SubmissionCatalogueDTO submissionCatalogueDTO,
-                                                  @MappingTarget SubmissionDTO submissionDTO);
+                                                  @MappingTarget Submission submission);
 }

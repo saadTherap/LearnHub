@@ -33,6 +33,6 @@ public interface CourseMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "currentRelease", ignore = true)
     @Mapping(target = "modules", ignore = true)
-    @Mapping(target = "instructor", source = "instructorId")
+    @Mapping(target = "instructor", ignore = true)
     void updateCourseFromCourseDTO(CourseDTO courseDTO, @MappingTarget Course course);
 }

@@ -31,5 +31,8 @@ public class ModuleDTO implements Serializable {
     @Min(value = 1, message = "{validation.course.id.null}")
     private long courseId;
     
+    @Min(value = 0, message = "{validation.order.index.min}", groups = {OnCreate.class, OnUpdate.class})
+    private long orderIndex;
+    
     private List<ContentDTO> contents;
 }

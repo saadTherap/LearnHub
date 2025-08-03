@@ -6,6 +6,7 @@ import net.therap.app.repository.ModuleRepository;
 import net.therap.app.repository.QuizRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,13 +16,17 @@ import java.util.Optional;
  * @since 22/7/25
  */
 @Service
+@Transactional(readOnly = true)
 public class QuizService {
     
-    @Autowired
-    private QuizRepository quizRepository;
+    private final QuizRepository quizRepository;
     
-    @Autowired
-    private ModuleRepository moduleRepository;
+    private final ModuleRepository moduleRepository;
+    
+    public QuizService(ModuleRepository moduleRepository, QuizRepository quizRepository) {
+        this.moduleRepository = moduleRepository;
+        this.quizRepository = quizRepository;
+    }
     
     public List<Quiz> findAll() {
         return quizRepository.findAll();
@@ -31,10 +36,12 @@ public class QuizService {
         return quizRepository.findById(id);
     }
     
+    @Transactional
     public Quiz save(Quiz quiz) {
         return quizRepository.save(quiz);
     }
     
+    @Transactional
     public Quiz createQuiz(Quiz quiz, Long moduleId) {
         Optional<Module> moduleOptional = moduleRepository.findById(moduleId);
         if (moduleOptional.isPresent()) {
@@ -44,6 +51,7 @@ public class QuizService {
         throw new RuntimeException("Module not found with ID: " + moduleId);
     }
     
+    @Transactional
     public Quiz updateQuiz(long id, Quiz quizDetails) {
         Optional<Quiz> quizOptional = quizRepository.findById(id);
         if (quizOptional.isPresent()) {
@@ -54,6 +62,7 @@ public class QuizService {
         throw new RuntimeException("Quiz not found with ID: " + id);
     }
     
+    @Transactional
     public void deleteById(long id) {
         quizRepository.deleteById(id);
     }

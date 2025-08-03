@@ -52,6 +52,9 @@ dependencies {
 
     // kafka dependencies
     implementation 'org.springframework.kafka:spring-kafka:3.3.0'
+
+    // sanitization
+    implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20240325.1'
 }
 
 tasks.named('test') {

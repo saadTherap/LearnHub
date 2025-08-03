@@ -2,6 +2,7 @@ package net.therap.app.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import net.therap.app.dto.ErrorResponse;
+import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,6 +107,13 @@ public class GlobalExceptionHandler {
         logger.error("Data integrity or illegal argument error: {}", ex.getMessage(), ex);
         
         return new ResponseEntity<>(errorResponse, httpStatus);
+    }
+    
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException ex, HttpServletRequest request) {
+        Locale currentLocale = LocaleContextHolder.getLocale();
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
     
     @ExceptionHandler(Exception.class)

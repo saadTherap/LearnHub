@@ -33,4 +33,7 @@ public class Module extends Persistent {
     @ManyToOne
     @JoinColumn(name = "course_id", referencedColumnName = "id", nullable = false)
     private Course course;
+    
+    @Column(name = "order_index")
+    private long orderIndex;
 }

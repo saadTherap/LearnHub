@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NonNull;
 import net.therap.app.validation.OnCreate;
 import net.therap.app.validation.OnUpdate;
+import net.therap.app.validation.htmlSanitization.SanitizeHtml;
 
 import java.io.Serializable;
 import java.util.List;
@@ -25,8 +26,9 @@ public class CourseDTO implements Serializable {
     @Size(min = 2, max = 30, message = "{validation.name.size}", groups = {OnCreate.class, OnUpdate.class})
     private String name;
     
+    @SanitizeHtml
     @NotBlank(message = "{validation.description.notblank}", groups = OnCreate.class)
-    @Size(min = 1, max = 250, message = "{validation.description.size}",  groups = {OnCreate.class, OnUpdate.class})
+    @Size(min = 1, max = 4000, message = "{validation.description.size}",  groups = {OnCreate.class, OnUpdate.class})
     private String description;
     
     private long currentRelease;

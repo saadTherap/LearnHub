@@ -2,6 +2,8 @@ package net.therap.app.helper;
 
 import net.therap.app.dto.*;
 import net.therap.app.model.*; // Import all your entity classes
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import net.therap.app.model.Module;
@@ -18,6 +20,8 @@ import static java.util.Objects.isNull;
  */
 @Component
 public class DtoHelper {
+    
+    Logger logger = LoggerFactory.getLogger(this.getClass());
     
     // --- Instructor Mapping ---
     public InstructorDTO toInstructorDTO(Instructor instructor) {
@@ -177,12 +181,14 @@ public class DtoHelper {
         });
         
         // Map all content releases (versions)
-//        if (content.getContentReleases() != null && !content.getContentReleases().isEmpty()) {
-//            dto.setContentReleases(content.getContentReleases().stream()
-//                                           .map(this::toContentReleaseDTO) // Map to ContentReleaseDTO
-//                                           .collect(Collectors.toList()));
-//        }
-        dto.setContentReleases(null);
+        
+        logger.info("Mapping content releases: {}", content.getContentReleases().size());
+        if (content.getContentReleases() != null && !content.getContentReleases().isEmpty()) {
+            dto.setContentReleases(content.getContentReleases().stream()
+                                           .map(this::toContentReleaseDTO) // Map to ContentReleaseDTO
+                                           .collect(Collectors.toList()));
+        }
+//        dto.setContentReleases(null);
         
         return dto;
     }
@@ -314,7 +320,7 @@ public class DtoHelper {
             dto.setType("SUBMISSION");
             
         } else {
-            dto.setType(null); // Fallback
+            dto.setType(null);
         }
         
         return dto;

@@ -4,6 +4,7 @@ import net.therap.app.model.Content;
 import net.therap.app.model.ContentRelease;
 import net.therap.app.model.enums.ReleaseStatus;
 import net.therap.app.repository.ContentRepository;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,11 @@ public class ContentService {
     }
     
     public Optional<Content> findContentByContentReleaseId(long contentReleaseId) {
-        return contentRepository.findContentByContentReleaseId(contentReleaseId);
+        Optional<Content> contentOptional = contentRepository.findContentByContentReleaseId(contentReleaseId);
+        
+        contentOptional.ifPresent(content -> Hibernate.initialize(content.getContentReleases()));
+        
+        return contentOptional;
     }
     
     public List<ContentRelease> findAllContents() {
@@ -66,5 +71,9 @@ public class ContentService {
     
     public boolean isPublishable(Content content) {
         return content.getCurrentContentRelease().getRelease() != ReleaseStatus.DRAFT.getReleaseNumber();
+    }
+    
+    public Content save(Content content) {
+        return contentRepository.save(content);
     }
 }

@@ -7,6 +7,7 @@ import net.therap.app.repository.LectureRepository;
 import net.therap.app.repository.ModuleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,7 @@ import java.util.Optional;
  * @since 22/7/25
  */
 @Service
+@Transactional(readOnly = true)
 public class LectureService {
     
     @Autowired
@@ -35,10 +37,12 @@ public class LectureService {
         return lectureRepository.findById(id);
     }
     
+    @Transactional
     public Lecture save(Lecture lecture) {
         return lectureRepository.save(lecture);
     }
     
+    @Transactional
     public Lecture createLecture(Lecture lecture, long contentId) {
         Optional<Content> contentOptional = contentRepository.findById(contentId);
         if (contentOptional.isPresent()) {
@@ -48,6 +52,7 @@ public class LectureService {
         throw new RuntimeException("Content not found with ID: " + contentId);
     }
     
+    @Transactional
     public Lecture updateLecture(long id, Lecture lectureDetails) {
         Optional<Lecture> lectureOptional = lectureRepository.findById(id);
         if (lectureOptional.isPresent()) {
@@ -61,6 +66,7 @@ public class LectureService {
         throw new RuntimeException("Lecture not found with ID: " + id);
     }
     
+    @Transactional
     public void deleteById(long id) {
         lectureRepository.deleteById(id);
     }
