@@ -6,6 +6,7 @@ plugins {
 
 ext {
     springBootVersion = '3.3.1'
+    springCloudVersion = '2025.0.0'
     springDependencyManagementVersion = '1.1.7'
     jjwtVersion = '0.11.5'
     lombokVersion = '1.18.32'
@@ -17,6 +18,7 @@ version = '0.1-SNAPSHOT'
 dependencyManagement {
     imports {
         mavenBom "org.springframework.boot:spring-boot-dependencies:$springBootVersion"
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
     }
 }
 
@@ -33,6 +35,7 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
     implementation "io.jsonwebtoken:jjwt-api:$jjwtVersion"
     runtimeOnly "io.jsonwebtoken:jjwt-impl:$jjwtVersion"
