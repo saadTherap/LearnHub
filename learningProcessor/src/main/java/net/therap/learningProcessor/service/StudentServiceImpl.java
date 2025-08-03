@@ -3,13 +3,12 @@ package net.therap.learningProcessor.service;
 import lombok.RequiredArgsConstructor;
 import net.therap.learningProcessor.dto.StudentDto;
 import net.therap.learningProcessor.entity.Student;
-import net.therap.learningProcessor.exception.ResourceNotFoundException;
 import net.therap.learningProcessor.mapper.StudentMapper;
 import net.therap.learningProcessor.repository.StudentRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -19,7 +18,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class StudentServiceImpl implements StudentService {
 
     private final StudentRepository studentRepository;
@@ -37,11 +35,10 @@ public class StudentServiceImpl implements StudentService {
     public StudentDto getStudentById(Long id) {
         return studentRepository.findById(id)
                 .map(studentMapper::toDto)
-                .orElseThrow(() -> new ResourceNotFoundException("error.student.notFound", id));
+                .orElse(null);
     }
 
     @Override
-    @Transactional
     public StudentDto createStudent(StudentDto dto) {
         Student entity = studentMapper.toEntity(dto);
         Student savedEntity = studentRepository.save(entity);
@@ -50,10 +47,12 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    @Transactional
     public StudentDto updateStudent(StudentDto studentDto) {
-        Student existingStudent = studentRepository.findById(studentDto.getId()).
-                orElseThrow(() -> new ResourceNotFoundException("error.student.notFound", studentDto.getId()));
+        Student existingStudent = studentRepository.findById(studentDto.getId()).orElse(null);
+
+        if(Objects.isNull(existingStudent)) {
+            return null;
+        }
 
         studentMapper.updateStudentFromDto(studentDto, existingStudent);
         Student updatedStudent= studentRepository.save(existingStudent);
@@ -63,10 +62,12 @@ public class StudentServiceImpl implements StudentService {
 
 
     @Override
-    @Transactional
     public boolean deleteStudent(Long id) {
-        Student student = studentRepository.findById(id).
-                orElseThrow(() -> new ResourceNotFoundException("error.student.notFound", id));
+        Student student = studentRepository.findById(id).orElse(null);
+
+        if(Objects.isNull(student)) {
+            return false;
+        }
 
         student.setDeleted(true);
         studentRepository.save(student);

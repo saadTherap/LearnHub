@@ -1,7 +1,9 @@
 package net.therap.learningProcessor.controller;
 
 import lombok.RequiredArgsConstructor;
+import net.therap.learningProcessor.constants.CacheConstants;
 import net.therap.learningProcessor.dto.StudentDto;
+import net.therap.learningProcessor.service.HazelcastCacheService;
 import net.therap.learningProcessor.service.StudentService;
 import net.therap.learningProcessor.validator.group.OnCreate;
 import net.therap.learningProcessor.validator.group.OnUpdate;
@@ -24,6 +26,7 @@ import java.util.Objects;
 public class StudentController {
 
     private final StudentService studentService;
+    private final HazelcastCacheService hazelcastCacheService;
 
     @GetMapping
     public ResponseEntity<List<StudentDto>> getAllStudents() {
@@ -33,11 +36,20 @@ public class StudentController {
 
     @GetMapping("/{id}")
     public ResponseEntity<StudentDto> getStudentById(@PathVariable Long id) {
-        StudentDto student = studentService.getStudentById(id);
 
-        if (Objects.isNull(student)) {
+        StudentDto cachedStudent = hazelcastCacheService.get(CacheConstants.STUDENTS, id);
+        if (cachedStudent != null) {
+            return ResponseEntity.ok(cachedStudent);
+        }
+
+        // Fetch from service/db
+        StudentDto student = studentService.getStudentById(id);
+        if (student == null) {
             return ResponseEntity.notFound().build();
         }
+
+        hazelcastCacheService.put(CacheConstants.STUDENTS, id, student);
+
         return ResponseEntity.ok(student);
     }
 
