@@ -5,6 +5,10 @@
 
     <cluster-name>learnhub</cluster-name>
     <network>
+        <public-address>192.168.0.215</public-address>
+        <interfaces enabled="true">
+        <interface>192.168.0.*</interface>
+        </interfaces>
         <port auto-increment="true">5701</port>
         <join>
             <tcp-ip enabled="true">
