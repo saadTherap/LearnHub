@@ -4,6 +4,12 @@ hazelcast-client:
   connection-strategy:
     async-start: true
     reconnect-mode: ASYNC
+    connection-retry:
+      initial-backoff-millis: 1000
+      max-backoff-millis: 20000
+      multiplier: 2
+      cluster-connect-timeout-millis: 5000
+      jitter: 0.2
 
   network:
     cluster-members:
@@ -12,6 +18,7 @@ hazelcast-client:
       - 172.16.2.115:5703
     smart-routing: true
     redo-operation: true
+    connection-timeout: 3000
 
   near-cache:
     courses:
