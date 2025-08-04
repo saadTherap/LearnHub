@@ -10,6 +10,7 @@ import net.therap.app.model.enums.ReleaseStatus;
 import net.therap.app.repository.ContentRepository;
 import net.therap.app.util.CacheInvalidationUtil;
 import org.hibernate.Hibernate;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,11 +28,13 @@ public class ContentService {
     private final ContentRepository contentRepository;
     private final DtoHelper dtoHelper;
     private final CacheInvalidationUtil cacheInvalidationUtil;
+    private final MessageSource messageSource;
     
-    public ContentService(ContentRepository contentRepository, DtoHelper dtoHelper, CacheInvalidationUtil cacheInvalidationUtil) {
+    public ContentService(ContentRepository contentRepository, DtoHelper dtoHelper, CacheInvalidationUtil cacheInvalidationUtil, MessageSource messageSource) {
         this.contentRepository = contentRepository;
         this.dtoHelper = dtoHelper;
         this.cacheInvalidationUtil = cacheInvalidationUtil;
+        this.messageSource = messageSource;
     }
     
     public List<Content> findByModuleId(long moduleId) {
@@ -104,13 +107,22 @@ public class ContentService {
     }
     
     @Transactional
-    public void delete(Content content) {
+    public Content deleteById(long id) {
+        Optional<Content> contentOptional = contentRepository.findById(id);
+        
+        if (contentOptional.isEmpty()) {
+            throw new NoSuchElementException(messageSource.getMessage("not.found.content", null, Locale.getDefault()));
+        }
+        
+        Content content = contentOptional.get();
         content.setDeleted(true);
-        contentRepository.save(content);
-
+        Content deletedContent = contentRepository.save(content);
+        
         String key = content.getId() + ":" + content.getCurrentContentRelease().getRelease();
         cacheInvalidationUtil.invalidateCacheAfterCommit(String.valueOf(content.getId()), CacheConstants.CONTENT_CATALOG, CacheConstants.CONTENT_RELEASE_LIST);
         cacheInvalidationUtil.invalidateCacheAfterCommit(key, CacheConstants.CONTENT_RELEASES);
+        
+        return deletedContent;
     }
     
     public void loadQuestions(Quiz previousQuiz) {

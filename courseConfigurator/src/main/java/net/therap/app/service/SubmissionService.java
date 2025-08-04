@@ -5,10 +5,13 @@ import net.therap.app.model.Submission;
 import net.therap.app.repository.ModuleRepository;
 import net.therap.app.repository.SubmissionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -19,11 +22,16 @@ import java.util.Optional;
 @Service
 public class SubmissionService {
     
-    @Autowired
-    private SubmissionRepository submissionRepository;
+    private final SubmissionRepository submissionRepository;
     
-    @Autowired
-    private ModuleRepository moduleRepository;
+    private final ModuleRepository moduleRepository;
+    private final MessageSource messageSource;
+    
+    public SubmissionService(SubmissionRepository submissionRepository, ModuleRepository moduleRepository, MessageSource messageSource) {
+        this.submissionRepository = submissionRepository;
+        this.moduleRepository = moduleRepository;
+        this.messageSource = messageSource;
+    }
     
     public List<Submission> findAll() {
         return submissionRepository.findAll();
@@ -39,30 +47,14 @@ public class SubmissionService {
     }
     
     @Transactional
-    public Submission createSubmission(Submission submission, Long moduleId) {
-        Optional<Module> moduleOptional = moduleRepository.findById(moduleId);
-        if (moduleOptional.isPresent()) {
-            submission.getContent().setModule(moduleOptional.get());
-            return submissionRepository.save(submission);
+    public Submission deleteById(long id) {
+        Optional<Submission> submission = submissionRepository.findById(id);
+        
+        if (submission.isPresent()) {
+            submission.get().setDeleted(true);
+            return submissionRepository.save(submission.get());
         }
-        throw new RuntimeException("Module not found with ID: " + moduleId);
-    }
-    
-    @Transactional
-    public Submission updateSubmission(long id, Submission submissionDetails) {
-        Optional<Submission> submissionOptional = submissionRepository.findById(id);
-        if (submissionOptional.isPresent()) {
-            Submission existingSubmission = submissionOptional.get();
-            existingSubmission.getContent().setTitle(submissionDetails.getContent().getTitle());
-            existingSubmission.setDescription(submissionDetails.getDescription());
-            existingSubmission.setResourceLink(submissionDetails.getResourceLink());
-            return submissionRepository.save(existingSubmission);
-        }
-        throw new RuntimeException("Submission not found with ID: " + id);
-    }
-    
-    @Transactional
-    public void deleteById(long id) {
-        submissionRepository.deleteById(id);
+        
+        throw new NoSuchElementException(messageSource.getMessage("not.found.submission", null, Locale.getDefault()));
     }
 }

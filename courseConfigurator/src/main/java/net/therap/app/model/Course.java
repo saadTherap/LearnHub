@@ -19,8 +19,6 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-@SQLDelete(sql = "UPDATE final_learnhub_course SET is_deleted = 1 WHERE id = ?")
-@Where(clause = "is_deleted = 0")
 public class Course extends Persistent {
     
     @Id

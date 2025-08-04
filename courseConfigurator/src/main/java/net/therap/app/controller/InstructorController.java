@@ -1,7 +1,6 @@
 package net.therap.app.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hazelcast.core.HazelcastInstance;
 import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.InstructorDTO;
 import net.therap.app.dto.InstructorDtoCatalog;
@@ -132,7 +131,7 @@ public class InstructorController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> softDeleteInstructor(@PathVariable long id) {
         try {
-            instructorService.deleteInstructor(id);
+            instructorService.deleteById(id);
             return ResponseEntity.noContent().build();
         } catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();

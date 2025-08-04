@@ -263,14 +263,14 @@ public class ContentController {
         ContentRelease contentRelease = contentOptional.get().getCurrentContentRelease();
         
         if (contentRelease.getRelease() == ReleaseStatus.DRAFT.getReleaseNumber()) {
-            contentReleaseService.delete(contentRelease);
+            contentReleaseService.delete(contentRelease.getId());
             contentOptional.get().setCurrentContentRelease(null);
-            contentService.delete(contentOptional.get());
+            contentService.deleteById(contentOptional.get().getId());
             
         } else {
-            contentReleaseService.delete(contentRelease);
+            contentReleaseService.delete(contentRelease.getId());
             contentOptional.get().setCurrentContentRelease(null);
-            contentService.delete(contentOptional.get());
+            contentService.deleteById(contentOptional.get().getId());
         }
         
         return ResponseEntity.ok(dtoHelper.toContentReleaseDTO(contentRelease));

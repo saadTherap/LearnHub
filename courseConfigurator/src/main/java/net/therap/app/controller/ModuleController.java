@@ -123,13 +123,7 @@ public class ModuleController {
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteModule(@PathVariable long id) {
-        if (moduleService.findById(id).isPresent()) {
-            moduleService.deleteById(id);
-        
-            return ResponseEntity.noContent().build();
-        }
-        
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<ModuleDTO> deleteModule(@PathVariable long id) {
+        return ResponseEntity.ok(dtoHelper.toModuleDtoLazy(moduleService.deleteById(id)));
     }
 }

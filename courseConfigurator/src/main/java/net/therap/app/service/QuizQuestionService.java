@@ -23,16 +23,17 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class QuizQuestionService {
     
-    @Autowired
-    private QuizQuestionRepository quizQuestionRepository;
+    private final QuizQuestionRepository quizQuestionRepository;
     
-    @Autowired
-    private MessageSource messageSource;
+    private final MessageSource messageSource;
     
-    @Autowired
-    private QuizRepository quizRepository;
-    @Autowired
-    private QuizOptionService quizOptionService;
+    private final QuizOptionService quizOptionService;
+    
+    public QuizQuestionService(QuizQuestionRepository quizQuestionRepository, MessageSource messageSource, QuizOptionService quizOptionService) {
+        this.quizQuestionRepository = quizQuestionRepository;
+        this.messageSource = messageSource;
+        this.quizOptionService = quizOptionService;
+    }
     
     public List<QuizQuestion> findAll() {
         return quizQuestionRepository.findAll();
@@ -55,7 +56,7 @@ public class QuizQuestionService {
             quizQuestionOptional.get().setDeleted(true);
             
             for (QuizOption option : quizQuestionOptional.get().getOptions()) {
-                quizOptionService.delete(option);
+                option = quizOptionService.deleteById(option.getId());
             }
             
             return quizQuestionRepository.save(quizQuestionOptional.get());

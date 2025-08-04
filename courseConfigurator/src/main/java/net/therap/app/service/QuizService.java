@@ -1,14 +1,14 @@
 package net.therap.app.service;
 
-import net.therap.app.model.Module;
 import net.therap.app.model.Quiz;
-import net.therap.app.repository.ModuleRepository;
 import net.therap.app.repository.QuizRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -21,11 +21,11 @@ public class QuizService {
     
     private final QuizRepository quizRepository;
     
-    private final ModuleRepository moduleRepository;
+    private final MessageSource messageSource;
     
-    public QuizService(ModuleRepository moduleRepository, QuizRepository quizRepository) {
-        this.moduleRepository = moduleRepository;
+    public QuizService(QuizRepository quizRepository, MessageSource messageSource) {
         this.quizRepository = quizRepository;
+        this.messageSource = messageSource;
     }
     
     public List<Quiz> findAll() {
@@ -42,28 +42,14 @@ public class QuizService {
     }
     
     @Transactional
-    public Quiz createQuiz(Quiz quiz, Long moduleId) {
-        Optional<Module> moduleOptional = moduleRepository.findById(moduleId);
-        if (moduleOptional.isPresent()) {
-            quiz.getContent().setModule(moduleOptional.get());
-            return quizRepository.save(quiz);
+    public Quiz deleteById(long id) {
+        Optional<Quiz> quiz = quizRepository.findById(id);
+        
+        if (quiz.isPresent()) {
+            quiz.get().setDeleted(true);
+            return quizRepository.save(quiz.get());
         }
-        throw new RuntimeException("Module not found with ID: " + moduleId);
-    }
-    
-    @Transactional
-    public Quiz updateQuiz(long id, Quiz quizDetails) {
-        Optional<Quiz> quizOptional = quizRepository.findById(id);
-        if (quizOptional.isPresent()) {
-            Quiz existingQuiz = quizOptional.get();
-            existingQuiz.getContent().setTitle(quizDetails.getContent().getTitle());
-            return quizRepository.save(existingQuiz);
-        }
-        throw new RuntimeException("Quiz not found with ID: " + id);
-    }
-    
-    @Transactional
-    public void deleteById(long id) {
-        quizRepository.deleteById(id);
+        
+        throw new NoSuchElementException(messageSource.getMessage("not.found.quiz", null, Locale.getDefault()));
     }
 }

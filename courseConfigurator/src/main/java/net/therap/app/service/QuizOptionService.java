@@ -5,10 +5,13 @@ import net.therap.app.model.QuizQuestion;
 import net.therap.app.repository.QuizOptionRepository;
 import net.therap.app.repository.QuizQuestionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -20,9 +23,11 @@ import java.util.Optional;
 public class QuizOptionService {
     
     private final QuizOptionRepository quizOptionRepository;
+    private final MessageSource messageSource;
     
-    public QuizOptionService(QuizOptionRepository quizOptionRepository) {
+    public QuizOptionService(QuizOptionRepository quizOptionRepository, MessageSource messageSource) {
         this.quizOptionRepository = quizOptionRepository;
+        this.messageSource = messageSource;
     }
     
     public List<QuizOption> findAll() {
@@ -39,8 +44,14 @@ public class QuizOptionService {
     }
     
     @Transactional
-    public QuizOption delete(QuizOption option) {
-        option.setDeleted(true);
-        return quizOptionRepository.save(option);
+    public QuizOption deleteById(long id) {
+        Optional<QuizOption> option = quizOptionRepository.findById(id);
+        
+        if (option.isPresent()) {
+            option.get().setDeleted(true);
+            return quizOptionRepository.save(option.get());
+        }
+        
+        throw new NoSuchElementException(messageSource.getMessage("not.found.option", null, Locale.getDefault()));
     }
 }
