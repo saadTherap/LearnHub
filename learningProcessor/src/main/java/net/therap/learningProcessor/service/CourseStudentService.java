@@ -15,6 +15,8 @@ public interface CourseStudentService {
 
     void enrollInCourse(Long studentId, Long courseId);
 
+    List<Long> getStudentIdsEnrolledInCourse(Long courseId);
+
     List<StudentDto> getStudentsEnrolledInCourse(Long courseId);
 
     List<Long> getEnrolledCourseIdsByStudent(Long studentId);

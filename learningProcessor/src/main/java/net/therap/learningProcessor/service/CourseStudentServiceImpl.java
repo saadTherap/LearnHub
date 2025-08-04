@@ -69,6 +69,16 @@ public class CourseStudentServiceImpl implements CourseStudentService {
     }
 
     @Override
+    public List<Long> getStudentIdsEnrolledInCourse(Long courseId) {
+        courseValidator.validateCourseExists(courseId);
+
+        return courseEnrollmentRepository.findByCourseId(courseId).stream()
+                .map(CourseEnrollment::getStudent)
+                .map(Student::getId)
+                .toList();
+    }
+
+    @Override
     public List<StudentDto> getStudentsEnrolledInCourse(Long courseId) {
         courseValidator.validateCourseExists(courseId);
 

@@ -36,6 +36,11 @@ public class CourseStudentController {
         return ResponseEntity.ok(courseStudentService.getStudentsEnrolledInCourse(courseId));
     }
 
+    @GetMapping("/enrollments/course/{courseId}/studentIds")
+    public ResponseEntity<List<Long>> getStudentIdsEnrolledInCourse(@PathVariable Long courseId) {
+        return ResponseEntity.ok(courseStudentService.getStudentIdsEnrolledInCourse(courseId));
+    }
+
     @GetMapping("/enrollments/student/{studentId}")
     public ResponseEntity<List<Long>> getEnrolledCourseIdsByStudent(@PathVariable Long studentId) {
         return ResponseEntity.ok(courseStudentService.getEnrolledCourseIdsByStudent(studentId));
