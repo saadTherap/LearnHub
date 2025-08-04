@@ -2,6 +2,7 @@ version: '3'
 
 services:
   hazelcast-node-1:
+    build: .
     image: anonto355/hazelcast-server:latest
     ports:
       - "5701:5701"
@@ -9,6 +10,7 @@ services:
       - HZ_PORT=5701
 
   hazelcast-node-2:
+    build: .
     image: anonto355/hazelcast-server:latest
     ports:
       - "5702:5701"
@@ -16,6 +18,7 @@ services:
       - HZ_PORT=5701
 
   hazelcast-node-3:
+    build: .
     image: anonto355/hazelcast-server:latest
     ports:
       - "5703:5701"
