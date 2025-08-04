@@ -8,7 +8,7 @@ hazelcast-client:
       initial-backoff-millis: 1000
       max-backoff-millis: 20000
       multiplier: 2
-      cluster-connect-timeout-millis: 5000
+      cluster-connect-timeout-millis: 10000
       jitter: 0.2
 
   network:
@@ -18,7 +18,7 @@ hazelcast-client:
       - 172.16.2.115:5703
     smart-routing: true
     redo-operation: true
-    connection-timeout: 3000
+    connection-timeout: 8000
 
   near-cache:
     courses:
