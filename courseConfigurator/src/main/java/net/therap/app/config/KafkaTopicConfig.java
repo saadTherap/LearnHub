@@ -12,11 +12,11 @@ import org.springframework.kafka.config.TopicBuilder;
 @Configuration
 public class KafkaTopicConfig {
 
-    @Bean
-    public NewTopic infoUpdateTopic() {
-        return TopicBuilder.name("update-info-topic")
-                .partitions(10)
-                .replicas(3)
-                .build();
-    }
+//    @Bean
+//    public NewTopic infoUpdateTopic() {
+//        return TopicBuilder.name("update-info-topic")
+//                .partitions(10)
+//                .replicas(3)
+//                .build();
+//    }
 }

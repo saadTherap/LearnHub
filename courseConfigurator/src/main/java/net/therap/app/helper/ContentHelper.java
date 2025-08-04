@@ -9,6 +9,7 @@ import net.therap.app.model.*;
 import net.therap.app.model.Module;
 import net.therap.app.model.enums.ContentType;
 import net.therap.app.model.enums.ReleaseStatus;
+import net.therap.app.service.ContentService;
 import net.therap.app.service.ModuleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+
+import static java.util.Objects.isNull;
 
 /**
  * @author gazizafor
@@ -31,11 +34,13 @@ public class ContentHelper {
     final LectureMapper lectureMapper;
     final SubmissionMapper submissionMapper;
     private final ModuleService moduleService;
+    private final ContentService contentService;
     
-    public ContentHelper(LectureMapper lectureMapper, SubmissionMapper submissionMapper, ModuleService moduleService) {
+    public ContentHelper(LectureMapper lectureMapper, SubmissionMapper submissionMapper, ModuleService moduleService, ContentService contentService) {
         this.lectureMapper = lectureMapper;
         this.submissionMapper = submissionMapper;
         this.moduleService = moduleService;
+        this.contentService = contentService;
     }
     
     public Content getContent(ContentCatalogueDTO contentCatalogueDTO) {
@@ -94,7 +99,7 @@ public class ContentHelper {
     
     public boolean isValidForPublication(ContentRelease previousRelease, ContentRelease newRelease) {
         logger.info("Checking if content release is valid, previous releaseNum is {}", previousRelease.getRelease());
-        if (previousRelease.getRelease() == ReleaseStatus.DRAFT.getReleaseNumber()) {
+        if (previousRelease.getRelease() == ReleaseStatus.DRAFT.getReleaseNumber() && !(previousRelease instanceof Quiz)) {
             return true;
         }
         
@@ -121,6 +126,12 @@ public class ContentHelper {
     }
     
     public boolean isSameQuiz(Quiz previousQuiz, Quiz newQuiz) {
+        contentService.loadQuestions(previousQuiz);
+        
+        if (isNull(newQuiz.getQuestions())) {
+            newQuiz.setQuestions(new ArrayList<>());
+        }
+        
         if (previousQuiz.getQuestions().size() != newQuiz.getQuestions().size()) {
             return false;
         }

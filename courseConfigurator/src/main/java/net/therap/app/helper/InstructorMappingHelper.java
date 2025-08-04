@@ -1,6 +1,5 @@
 package net.therap.app.helper;
 
-import net.therap.app.model.Course;
 import net.therap.app.model.Instructor;
 import net.therap.app.service.InstructorService;
 import org.springframework.beans.factory.annotation.Autowired;

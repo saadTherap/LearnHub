@@ -6,6 +6,7 @@ import net.therap.app.repository.QuizOptionRepository;
 import net.therap.app.repository.QuizQuestionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,13 +16,14 @@ import java.util.Optional;
  * @since 22/7/25
  */
 @Service
+@Transactional(readOnly = true)
 public class QuizOptionService {
     
-    @Autowired
-    private QuizOptionRepository quizOptionRepository;
+    private final QuizOptionRepository quizOptionRepository;
     
-    @Autowired
-    private QuizQuestionRepository quizQuestionRepository;
+    public QuizOptionService(QuizOptionRepository quizOptionRepository) {
+        this.quizOptionRepository = quizOptionRepository;
+    }
     
     public List<QuizOption> findAll() {
         return quizOptionRepository.findAll();
@@ -31,31 +33,14 @@ public class QuizOptionService {
         return quizOptionRepository.findById(id);
     }
     
+    @Transactional
     public QuizOption save(QuizOption quizOption) {
         return quizOptionRepository.save(quizOption);
     }
     
-    public QuizOption createQuizOption(QuizOption quizOption, Long quizQuestionId) {
-        Optional<QuizQuestion> quizQuestionOptional = quizQuestionRepository.findById(quizQuestionId);
-        if (quizQuestionOptional.isPresent()) {
-            quizOption.setQuizQuestion(quizQuestionOptional.get());
-            return quizOptionRepository.save(quizOption);
-        }
-        throw new RuntimeException("Quiz Question not found with ID: " + quizQuestionId);
-    }
-    
-    public QuizOption updateQuizOption(Long id, QuizOption quizOptionDetails) {
-        Optional<QuizOption> quizOptionOptional = quizOptionRepository.findById(id);
-        if (quizOptionOptional.isPresent()) {
-            QuizOption existingQuizOption = quizOptionOptional.get();
-            existingQuizOption.setOptionText(quizOptionDetails.getOptionText());
-            existingQuizOption.setCorrect(quizOptionDetails.isCorrect());
-            return quizOptionRepository.save(existingQuizOption);
-        }
-        throw new RuntimeException("Quiz Option not found with ID: " + id);
-    }
-    
-    public void deleteById(Long id) {
-        quizOptionRepository.deleteById(id);
+    @Transactional
+    public QuizOption delete(QuizOption option) {
+        option.setDeleted(true);
+        return quizOptionRepository.save(option);
     }
 }
