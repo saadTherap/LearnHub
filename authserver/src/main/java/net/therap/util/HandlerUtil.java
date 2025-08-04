@@ -1,7 +1,6 @@
 package net.therap.util;
 
 import net.therap.dto.ErrorResponse;
-import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 import java.util.Map;

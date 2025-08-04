@@ -3,17 +3,17 @@ package net.therap.service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
+import jakarta.annotation.PostConstruct;
 import net.therap.entity.User;
-import net.therap.util.MessageUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
+import java.security.PrivateKey;
 import java.util.Date;
 import java.util.function.Function;
+
+import static net.therap.util.JwtUtil.getPrivateKey;
 
 /**
  * @author apurboturjo
@@ -26,11 +26,17 @@ public class JwtService {
     
     private static final long REFRESH_EXPIRATION_MS = 7 * 24 * 60 * 60 * 1000L;
     
-    private final Key key;
+    @Value("${jwt.private-key-path}")
+    private String privateKeyPath;
     
-    @Autowired
-    public JwtService(MessageUtil messageUtil) {
-        key = Keys.hmacShaKeyFor(messageUtil.getMessage("token.secret.key").getBytes());
+    @Value("${jwt.public-key-path}")
+    private String publicKeyPath;
+    
+    private PrivateKey privateKey;
+    
+    @PostConstruct
+    public void loadKeys() throws Exception {
+        this.privateKey = getPrivateKey(privateKeyPath);
     }
     
     public String generateAccessToken(User user) {
@@ -40,7 +46,7 @@ public class JwtService {
                 .claim("role", user.getRole().name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_EXPIRATION_MS))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .signWith(privateKey, SignatureAlgorithm.HS256)
                 .compact();
     }
     
@@ -51,7 +57,7 @@ public class JwtService {
                 .claim("role", user.getRole().name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION_MS))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .signWith(privateKey, SignatureAlgorithm.HS256)
                 .compact();
     }
     
@@ -73,9 +79,7 @@ public class JwtService {
     }
     
     public boolean isValid(String jwtToken, UserDetails userDetails) {
-        final String username = extractEmail(jwtToken);
-        
-        return (username.equals(userDetails.getUsername())) && !isExpired(jwtToken) && userDetails.isEnabled();
+        return !isExpired(jwtToken) && userDetails.isEnabled();
     }
     
     private boolean isExpired(String jwtToken) {
@@ -84,7 +88,7 @@ public class JwtService {
     
     private Claims extractAllClaims(String jwtToken) {
         return Jwts.parserBuilder()
-                .setSigningKey(key)
+                .setSigningKey(privateKey)
                 .build()
                 .parseClaimsJws(jwtToken)
                 .getBody();

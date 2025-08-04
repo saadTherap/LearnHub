@@ -1,7 +1,10 @@
 package net.therap.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.therap.entity.interfaces.Persistence;
 import net.therap.enums.UserRole;
 

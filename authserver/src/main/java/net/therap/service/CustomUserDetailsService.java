@@ -6,14 +6,16 @@ import net.therap.exception.UserExistenceException;
 import net.therap.exception.UserPersistenceException;
 import net.therap.respository.UserRepository;
 import net.therap.util.MessageUtil;
-import org.springframework.context.MessageSource;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 
 /**
