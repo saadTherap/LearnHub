@@ -2,6 +2,7 @@ package net.therap.learningProcessor.kafka_listener;
 
 import net.therap.learningProcessor.entity.UpdateInfo;
 import net.therap.learningProcessor.service.UpdateInfoService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -19,8 +20,8 @@ public class KafkaUpdateInfoListener {
     }
 
     @KafkaListener(
-            topics = "update-info-topic",
-            groupId = "update-info-grp"
+            topics = "${kafka.topics.update-info}",
+            groupId = "${kafka.topics.update-info.grp}"
     )
     void listen(UpdateInfo updateInfo) {
         System.out.println("Received update info: " + updateInfo);
