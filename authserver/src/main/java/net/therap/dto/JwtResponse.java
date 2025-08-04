@@ -18,9 +18,7 @@ public class JwtResponse implements Serializable {
     private String tokenType = "Bearer";
     
     private String tokenMessage;
-    
-    private String publicKey;
-    
+
     public JwtResponse(String accessToken, String refreshToken) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;

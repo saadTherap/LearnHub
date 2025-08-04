@@ -2,6 +2,7 @@ package net.therap;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
  * @author apurboturjo
@@ -9,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 
 @SpringBootApplication
+@EnableFeignClients(basePackages = "net.therap.client")
 public class App {
     public static void main(String[] args) {
         SpringApplication.run(App.class, args);
