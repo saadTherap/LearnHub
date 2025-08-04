@@ -1,0 +1,29 @@
+package net.therap.learningProcessor.kafka_listener;
+
+import net.therap.learningProcessor.entity.UpdateInfo;
+import net.therap.learningProcessor.service.UpdateInfoService;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author tanvirhassan
+ * @since 4/8/25
+ */
+@Component
+public class KafkaUpdateInfoListener {
+
+    private final UpdateInfoService updateInfoService;
+
+    public KafkaUpdateInfoListener(UpdateInfoService updateInfoService) {
+        this.updateInfoService = updateInfoService;
+    }
+
+    @KafkaListener(
+            topics = "update-info-topic",
+            groupId = "update-info-grp"
+    )
+    void listen(UpdateInfo updateInfo) {
+        System.out.println("Received update info: " + updateInfo);
+        updateInfoService.invalidateCache(updateInfo);
+    }
+}
