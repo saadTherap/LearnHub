@@ -34,7 +34,7 @@ import java.util.UUID;
 public class JwtService {
     
     private static final long ACCESS_EXPIRATION_MINUTES = 15L;
-    private static final long REFRESH_EXPIRATION_MINUTES = 60L * 24 * 7; // 7 days
+    private static final long REFRESH_EXPIRATION_MINUTES = 60L * 24 * 7;
     
     @Value("${jwt.private-key-path}")
     private String privateKeyPath;
@@ -43,7 +43,7 @@ public class JwtService {
     private String publicKeyPath;
     
     @Getter
-    @Value("${jwt.key-id:default-key}")
+    @Value("${jwt.key-id.default-key}")
     private String keyId;
     
     private RSAKey rsaKey;
