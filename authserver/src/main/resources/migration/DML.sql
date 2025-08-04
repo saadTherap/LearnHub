@@ -1,0 +1,10 @@
+INSERT INTO employee (id, email, first_name, last_name) VALUES (1, 'john.doe@example.com', 'John', 'Doe');
+INSERT INTO employee (id, email, first_name, last_name) VALUES (2, 'jane.smith@example.com', 'Jane', 'Smith');
+INSERT INTO employee (id, email, first_name, last_name) VALUES (3, 'peter.jones@example.com', 'Peter', 'Jones');
+INSERT INTO employee (id, email, first_name, last_name) VALUES (4, 'alice.williams@example.com', 'Alice', 'Williams');
+INSERT INTO employee (id, email, first_name, last_name) VALUES (5, 'bob.brown@example.com', 'Bob', 'Brown');
+INSERT INTO employee (id, email, first_name, last_name) VALUES (6, 'charlie.davis@example.com', 'Charlie', 'Davis');
+INSERT INTO employee (id, email, first_name, last_name) VALUES (7, 'diana.miller@example.com', 'Diana', 'Miller');
+INSERT INTO employee (id, email, first_name, last_name) VALUES (8, 'eve.wilson@example.com', 'Eve', 'Wilson');
+INSERT INTO employee (id, email, first_name, last_name) VALUES (9, 'frank.moore@example.com', 'Frank', 'Moore');
+INSERT INTO employee (id, email, first_name, last_name) VALUES (10, 'grace.taylor@example.com', 'Grace', 'Taylor');
