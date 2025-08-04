@@ -85,7 +85,17 @@ public class ContentController {
     public ResponseEntity<ContentCatalogueDTO> getContentReleaseById(@PathVariable long contentReleaseId) {
         Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
         
-        return contentOptional.map(content -> new ResponseEntity<>(dtoHelper.toDetailedContentCatalogueDTO(content.getCurrentContentRelease()), HttpStatus.OK)).orElseGet(() -> {throw new NoSuchElementException(messageSource.getMessage("content.not.found",null,Locale.getDefault()));});
+//        return contentOptional.map(content -> new ResponseEntity<>(dtoHelper.toDetailedContentCatalogueDTO(content.getCurrentContentRelease()), HttpStatus.OK)).orElseGet(() -> {
+//            throw new NoSuchElementException(messageSource.getMessage("content.not.found", null, Locale.getDefault()));
+//        });
+        
+        return contentOptional
+                .map(content -> {
+                    ContentRelease contentRelease = content.getCurrentContentRelease();
+                    
+                    return new ResponseEntity<>(contentService.toDetailedContentCatalogueDTO(contentRelease), HttpStatus.OK);
+                })
+                .orElseThrow(() -> new NoSuchElementException(messageSource.getMessage("content.not.found",null,Locale.getDefault())));
     }
     
     @GetMapping

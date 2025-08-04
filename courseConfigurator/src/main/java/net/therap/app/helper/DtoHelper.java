@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import net.therap.app.model.Module;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -326,18 +327,9 @@ public class DtoHelper {
         return dto;
     }
     
-    public ContentCatalogueDTO toDetailedContentCatalogueDTO(ContentRelease contentRelease) {
-        ContentCatalogueDTO dto = toContentCatalogueDTO(contentRelease);
-        
-        return switch (dto.getType()) {
-            case "LECTURE" -> populateLectureCatalogDTO(dto, contentRelease);
-            case "QUIZ" -> populateQuizCatalogDTO(dto, contentRelease);
-            case "SUBMISSION" -> populateSubmissionCatalogDTO(dto, contentRelease);
-            default -> null;
-        };
-    }
     
-    private static LectureCatalogDTO populateLectureCatalogDTO(ContentCatalogueDTO contentCatalogueDTO, ContentRelease contentRelease) {
+    
+    public LectureCatalogDTO populateLectureCatalogDTO(ContentCatalogueDTO contentCatalogueDTO, ContentRelease contentRelease) {
         LectureCatalogDTO lectureCatalogDTO = new LectureCatalogDTO();
         BeanUtils.copyProperties(contentCatalogueDTO, lectureCatalogDTO);
         
@@ -350,7 +342,7 @@ public class DtoHelper {
         return lectureCatalogDTO;
     }
     
-    private static SubmissionCatalogueDTO populateSubmissionCatalogDTO(ContentCatalogueDTO contentCatalogueDTO, ContentRelease contentRelease) {
+    public SubmissionCatalogueDTO populateSubmissionCatalogDTO(ContentCatalogueDTO contentCatalogueDTO, ContentRelease contentRelease) {
         SubmissionCatalogueDTO submissionCatalogueDTO = new SubmissionCatalogueDTO();
         BeanUtils.copyProperties(contentCatalogueDTO, submissionCatalogueDTO);
         
@@ -362,7 +354,7 @@ public class DtoHelper {
         return submissionCatalogueDTO;
     }
     
-    private QuizCatalogDTO populateQuizCatalogDTO(ContentCatalogueDTO contentCatalogueDTO, ContentRelease contentRelease) {
+    public QuizCatalogDTO populateQuizCatalogDTO(ContentCatalogueDTO contentCatalogueDTO, ContentRelease contentRelease) {
         QuizCatalogDTO quizCatalogDTO = new QuizCatalogDTO();
         BeanUtils.copyProperties(contentCatalogueDTO, quizCatalogDTO);
         

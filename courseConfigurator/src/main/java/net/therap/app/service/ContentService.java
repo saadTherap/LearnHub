@@ -1,5 +1,7 @@
 package net.therap.app.service;
 
+import net.therap.app.dto.ContentCatalogueDTO;
+import net.therap.app.helper.DtoHelper;
 import net.therap.app.model.Content;
 import net.therap.app.model.ContentRelease;
 import net.therap.app.model.enums.ReleaseStatus;
@@ -21,9 +23,11 @@ import java.util.stream.Collectors;
 public class ContentService {
     
     private final ContentRepository contentRepository;
+    private final DtoHelper dtoHelper;
     
-    public ContentService(ContentRepository contentRepository) {
+    public ContentService(ContentRepository contentRepository, DtoHelper dtoHelper) {
         this.contentRepository = contentRepository;
+        this.dtoHelper = dtoHelper;
     }
     
     public List<Content> findByModuleId(long moduleId) {
@@ -72,6 +76,18 @@ public class ContentService {
     
     public boolean isPublishable(Content content) {
         return content.getCurrentContentRelease().getRelease() != ReleaseStatus.DRAFT.getReleaseNumber();
+    }
+    
+    @Transactional(readOnly = true)
+    public ContentCatalogueDTO toDetailedContentCatalogueDTO(ContentRelease contentRelease) {
+        ContentCatalogueDTO dto = dtoHelper.toContentCatalogueDTO(contentRelease);
+        
+        return switch (dto.getType()) {
+            case "LECTURE" -> dtoHelper.populateLectureCatalogDTO(dto, contentRelease);
+            case "QUIZ" -> dtoHelper.populateQuizCatalogDTO(dto, contentRelease);
+            case "SUBMISSION" -> dtoHelper.populateSubmissionCatalogDTO(dto, contentRelease);
+            default -> null;
+        };
     }
     
     @Transactional
