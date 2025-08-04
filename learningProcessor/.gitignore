@@ -1,0 +1,16 @@
+.*
+!.gitignore
+*.ipr
+*.iws
+*.iml
+*.log
+atlassian-ide-plugin.xml
+target
+build
+out
+gradle
+gradlew
+gradlew.bat
+# Ignore Gradle project-specific cache directory
+.gradle
+uploads
