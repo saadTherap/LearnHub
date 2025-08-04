@@ -11,7 +11,9 @@ public final class CacheConstants {
     public static final String COURSE_CATALOG = "courseCatalog";
     public static final String INSTRUCTORS = "instructors";
     public static final String INSTRUCTOR_CATALOG = "instructorCatalog";
-    public static final String LESSONS = "lessons";
-    public static final String SUBMISSIONS = "submissions";
     public static final String MODULES = "modules";
+    public static final String MODULES_CATALOG = "moduleCatalog";
+    public static final String CONTENT_RELEASES = "contentReleases";
+    public static final String CONTENT_RELEASE_LIST = "contentReleaseList";
+    public static final String CONTENT_CATALOG = "contentCatalog";
 }

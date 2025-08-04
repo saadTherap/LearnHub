@@ -4,6 +4,7 @@ import net.therap.app.constants.CacheConstants;
 import net.therap.app.model.Course;
 import net.therap.app.model.Module;
 import net.therap.app.repository.CourseRepository;
+import net.therap.app.util.CacheInvalidationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +27,7 @@ public class CourseService {
     @Autowired
     private ModuleService moduleService;
     @Autowired
-    private HazelcastCacheService hazelcastCacheService;
+    private CacheInvalidationUtil cacheInvalidationUtil;
     
     public List<Course> findAll() {
         return courseRepository.findAll();
@@ -40,7 +41,7 @@ public class CourseService {
     public Course save(Course course) {
         Course savedCourse = courseRepository.save(course);
 
-        invalidateCachesAfterCommit(savedCourse.getId(), CacheConstants.COURSES, CacheConstants.COURSE_CATALOG);
+        cacheInvalidationUtil.invalidateCacheAfterCommit(String.valueOf(savedCourse.getId()), CacheConstants.COURSES, CacheConstants.COURSE_CATALOG);
 
         return savedCourse;
     }
@@ -49,24 +50,7 @@ public class CourseService {
     public void deleteById(Long id) {
         courseRepository.deleteById(id);
 
-        invalidateCachesAfterCommit(id, CacheConstants.COURSES, CacheConstants.COURSE_CATALOG);
-    }
-
-    /**
-     * Invalidate multiple caches after the current transaction commits successfully.
-     *
-     * @param id The cache key to remove.
-     * @param mapNames One or more cache map names to remove the key from.
-     */
-    private void invalidateCachesAfterCommit(Long id, String... mapNames) {
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                for (String mapName : mapNames) {
-                    hazelcastCacheService.remove(mapName, id);
-                }
-            }
-        });
+        cacheInvalidationUtil.invalidateCacheAfterCommit(String.valueOf(id), CacheConstants.COURSES, CacheConstants.COURSE_CATALOG);
     }
 
     public boolean isPublishable(Course course) {

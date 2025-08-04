@@ -8,6 +8,7 @@ import net.therap.app.mapper.ModuleMapper;
 import net.therap.app.model.Course;
 import net.therap.app.model.Module;
 import net.therap.app.service.CourseService;
+import net.therap.app.service.HazelcastCacheService;
 import net.therap.app.service.ModuleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,15 +39,17 @@ public class ModuleController {
     private final ModuleMapper moduleMapper;
     private final CourseService courseService;
     private final MessageSource messageSource;
+    private final HazelcastCacheService hazelcastCacheService;
     
     @Autowired
     public ModuleController(CourseService courseService, ModuleMapper moduleMapper, DtoHelper dtoHelper,
-                            ModuleService moduleService, MessageSource messageSource) {
+                            ModuleService moduleService, MessageSource messageSource, HazelcastCacheService hazelcastCacheService) {
         this.courseService = courseService;
         this.moduleMapper = moduleMapper;
         this.dtoHelper = dtoHelper;
         this.moduleService = moduleService;
         this.messageSource = messageSource;
+        this.hazelcastCacheService = hazelcastCacheService;
     }
     
     @GetMapping

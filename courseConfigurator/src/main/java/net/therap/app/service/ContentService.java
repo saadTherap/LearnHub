@@ -1,5 +1,6 @@
 package net.therap.app.service;
 
+import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.ContentCatalogueDTO;
 import net.therap.app.helper.DtoHelper;
 import net.therap.app.model.Content;
@@ -7,6 +8,7 @@ import net.therap.app.model.ContentRelease;
 import net.therap.app.model.Quiz;
 import net.therap.app.model.enums.ReleaseStatus;
 import net.therap.app.repository.ContentRepository;
+import net.therap.app.util.CacheInvalidationUtil;
 import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,10 +26,12 @@ public class ContentService {
     
     private final ContentRepository contentRepository;
     private final DtoHelper dtoHelper;
+    private final CacheInvalidationUtil cacheInvalidationUtil;
     
-    public ContentService(ContentRepository contentRepository, DtoHelper dtoHelper) {
+    public ContentService(ContentRepository contentRepository, DtoHelper dtoHelper, CacheInvalidationUtil cacheInvalidationUtil) {
         this.contentRepository = contentRepository;
         this.dtoHelper = dtoHelper;
+        this.cacheInvalidationUtil = cacheInvalidationUtil;
     }
     
     public List<Content> findByModuleId(long moduleId) {
@@ -92,6 +96,10 @@ public class ContentService {
     
     @Transactional
     public Content save(Content content) {
+        String key = content.getId() + ":" + content.getCurrentContentRelease().getRelease();
+        cacheInvalidationUtil.invalidateCacheAfterCommit(String.valueOf(content.getId()), CacheConstants.CONTENT_CATALOG, CacheConstants.CONTENT_RELEASE_LIST);
+        cacheInvalidationUtil.invalidateCacheAfterCommit(key, CacheConstants.CONTENT_RELEASES);
+
         return contentRepository.save(content);
     }
     
@@ -99,6 +107,10 @@ public class ContentService {
     public void delete(Content content) {
         content.setDeleted(true);
         contentRepository.save(content);
+
+        String key = content.getId() + ":" + content.getCurrentContentRelease().getRelease();
+        cacheInvalidationUtil.invalidateCacheAfterCommit(String.valueOf(content.getId()), CacheConstants.CONTENT_CATALOG, CacheConstants.CONTENT_RELEASE_LIST);
+        cacheInvalidationUtil.invalidateCacheAfterCommit(key, CacheConstants.CONTENT_RELEASES);
     }
     
     public void loadQuestions(Quiz previousQuiz) {

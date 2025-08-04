@@ -1,5 +1,6 @@
 package net.therap.app.controller;
 
+import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.ContentCatalogueDTO;
 import net.therap.app.dto.ContentReleaseDTO;
 import net.therap.app.dto.LectureCatalogDTO;
@@ -54,13 +55,15 @@ public class ContentController {
     private final LectureMapper lectureMapper;
     private final SubmissionMapper submissionMapper;
     private final MessageSource messageSource;
+    private final HazelcastCacheService hazelcastCacheService;
+
     
     @Autowired
     public ContentController(ContentService contentService, DtoHelper dtoHelper, ContentHelper contentHelper,
                              LectureService lectureService, QuizService quizService,
                              SubmissionService submissionService, ContentReleaseService contentReleaseService,
                              CourseService courseService, LectureMapper lectureMapper,
-                             SubmissionMapper submissionMapper, MessageSource messageSource) {
+                             SubmissionMapper submissionMapper, MessageSource messageSource, HazelcastCacheService hazelcastCacheService) {
         this.contentService = contentService;
         this.dtoHelper = dtoHelper;
         this.contentHelper = contentHelper;
@@ -72,6 +75,7 @@ public class ContentController {
         this.lectureMapper = lectureMapper;
         this.submissionMapper = submissionMapper;
         this.messageSource = messageSource;
+        this.hazelcastCacheService = hazelcastCacheService;
     }
     
     @GetMapping("/byModule/{moduleId}")
@@ -80,24 +84,30 @@ public class ContentController {
         
         return contents.stream().map(dtoHelper::toContentCatalogueDTO).toList();
     }
-    
+
     @GetMapping("/detail/{contentReleaseId}")
     public ResponseEntity<ContentCatalogueDTO> getContentReleaseById(@PathVariable long contentReleaseId) {
+
+        ContentCatalogueDTO cached = hazelcastCacheService.get(CacheConstants.CONTENT_CATALOG, contentReleaseId);
+        if (cached != null) {
+            return ResponseEntity.ok(cached);
+        }
+
         Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
-        
-//        return contentOptional.map(content -> new ResponseEntity<>(dtoHelper.toDetailedContentCatalogueDTO(content.getCurrentContentRelease()), HttpStatus.OK)).orElseGet(() -> {
-//            throw new NoSuchElementException(messageSource.getMessage("content.not.found", null, Locale.getDefault()));
-//        });
-        
+
         return contentOptional
                 .map(content -> {
                     ContentRelease contentRelease = content.getCurrentContentRelease();
-                    
-                    return new ResponseEntity<>(contentService.toDetailedContentCatalogueDTO(contentRelease), HttpStatus.OK);
+                    ContentCatalogueDTO dto = contentService.toDetailedContentCatalogueDTO(contentRelease);
+
+                    hazelcastCacheService.put(CacheConstants.CONTENT_CATALOG, contentReleaseId, dto);
+
+                    return new ResponseEntity<>(dto, HttpStatus.OK);
                 })
-                .orElseThrow(() -> new NoSuchElementException(messageSource.getMessage("content.not.found",null,Locale.getDefault())));
+                .orElseThrow(() -> new NoSuchElementException(messageSource.getMessage("content.not.found", null, Locale.getDefault())));
     }
-    
+
+
     @GetMapping
     public ResponseEntity<List<ContentReleaseDTO>> getAllContentReleases() {
         logger.info("Fetching all content releases");
@@ -106,19 +116,38 @@ public class ContentController {
         return new ResponseEntity<>(contentReleases.stream().map(dtoHelper::toContentReleaseDTO).toList(),
                                     HttpStatus.OK);
     }
-    
+
     @GetMapping("/{contentReleaseId}/releases")
     public ResponseEntity<List<ContentReleaseDTO>> getAllContentReleases(@PathVariable long contentReleaseId) {
+        List<ContentReleaseDTO> cached = hazelcastCacheService.get(CacheConstants.CONTENT_RELEASE_LIST, contentReleaseId);
+        if (cached != null) {
+            return ResponseEntity.ok(cached);
+        }
+
         List<ContentRelease> contentReleases = contentService.findAllReleases(contentReleaseId);
-        
-        return new ResponseEntity<>(contentReleases.stream().map(dtoHelper::toContentReleaseDTO).toList(),
-                                    HttpStatus.OK);
+        List<ContentReleaseDTO> dtos = contentReleases.stream()
+                .map(dtoHelper::toContentReleaseDTO)
+                .toList();
+
+        hazelcastCacheService.put(CacheConstants.CONTENT_RELEASE_LIST, contentReleaseId, dtos);
+        return ResponseEntity.ok(dtos);
     }
-    
+
     @GetMapping("/{contentReleaseId}/releases/{releaseNum}")
     public ResponseEntity<ContentReleaseDTO> getSpecificContentRelease(@PathVariable long contentReleaseId,
                                                                        @PathVariable long releaseNum) {
-        return ResponseEntity.ok(dtoHelper.toContentReleaseDTO(contentService.findSpecificContentRelease(contentReleaseId, releaseNum)));
+        String key = contentReleaseId + ":" + releaseNum;
+        ContentReleaseDTO cached = hazelcastCacheService.get(CacheConstants.CONTENT_RELEASES, key);
+        if (cached != null) {
+            return ResponseEntity.ok(cached);
+        }
+
+        ContentRelease contentRelease = contentService.findSpecificContentRelease(contentReleaseId, releaseNum);
+        ContentReleaseDTO dto = dtoHelper.toContentReleaseDTO(contentRelease);
+
+        hazelcastCacheService.put(CacheConstants.CONTENT_RELEASES, key, dto);
+
+        return ResponseEntity.ok(dto);
     }
     
     @PostMapping("/draft")
