@@ -10,6 +10,8 @@ import net.therap.learningProcessor.entity.CourseEnrollment;
 import net.therap.learningProcessor.entity.Student;
 import net.therap.learningProcessor.entity.StudentContentCompletion;
 import net.therap.learningProcessor.entity.StudentSubmission;
+import net.therap.learningProcessor.exception.ResourceAlreadyExistsException;
+import net.therap.learningProcessor.exception.ResourceNotFoundException;
 import net.therap.learningProcessor.mapper.StudentCourseProgressMapper;
 import net.therap.learningProcessor.mapper.StudentMapper;
 import net.therap.learningProcessor.repository.CourseEnrollmentRepository;
@@ -17,7 +19,10 @@ import net.therap.learningProcessor.repository.StudentContentCompletionRepositor
 import net.therap.learningProcessor.repository.StudentRepository;
 import net.therap.learningProcessor.repository.StudentSubmissionRepository;
 import net.therap.learningProcessor.util.CourseProgressUtil;
+import net.therap.learningProcessor.validator.CourseValidator;
+import net.therap.learningProcessor.validator.StudentValidator;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +33,7 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CourseStudentServiceImpl implements CourseStudentService {
 
     private final StudentRepository studentRepository;
@@ -37,16 +43,23 @@ public class CourseStudentServiceImpl implements CourseStudentService {
 
     private final CourseClient courseClient;
 
+    private final CourseValidator courseValidator;
+    private final StudentValidator studentValidator;
+
     private final StudentMapper studentMapper;
     private final StudentCourseProgressMapper studentCourseProgressMapper;
 
     @Override
+    @Transactional
     public void enrollInCourse(Long studentId, Long courseId) {
         if (courseEnrollmentRepository.existsByStudentIdAndCourseId(studentId, courseId)) {
-            return;
+            throw new ResourceAlreadyExistsException("error.enrollment.alreadyExists", studentId, courseId);
         }
 
-        Student student = studentRepository.findById(studentId).orElseThrow();
+        Student student = studentRepository.findById(studentId).
+                orElseThrow(() -> new ResourceNotFoundException("error.student.notFound", studentId));
+
+        courseValidator.validateCourseExists(courseId);
 
         CourseEnrollment enrollment = new CourseEnrollment();
         enrollment.setStudent(student);
@@ -57,6 +70,8 @@ public class CourseStudentServiceImpl implements CourseStudentService {
 
     @Override
     public List<StudentDto> getStudentsEnrolledInCourse(Long courseId) {
+        courseValidator.validateCourseExists(courseId);
+
         return courseEnrollmentRepository.findByCourseId(courseId).stream()
                 .map(CourseEnrollment::getStudent)
                 .map(studentMapper::toDto)
@@ -65,14 +80,20 @@ public class CourseStudentServiceImpl implements CourseStudentService {
 
     @Override
     public List<Long> getEnrolledCourseIdsByStudent(Long studentId) {
+        studentValidator.validateStudentExists(studentId);
+
         return courseEnrollmentRepository.findByStudentId(studentId).stream()
                 .map(CourseEnrollment::getCourseId)
                 .toList();
     }
 
     @Override
+    @Transactional
     public boolean completeContent(Long studentId, Long contentId) {
-        Student student = studentRepository.findById(studentId).orElseThrow();
+        Student student = studentRepository.findById(studentId).
+                orElseThrow(() -> new ResourceNotFoundException("error.student.notFound", studentId));
+
+        courseValidator.validateContentExists(contentId);
 
         StudentContentCompletion completion = new StudentContentCompletion();
         completion.setContentId(contentId);
@@ -84,7 +105,11 @@ public class CourseStudentServiceImpl implements CourseStudentService {
     }
 
     @Override
+    @Transactional
     public void submitAssignment(Long studentId, Long contentId, String downloadUrl) {
+        studentValidator.validateStudentExists(studentId);
+        courseValidator.validateContentExists(contentId);
+
         StudentSubmission submission = studentSubmissionRepository.findByStudentIdAndContentId(studentId, contentId)
                 .orElseGet(StudentSubmission::new);
 
@@ -100,11 +125,16 @@ public class CourseStudentServiceImpl implements CourseStudentService {
 
     @Override
     public List<StudentContentCompletionDto> getContentStatusByStudentId(Long studentId) {
+        studentValidator.validateStudentExists(studentId);
+
         return studentContentCompletionRepository.getStudentContentStatusByStudentId(studentId);
     }
 
     @Override
     public CourseDetailWithProgressDto getCourseDetailWithProgress(Long studentId, Long courseId) {
+        studentValidator.validateStudentExists(studentId);
+        courseValidator.validateCourseExists(courseId);
+
         CourseDetailWithProgressDto courseDetail = courseClient.getCourseDetail(courseId);
         List<StudentContentCompletionDto> completedContentDtos = studentContentCompletionRepository.getStudentContentStatusByStudentId(studentId);
 
@@ -115,6 +145,9 @@ public class CourseStudentServiceImpl implements CourseStudentService {
 
     @Override
     public StudentCourseProgressDto getStudentCourseProgress(Long studentId, Long courseId) {
+        studentValidator.validateStudentExists(studentId);
+        courseValidator.validateCourseExists(courseId);
+
         Student student = studentRepository.findById(studentId).orElseThrow();
         CourseDetailWithProgressDto courseDetail = courseClient.getCourseDetail(courseId);
 
@@ -123,6 +156,8 @@ public class CourseStudentServiceImpl implements CourseStudentService {
 
     @Override
     public List<StudentCourseProgressDto> getAllStudentProgressForCourse(Long courseId) {
+        courseValidator.validateCourseExists(courseId);
+
         CourseDetailWithProgressDto courseDetail = courseClient.getCourseDetail(courseId);
         List<Student> students = getEnrolledStudents(courseId);
 
@@ -138,7 +173,6 @@ public class CourseStudentServiceImpl implements CourseStudentService {
     }
 
     private StudentCourseProgressDto createStudentCourseProgressDto(Student student, CourseDetailWithProgressDto courseDetail) {
-
         List<StudentContentCompletionDto> completedContentDtos = studentContentCompletionRepository.getStudentContentStatusByStudentId(student.getId());
 
         double progress = CourseProgressUtil.calculateCourseProgress(completedContentDtos, courseDetail.getModules());
