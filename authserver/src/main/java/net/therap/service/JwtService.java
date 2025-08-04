@@ -4,14 +4,17 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.entity.User;
 import net.therap.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.interfaces.RSAPrivateKey;
@@ -26,11 +29,12 @@ import java.util.UUID;
  * @since 7/27/25
  */
 @Slf4j
+@Getter
 @Service
 public class JwtService {
     
     private static final long ACCESS_EXPIRATION_MINUTES = 15L;
-    private static final long REFRESH_EXPIRATION_MINUTES = 15L * 7;
+    private static final long REFRESH_EXPIRATION_MINUTES = 60L * 24 * 7; // 7 days
     
     @Value("${jwt.private-key-path}")
     private String privateKeyPath;
@@ -38,7 +42,8 @@ public class JwtService {
     @Value("${jwt.public-key-path}")
     private String publicKeyPath;
     
-    @Value("${jwt.key-id.default-key}")
+    @Getter
+    @Value("${jwt.key-id:default-key}")
     private String keyId;
     
     private RSAKey rsaKey;
@@ -70,8 +75,84 @@ public class JwtService {
         return rsaKey.toPublicJWK().toJSONString();
     }
     
-    public String getKeyId() {
-        return keyId;
+    public String extractEmail(String token) {
+        try {
+            JWTClaimsSet claims = parseAndValidateToken(token);
+            
+            return claims.getSubject();
+            
+        } catch (Exception e) {
+            log.error("Failed to extract email from token", e);
+            throw new RuntimeException("Invalid token", e);
+        }
+    }
+    
+    public Long extractUserId(String token) {
+        try {
+            JWTClaimsSet claims = parseAndValidateToken(token);
+            
+            return claims.getLongClaim("userId");
+            
+        } catch (Exception e) {
+            log.error("Failed to extract user ID from token", e);
+            throw new RuntimeException("Invalid token", e);
+        }
+    }
+    
+    public String extractRole(String token) {
+        try {
+            JWTClaimsSet claims = parseAndValidateToken(token);
+            
+            return claims.getStringClaim("role");
+            
+        } catch (Exception e) {
+            log.error("Failed to extract role from token", e);
+            throw new RuntimeException("Invalid token", e);
+        }
+    }
+    
+    public Date extractExpiration(String token) {
+        try {
+            JWTClaimsSet claims = parseAndValidateToken(token);
+            
+            return claims.getExpirationTime();
+            
+        } catch (Exception e) {
+            log.error("Failed to extract expiration from token", e);
+            throw new RuntimeException("Invalid token", e);
+        }
+    }
+    
+    public boolean isValid(String token, UserDetails userDetails) {
+        try {
+            String email = extractEmail(token);
+            return email.equals(userDetails.getUsername()) &&
+                    !isExpired(token) &&
+                    userDetails.isEnabled();
+        } catch (Exception e) {
+            log.debug("Token validation failed: {}", e.getMessage());
+            return false;
+        }
+    }
+    
+    private boolean isExpired(String token) {
+        try {
+            Date expiration = extractExpiration(token);
+            return expiration.before(new Date());
+        } catch (Exception e) {
+            return true;
+        }
+    }
+    
+    private JWTClaimsSet parseAndValidateToken(String token) throws Exception {
+        SignedJWT signedJWT = SignedJWT.parse(token);
+        
+        RSASSAVerifier verifier = new RSASSAVerifier(rsaKey.toRSAPublicKey());
+        if (!signedJWT.verify(verifier)) {
+            throw new RuntimeException("Token signature verification failed");
+        }
+        
+        return signedJWT.getJWTClaimsSet();
     }
     
     private String generateToken(User user, long expirationMinutes, String tokenType) {
