@@ -19,6 +19,7 @@ import lombok.Setter;
 @PrimaryKeyJoinColumn(name = "id")
 public class Submission extends ContentRelease {
     
+    @Lob
     @Column(nullable = false, length = 255)
     private String description;
     

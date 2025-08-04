@@ -3,6 +3,7 @@ package net.therap.app.service;
 import net.therap.app.model.Content;
 import net.therap.app.model.ContentRelease;
 import net.therap.app.model.enums.ReleaseStatus;
+import net.therap.app.repository.ContentReleaseRepository;
 import net.therap.app.repository.ContentRepository;
 import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
@@ -73,7 +74,14 @@ public class ContentService {
         return content.getCurrentContentRelease().getRelease() != ReleaseStatus.DRAFT.getReleaseNumber();
     }
     
+    @Transactional
     public Content save(Content content) {
         return contentRepository.save(content);
+    }
+    
+    @Transactional
+    public void delete(Content content) {
+        content.setDeleted(true);
+        contentRepository.save(content);
     }
 }

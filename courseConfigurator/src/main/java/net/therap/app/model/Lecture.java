@@ -20,6 +20,7 @@ import lombok.Setter;
 @DiscriminatorValue("LECTURE")
 public class Lecture extends ContentRelease {
     
+    @Lob
     @Column(nullable = false)
     private String description;
     
