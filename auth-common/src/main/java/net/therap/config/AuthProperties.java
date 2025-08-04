@@ -13,7 +13,8 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "auth")
 public class AuthProperties {
     
-    private int accessTokenMaxAge = 900;
+    private int accessTokenMaxAge = 54000L;
+    private int refreshTokenMaxAge = 378000L;
     private String publicKeyDir = "keys";
     private boolean secureCookies = true;
 }

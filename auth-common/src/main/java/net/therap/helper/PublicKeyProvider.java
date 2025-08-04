@@ -65,7 +65,6 @@ public class PublicKeyProvider {
         RSAKey rsaKey = RSAKey.parse(jwkJson);
         RSAPublicKey publicKey = rsaKey.toRSAPublicKey();
         
-        // Cache to file
         Files.createDirectories(keyDir);
         Files.writeString(keyPath, jwkJson);
         

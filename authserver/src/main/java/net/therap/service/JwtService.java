@@ -1,30 +1,36 @@
 package net.therap.service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import net.therap.entity.User;
+import net.therap.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.security.PrivateKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.function.Function;
-
-import static net.therap.util.JwtUtil.getPrivateKey;
+import java.util.UUID;
 
 /**
  * @author apurboturjo
  * @since 7/27/25
  */
+@Slf4j
 @Service
 public class JwtService {
     
-    private static final long ACCESS_EXPIRATION_MS = 86400000;
-    
-    private static final long REFRESH_EXPIRATION_MS = 7 * 24 * 60 * 60 * 1000L;
+    private static final long ACCESS_EXPIRATION_MINUTES = 15L;
+    private static final long REFRESH_EXPIRATION_MINUTES = 15L * 7;
     
     @Value("${jwt.private-key-path}")
     private String privateKeyPath;
@@ -32,65 +38,71 @@ public class JwtService {
     @Value("${jwt.public-key-path}")
     private String publicKeyPath;
     
-    private PrivateKey privateKey;
+    @Value("${jwt.key-id.default-key}")
+    private String keyId;
+    
+    private RSAKey rsaKey;
+    private JWSSigner signer;
     
     @PostConstruct
     public void loadKeys() throws Exception {
-        this.privateKey = getPrivateKey(privateKeyPath);
+        RSAPrivateKey privateKey = JwtUtil.getPrivateKey(privateKeyPath);
+        RSAPublicKey publicKey = JwtUtil.getPublicKey(publicKeyPath);
+        
+        this.rsaKey = new RSAKey.Builder(publicKey)
+                .privateKey(privateKey)
+                .keyID(keyId)
+                .build();
+        
+        this.signer = new RSASSASigner(privateKey);
+        log.info("JWT keys loaded successfully with key ID: {}", keyId);
     }
     
     public String generateAccessToken(User user) {
-        return Jwts.builder()
-                .setSubject(user.getEmail())
-                .claim("userId", user.getId())
-                .claim("role", user.getRole().name())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_EXPIRATION_MS))
-                .signWith(privateKey, SignatureAlgorithm.HS256)
-                .compact();
+        return generateToken(user, ACCESS_EXPIRATION_MINUTES, "access");
     }
     
     public String generateRefreshToken(User user) {
-        return Jwts.builder()
-                .setSubject(user.getEmail())
-                .claim("userId", user.getId())
-                .claim("role", user.getRole().name())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION_MS))
-                .signWith(privateKey, SignatureAlgorithm.HS256)
-                .compact();
+        return generateToken(user, REFRESH_EXPIRATION_MINUTES, "refresh");
     }
     
-    public <T> T extractClaim(String jwtToken, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(jwtToken);
-        return claimsResolver.apply(claims);
+    public String getPublicKeyAsJWK() {
+        return rsaKey.toPublicJWK().toJSONString();
     }
     
-    public Long extractUserId(String jwtToken) {
-        return extractClaim(jwtToken, claims -> claims.get("userId", Long.class));
+    public String getKeyId() {
+        return keyId;
     }
     
-    public String extractEmail(String jwtToken) {
-        return extractClaim(jwtToken, Claims::getSubject);
-    }
-    
-    public Date extractExpiration(String jwtToken) {
-        return extractClaim(jwtToken, Claims::getExpiration);
-    }
-    
-    public boolean isValid(String jwtToken, UserDetails userDetails) {
-        return !isExpired(jwtToken) && userDetails.isEnabled();
-    }
-    
-    private boolean isExpired(String jwtToken) {
-        return extractExpiration(jwtToken).before(new Date());
-    }
-    
-    private Claims extractAllClaims(String jwtToken) {
-        return Jwts.parserBuilder()
-                .setSigningKey(privateKey)
-                .build()
-                .parseClaimsJws(jwtToken)
-                .getBody();
+    private String generateToken(User user, long expirationMinutes, String tokenType) {
+        try {
+            Instant now = Instant.now();
+            Instant expiration = now.plus(expirationMinutes, ChronoUnit.MINUTES);
+            
+            JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                    .subject(user.getEmail())
+                    .claim("userId", user.getId())
+                    .claim("role", user.getRole().name())
+                    .claim("tokenType", tokenType)
+                    .issuer("therap-auth-server")
+                    .audience("therap-clients")
+                    .issueTime(Date.from(now))
+                    .expirationTime(Date.from(expiration))
+                    .jwtID(UUID.randomUUID().toString())
+                    .build();
+            
+            JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256)
+                    .keyID(keyId)
+                    .build();
+            
+            SignedJWT signedJWT = new SignedJWT(header, claims);
+            signedJWT.sign(signer);
+            
+            return signedJWT.serialize();
+            
+        } catch (Exception e) {
+            log.error("Failed to generate {} token for user: {}", tokenType, user.getEmail(), e);
+            throw new RuntimeException("Token generation failed", e);
+        }
     }
 }

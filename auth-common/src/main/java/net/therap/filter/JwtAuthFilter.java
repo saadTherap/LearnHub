@@ -49,12 +49,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         
         if (Objects.isNull(accessToken)) {
             sendUnauthorizedError(response, "Access token missing");
+            
             return;
         }
         
         try {
             JWTClaimsSet claims = tokenValidator.validate(accessToken);
-            log.debug("Token validated successfully for subject: {}", claims.getSubject());
+            log.debug("Token validated successfully for user: {}", claims.getSubject());
             
             filterChain.doFilter(request, response);
             
@@ -63,6 +64,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             
             if (Objects.nonNull(refreshToken)) {
                 handleTokenRefresh(request, response, filterChain, refreshToken);
+                
             } else {
                 sendUnauthorizedError(response, "Token invalid");
             }
@@ -72,7 +74,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private void handleTokenRefresh(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain,
-                                    String refreshToken) throws ServletException, IOException {
+                                    String refreshToken) throws IOException {
         try {
             String newAccessToken = tokenRefresherService.refresh(refreshToken);
             setAccessTokenCookie(response, newAccessToken);
@@ -87,11 +89,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
     
     private void setAccessTokenCookie(HttpServletResponse response, String token) {
-        Cookie cookie = new Cookie("access_token", token);
+        Cookie cookie = new Cookie(ACCESS_TOKEN_COOKIE_KEY, token);
         cookie.setHttpOnly(true);
         cookie.setSecure(authProperties.isSecureCookies());
         cookie.setPath("/");
-        cookie.setMaxAge(authProperties.getAccessTokenMaxAge());
+        cookie.setMaxAge(authProperties.getRefreshTokenMaxAge());
         
         response.addCookie(cookie);
     }

@@ -8,13 +8,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
-
-import static java.nio.file.Files.readAllBytes;
 
 
 /**
@@ -29,30 +27,27 @@ public class JwtUtil {
     public static UserRole toSystemFormatUserRole(String role) {
         try {
             return UserRole.valueOf(role.toUpperCase());
-        
         } catch (IllegalArgumentException e) {
             throw new InvalidRoleSpecifiedException(USER_ROLE_ERROR + ": " + role);
         }
     }
     
-    public static PrivateKey getPrivateKey(String path) throws Exception {
+    public static RSAPrivateKey getPrivateKey(String path) throws Exception {
         String key = sanitizeKeyString(path);
-        
         byte[] keyBytes = Base64.getDecoder().decode(key);
         PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
         KeyFactory kf = KeyFactory.getInstance("RSA");
         
-        return kf.generatePrivate(spec);
+        return (RSAPrivateKey) kf.generatePrivate(spec);
     }
     
-    public static String getPublicKey(String path) throws Exception {
-        byte[] keyBytes = readAllBytes(Paths.get(path));
-        
+    public static RSAPublicKey getPublicKey(String path) throws Exception {
+        String key = sanitizeKeyString(path);
+        byte[] keyBytes = Base64.getDecoder().decode(key);
         X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
         KeyFactory kf = KeyFactory.getInstance("RSA");
-        PublicKey publicKey = kf.generatePublic(spec);
         
-        return Base64.getEncoder().encodeToString(publicKey.getEncoded());
+        return (RSAPublicKey) kf.generatePublic(spec);
     }
     
     private static String sanitizeKeyString(String path) throws IOException {
