@@ -1,7 +1,6 @@
 package net.therap.learningProcessor.entity;
 
 import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
 
 /**
  * @author tanvirhassan

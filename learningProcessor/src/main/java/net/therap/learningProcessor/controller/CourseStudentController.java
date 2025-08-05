@@ -5,7 +5,10 @@ import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
 import net.therap.learningProcessor.dto.StudentContentCompletionDto;
 import net.therap.learningProcessor.dto.StudentCourseProgressDto;
 import net.therap.learningProcessor.dto.StudentDto;
+import net.therap.learningProcessor.entity.EnrollmentNotification;
+import net.therap.learningProcessor.eum.NotificationType;
 import net.therap.learningProcessor.service.CourseStudentService;
+import net.therap.learningProcessor.service.NotificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,11 +25,19 @@ import java.util.List;
 public class CourseStudentController {
 
     private final CourseStudentService courseStudentService;
+    private final NotificationService notificationService;
 
     @PostMapping("/enrollments")
     public ResponseEntity<Void> enrollInCourse(@RequestParam Long studentId,
                                                @RequestParam Long courseId) {
         courseStudentService.enrollInCourse(studentId, courseId);
+
+        EnrollmentNotification notification = new EnrollmentNotification();
+        notification.setType(NotificationType.ENROLLMENT);
+        notification.setTitle("Test enrollment");
+        notification.setId(studentId);
+
+        notificationService.sendNotification(notification);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

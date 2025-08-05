@@ -29,15 +29,14 @@ import java.util.Objects;
 public abstract class Notification {
 
     private Long id;
-
     private String title;
-
     private NotificationType type;
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Notification that = (Notification) o;
+
         return Objects.equals(id, that.id);
     }
 
