@@ -2,15 +2,17 @@ package net.therap.learningProcessor.controller;
 
 import lombok.RequiredArgsConstructor;
 import net.therap.learningProcessor.client.CourseClient;
+import net.therap.learningProcessor.client.FileClient;
 import net.therap.learningProcessor.dto.CourseCatalogDto;
 import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
 import net.therap.learningProcessor.dto.ModuleWithProgressDto;
+import net.therap.learningProcessor.dto.StoredFileDto;
 import net.therap.learningProcessor.dto.content.BaseContentDto;
 import net.therap.learningProcessor.dto.content.ContentDetailDto;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -24,6 +26,7 @@ import java.util.List;
 public class TestController {
 
     private final CourseClient courseClient;
+    private final FileClient fileClient;
 
     @GetMapping("/catalogs")
     public List<CourseCatalogDto> getCourseCatalog() {
@@ -53,5 +56,28 @@ public class TestController {
     @GetMapping("/contents/detail/{contentId}")
     public ContentDetailDto testContentDetail(@PathVariable Long contentId) {
         return courseClient.getContentDetail(contentId);
+    }
+
+
+    // FileClient endpoints
+
+    @GetMapping("/files")
+    public List<StoredFileDto> getAllFiles() {
+        return fileClient.getAllFiles();
+    }
+
+    @GetMapping("/files/{id}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable Long id) {
+        return fileClient.downloadFile(id);
+    }
+
+    @DeleteMapping("/files/{id}")
+    public void deleteFile(@PathVariable Long id) {
+        fileClient.deleteFile(id);
+    }
+
+    @PostMapping("/files/upload")
+    public StoredFileDto uploadFile(@RequestParam("file") MultipartFile file) {
+        return fileClient.uploadFile(file);
     }
 }
