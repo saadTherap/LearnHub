@@ -33,19 +33,13 @@ import static net.therap.util.JwtUtil.toSystemFormatUserRole;
 @Slf4j // Using Lombok for logging
 public class AuthServiceImpl implements AuthService {
     
-    private final PasswordEncoder passwordEncoder;
-    
-    private final AuthenticationManager authManager;
-    
     private final JwtService jwtService;
-    
-    private final CustomUserDetailsService customUserDetailsService;
-    
-    private final EmailService emailService;
-    
-    private final VerificationTokenRepository verificationTokenRepository;
-    
     private final MessageUtil messageUtil;
+    private final EmailService emailService;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authManager;
+    private final CustomUserDetailsService customUserDetailsService;
+    private final VerificationTokenRepository verificationTokenRepository;
     
     @Override
     public JwtResponse register(RegisterRequest request) {
