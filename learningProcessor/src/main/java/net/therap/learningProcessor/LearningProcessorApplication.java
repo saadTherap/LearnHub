@@ -5,13 +5,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration;
 import org.springframework.boot.autoconfigure.hazelcast.HazelcastAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(exclude = {
         CacheAutoConfiguration.class,
         HazelcastAutoConfiguration.class
-//        HazelcastHealthContributorAutoConfiguration.class
 })
-@EnableFeignClients(basePackages = "net.therap.learningProcessor.client")
+//@EnableFeignClients(basePackages = "net.therap.learningProcessor.client")
+@EnableScheduling
 public class LearningProcessorApplication {
 
     public static void main(String[] args) {
