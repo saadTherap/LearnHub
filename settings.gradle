@@ -1,2 +1,2 @@
 rootProject.name = 'LearnHub'
-include('authserver', 'auth-common')
+include('authserver', 'auth-common', 'courseConfigurator')
