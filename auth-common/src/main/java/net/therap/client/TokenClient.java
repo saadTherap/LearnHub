@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
  * @since 8/3/25
  */
 @Component
-@FeignClient(name = "tokenClient", url = "https://server.local/api/auth")
+@FeignClient(name = "tokenClient", url = "https://server.local/authenticator/api/auth/refresh")
 public interface TokenClient {
     
-    @PostMapping(value = "/refresh", consumes = "application/json")
+    @PostMapping(consumes = "application/json")
     TokenResponseDto refreshToken(@RequestBody RefreshTokenRequestDto requestDto);
 }
