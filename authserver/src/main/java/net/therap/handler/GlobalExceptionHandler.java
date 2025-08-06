@@ -3,7 +3,7 @@ package net.therap.handler;
 import lombok.RequiredArgsConstructor;
 import net.therap.dto.ErrorResponse;
 import net.therap.exception.InvalidRoleSpecifiedException;
-import net.therap.exception.RegistrationTokenVerificationException;
+import net.therap.exception.TokenVerificationException;
 import net.therap.exception.UserExistenceException;
 import net.therap.exception.UserPersistenceException;
 import net.therap.util.MessageUtil;
@@ -72,8 +72,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
     
-    @ExceptionHandler(RegistrationTokenVerificationException.class)
-    public ResponseEntity<ErrorResponse> handleRegistrationTokenVerification(RegistrationTokenVerificationException ex) {
+    @ExceptionHandler(TokenVerificationException.class)
+    public ResponseEntity<ErrorResponse> handleRegistrationTokenVerification(TokenVerificationException ex) {
         ErrorResponse response = buildErrorResponse(
                 messageUtil.getMessage("err.verify.token.failed"),
                 Map.of(ERROR, ex.getMessage())

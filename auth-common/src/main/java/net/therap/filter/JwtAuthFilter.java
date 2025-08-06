@@ -41,15 +41,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (!StringUtils.hasText(token)) {
             log.debug("No JWT token found in request");
             sendUnauthorizedError(response, "Authentication token required");
+            
             return;
         }
         
         try {
             JWTClaimsSet claims = tokenValidator.validate(token);
             log.debug("Token validated successfully for user: {}", claims.getSubject());
-            
-            // Optionally, you can set user context here for downstream services
-            // SecurityContextHolder.getContext().setAuthentication(createAuthentication(claims));
             
             filterChain.doFilter(request, response);
             
@@ -59,10 +57,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
     }
     
-    /**
-     * Extract JWT token from Authorization header
-     * Supports both "Bearer <token>" format and direct token
-     */
     private String extractTokenFromRequest(HttpServletRequest request) {
         String authHeader = request.getHeader(AUTHORIZATION_HEADER);
         
@@ -70,7 +64,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if (authHeader.startsWith(BEARER_PREFIX)) {
                 return authHeader.substring(BEARER_PREFIX.length());
             }
-            // If header doesn't start with "Bearer ", treat the entire header as token
+            
             return authHeader;
         }
         
@@ -83,14 +77,4 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         response.setContentType("application/json");
         response.getWriter().write("{\"error\": \"Authentication required\", \"message\": \"" + message + "\"}");
     }
-    
-    // Uncomment and implement if you need to set Spring Security context
-    /*
-    private Authentication createAuthentication(JWTClaimsSet claims) {
-        // Create your authentication object based on claims
-        // Example:
-        // return new JwtAuthenticationToken(claims.getSubject(), claims);
-        return null;
-    }
-    */
 }
