@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * @since 8/3/25
  */
 @Component
-@FeignClient(name = "publicKeyClient", url = "https://server.local/api/auth")
+@FeignClient(name = "publicKeyClient", url = "https://server.local/authenticator")
 public interface PublicKeyClient {
     
     @GetMapping("/pk")
