@@ -10,6 +10,7 @@ import net.therap.learningProcessor.dto.StoredFileDto;
 import net.therap.learningProcessor.dto.content.BaseContentDto;
 import net.therap.learningProcessor.dto.content.ContentDetailDto;
 import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -76,7 +77,10 @@ public class TestController {
         fileClient.deleteFile(id);
     }
 
-    @PostMapping("/files/upload")
+    @PostMapping(
+            value = "/files/upload",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
     public StoredFileDto uploadFile(@RequestParam("file") MultipartFile file) {
         return fileClient.uploadFile(file);
     }

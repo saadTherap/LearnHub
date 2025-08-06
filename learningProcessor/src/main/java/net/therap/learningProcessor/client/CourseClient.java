@@ -15,7 +15,7 @@ import java.util.List;
  * @author avidewan
  * @since 7/27/25
  */
-@FeignClient(name = "course-configurator", url = "/myApp/api")
+@FeignClient(name = "course-configurator", url = "${course-configurator.url}", path = "/myApp/api")
 public interface CourseClient {
 
     @GetMapping("/courses/public")

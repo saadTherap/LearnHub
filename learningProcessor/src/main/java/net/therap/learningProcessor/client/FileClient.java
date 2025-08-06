@@ -12,11 +12,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 /**
- * @author
- * @since 8/5/25
+ * @author avidewan
+ * @since 7/27/25
  */
 @FeignClient(name = "secure-file-server",
-        path = "/secureFileServer/api/files",
+        url = "${secure-file-server.url}",
+        path = "/api/files",
         configuration = FeignMultipartSupportConfig.class)
 public interface FileClient {
 
