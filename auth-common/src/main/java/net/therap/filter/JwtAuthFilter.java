@@ -3,19 +3,16 @@ package net.therap.filter;
 import com.nimbusds.jwt.JWTClaimsSet;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import net.therap.config.AuthProperties;
 import net.therap.exception.AuthenticationException;
-import net.therap.service.TokenRefresherService;
 import net.therap.validator.TokenValidator;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Objects;
 
 /**
  * @author apurboturjo
@@ -25,18 +22,13 @@ import java.util.Objects;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
     
-    private final String ACCESS_TOKEN_COOKIE_KEY = "access_token";
-    private final String REFRESH_TOKEN_COOKIE_KEY = "refresh_token";
-    private final TokenValidator tokenValidator;
-    private final TokenRefresherService tokenRefresherService;
-    private final AuthProperties authProperties;
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String BEARER_PREFIX = "Bearer ";
     
-    public JwtAuthFilter(TokenValidator tokenValidator,
-                         TokenRefresherService tokenRefresherService,
-                         AuthProperties authProperties) {
+    private final TokenValidator tokenValidator;
+    
+    public JwtAuthFilter(TokenValidator tokenValidator) {
         this.tokenValidator = tokenValidator;
-        this.tokenRefresherService = tokenRefresherService;
-        this.authProperties = authProperties;
     }
     
     @Override
@@ -44,72 +36,45 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         
-        String accessToken = extractTokenFromCookie(request, ACCESS_TOKEN_COOKIE_KEY);
-        String refreshToken = extractTokenFromCookie(request, REFRESH_TOKEN_COOKIE_KEY);
+        String token = extractTokenFromRequest(request);
         
-        if (Objects.isNull(accessToken)) {
-            sendUnauthorizedError(response, "Access token missing");
+        if (!StringUtils.hasText(token)) {
+            log.debug("No JWT token found in request");
+            sendUnauthorizedError(response, "Authentication token required");
             
             return;
         }
         
         try {
-            JWTClaimsSet claims = tokenValidator.validate(accessToken);
+            JWTClaimsSet claims = tokenValidator.validate(token);
             log.debug("Token validated successfully for user: {}", claims.getSubject());
             
             filterChain.doFilter(request, response);
             
         } catch (AuthenticationException e) {
-            log.warn("Access token validation failed: {}", e.getMessage());
-            
-            if (Objects.nonNull(refreshToken)) {
-                handleTokenRefresh(request, response, filterChain, refreshToken);
-                
-            } else {
-                sendUnauthorizedError(response, "Token invalid");
-            }
+            log.warn("Token validation failed: {}", e.getMessage());
+            sendUnauthorizedError(response, "Invalid or expired token");
         }
     }
     
-    private void handleTokenRefresh(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain,
-                                    String refreshToken) throws IOException {
-        try {
-            String newAccessToken = tokenRefresherService.refresh(refreshToken);
-            setAccessTokenCookie(response, newAccessToken);
-            
-            log.info("Token refreshed successfully");
-            filterChain.doFilter(request, response);
-            
-        } catch (Exception e) {
-            log.error("Token refresh failed: {}", e.getMessage());
-            sendUnauthorizedError(response, "Token refresh failed");
-        }
-    }
-    
-    private void setAccessTokenCookie(HttpServletResponse response, String token) {
-        Cookie cookie = new Cookie(ACCESS_TOKEN_COOKIE_KEY, token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(authProperties.isSecureCookies());
-        cookie.setPath("/");
-        cookie.setMaxAge(authProperties.getRefreshTokenMaxAge());
+    private String extractTokenFromRequest(HttpServletRequest request) {
+        String authHeader = request.getHeader(AUTHORIZATION_HEADER);
         
-        response.addCookie(cookie);
+        if (StringUtils.hasText(authHeader)) {
+            if (authHeader.startsWith(BEARER_PREFIX)) {
+                return authHeader.substring(BEARER_PREFIX.length());
+            }
+            
+            return authHeader;
+        }
+        
+        return null;
     }
     
     private void sendUnauthorizedError(HttpServletResponse response, String message) throws IOException {
         log.warn("Authentication failed: {}", message);
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication required");
-    }
-    
-    private String extractTokenFromCookie(HttpServletRequest request, String cookieName) {
-        for (Cookie cookie : request.getCookies()) {
-            if (cookieName.equals(cookie.getName())) {
-                return cookie.getValue();
-            }
-        }
-        
-        return null;
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\": \"Authentication required\", \"message\": \"" + message + "\"}");
     }
 }

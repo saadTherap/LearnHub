@@ -3,13 +3,14 @@ package net.therap.handler;
 import lombok.RequiredArgsConstructor;
 import net.therap.dto.ErrorResponse;
 import net.therap.exception.InvalidRoleSpecifiedException;
-import net.therap.exception.RegistrationTokenVerificationException;
+import net.therap.exception.TokenVerificationException;
 import net.therap.exception.UserExistenceException;
 import net.therap.exception.UserPersistenceException;
 import net.therap.util.MessageUtil;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -71,8 +72,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
     
-    @ExceptionHandler(RegistrationTokenVerificationException.class)
-    public ResponseEntity<ErrorResponse> handleRegistrationTokenVerification(RegistrationTokenVerificationException ex) {
+    @ExceptionHandler(TokenVerificationException.class)
+    public ResponseEntity<ErrorResponse> handleRegistrationTokenVerification(TokenVerificationException ex) {
         ErrorResponse response = buildErrorResponse(
                 messageUtil.getMessage("err.verify.token.failed"),
                 Map.of(ERROR, ex.getMessage())
@@ -89,5 +90,15 @@ public class GlobalExceptionHandler {
         );
         
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+    
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
+        ErrorResponse response = buildErrorResponse(
+                messageUtil.getMessage("err.user.bad-credentials"),
+                Map.of(ERROR, ex.getMessage())
+        );
+        
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 }
