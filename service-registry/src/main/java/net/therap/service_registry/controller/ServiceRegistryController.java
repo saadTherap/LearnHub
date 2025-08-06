@@ -2,6 +2,8 @@ package net.therap.service_registry.controller;
 
 import net.therap.service_registry.model.ServiceInstance;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 
 import java.time.Instant;
 import java.util.*;
@@ -18,10 +20,22 @@ public class ServiceRegistryController {
     private static final long STALE_THRESHOLD_SECONDS = 30;
 
     @PostMapping("/register")
-    public String register(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<String> register(@RequestBody Map<String, Object> payload) {
         String service = (String) payload.get("service");
         String host = (String) payload.get("host");
-        int port = (int) payload.get("port");
+        Object portObj = payload.get("port");
+
+        if (service == null || host == null || portObj == null) {
+            return ResponseEntity.badRequest().body("Missing required fields");
+        }
+
+        int port;
+        try {
+            port = portObj instanceof Integer ? (Integer) portObj
+                    : Integer.parseInt(portObj.toString());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Invalid port format");
+        }
 
         ServiceInstance instance = new ServiceInstance(host, port);
 
@@ -29,39 +43,76 @@ public class ServiceRegistryController {
         registry.get(service).remove(instance);
         registry.get(service).add(instance);
 
-        return "registered";
+        return ResponseEntity.status(HttpStatus.CREATED).body("registered");
     }
 
     @PostMapping("/heartbeat")
-    public String heartbeat(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<String> heartbeat(@RequestBody Map<String, Object> payload) {
         String service = (String) payload.get("service");
         String host = (String) payload.get("host");
-        int port = (int) payload.get("port");
+        Object portObj = payload.get("port");
 
-        Set<ServiceInstance> instances = registry.get(service);
-
-        if (instances != null) {
-            instances.stream()
-                    .filter(i -> i.getHost().equals(host) && i.getPort() == port)
-                    .forEach(i -> i.setLastSeen(Instant.now()));
+        if (service == null || host == null || portObj == null) {
+            return ResponseEntity.badRequest().body("Missing required fields");
         }
 
-        return "heartbeat updated";
+        int port;
+        try {
+            port = portObj instanceof Integer ? (Integer) portObj
+                    : Integer.parseInt(portObj.toString());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Invalid port format");
+        }
+
+        Set<ServiceInstance> instances = registry.get(service);
+        boolean updated = false;
+
+        if (instances != null) {
+            for (ServiceInstance i : instances) {
+                if (i.getHost().equals(host) && i.getPort() == port) {
+                    i.setLastSeen(Instant.now());
+                    updated = true;
+                }
+            }
+        }
+
+        if (updated) {
+            return ResponseEntity.ok("heartbeat updated");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("service instance not found");
+        }
     }
 
     @PostMapping("/deregister")
-    public String deregister(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<String> deregister(@RequestBody Map<String, Object> payload) {
         String service = (String) payload.get("service");
         String host = (String) payload.get("host");
-        int port = (int) payload.get("port");
+        Object portObj = payload.get("port");
 
-        Set<ServiceInstance> instances = registry.get(service);
-
-        if (instances != null) {
-            instances.remove(new ServiceInstance(host, port));
+        if (service == null || host == null || portObj == null) {
+            return ResponseEntity.badRequest().body("Missing required fields");
         }
 
-        return "deregistered";
+        int port;
+        try {
+            port = portObj instanceof Integer ? (Integer) portObj
+                    : Integer.parseInt(portObj.toString());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Invalid port format");
+        }
+
+        Set<ServiceInstance> instances = registry.get(service);
+        boolean removed = false;
+
+        if (instances != null) {
+            removed = instances.remove(new ServiceInstance(host, port));
+        }
+
+        if (removed) {
+            return ResponseEntity.ok("deregistered");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("service instance not found");
+        }
     }
 
     @GetMapping("/services/{service}")

@@ -28,9 +28,14 @@ public class ServiceInstance {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ServiceInstance)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ServiceInstance)) {
+            return false;
+        }
         ServiceInstance that = (ServiceInstance) o;
+
         return port == that.port && Objects.equals(host, that.host);
     }
 
