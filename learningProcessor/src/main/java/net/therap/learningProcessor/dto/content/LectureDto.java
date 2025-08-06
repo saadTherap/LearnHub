@@ -14,6 +14,8 @@ import lombok.EqualsAndHashCode;
 public class LectureDto extends ContentDetailDto {
 
     private String description;
+
     private String videoUrl;
+
     private String resourceLink;
 }

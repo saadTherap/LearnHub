@@ -12,10 +12,16 @@ import lombok.Data;
 public class StudentCourseProgressDto {
 
     private Long studentId;
+
     private String firstName;
+
     private String lastName;
+
     private String email;
+
     private Long courseId;
+
     private String courseName;
+
     private double progress;
 }

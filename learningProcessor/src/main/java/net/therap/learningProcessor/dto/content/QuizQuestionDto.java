@@ -13,8 +13,12 @@ import java.util.List;
 public class QuizQuestionDto {
 
     private long id;
+
     private String questionText;
+
     private long quizReleaseId;
+
     private int quizReleaseNum;
+
     private List<QuizOptionDto> options;
 }

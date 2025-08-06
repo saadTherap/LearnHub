@@ -15,11 +15,14 @@ import java.util.List;
 public class ModuleWithProgressDto {
 
     private long id;
+
     private String title;
+
     private long courseId;
 
     private int completedContentCount;
 
     private long numberOfContents;
+
     private List<BaseContentDto> contents;
 }

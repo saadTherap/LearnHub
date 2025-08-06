@@ -12,5 +12,6 @@ import lombok.Data;
 public class StudentContentCompletionDto {
 
     private long studentId;
+
     private long contentId;
 }

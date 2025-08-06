@@ -14,5 +14,6 @@ import lombok.EqualsAndHashCode;
 public class SubmissionDto extends ContentDetailDto {
 
     private String description;
+
     private String resourceLink;
 }

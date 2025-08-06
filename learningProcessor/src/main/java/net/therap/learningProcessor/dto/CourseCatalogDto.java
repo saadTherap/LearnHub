@@ -12,8 +12,12 @@ import lombok.Data;
 public class CourseCatalogDto {
 
     private long courseId;
+
     private String name;
+
     private String description;
+
     private String instructorName;
+
     private int currentPublishedVersion;
 }

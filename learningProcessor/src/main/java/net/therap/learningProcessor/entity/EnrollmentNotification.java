@@ -14,5 +14,6 @@ import lombok.Setter;
 public class EnrollmentNotification extends Notification {
 
     private Long studentId;
+
     private Long courseId;
 }

@@ -6,6 +6,7 @@ import net.therap.learningProcessor.dto.StudentContentCompletionDto;
 import net.therap.learningProcessor.dto.StudentCourseProgressDto;
 import net.therap.learningProcessor.dto.StudentDto;
 import net.therap.learningProcessor.entity.EnrollmentNotification;
+import net.therap.learningProcessor.entity.SubmissionNotification;
 import net.therap.learningProcessor.eum.NotificationType;
 import net.therap.learningProcessor.service.CourseStudentService;
 import net.therap.learningProcessor.service.NotificationService;
@@ -34,9 +35,9 @@ public class CourseStudentController {
 
         EnrollmentNotification notification = new EnrollmentNotification();
         notification.setType(NotificationType.ENROLLMENT);
-        notification.setTitle("Test enrollment");
-        notification.setId(studentId);
-
+        notification.setStudentId(studentId);
+        notification.setCourseId(courseId);
+        notification.setMessage("An student has enrolled into Course Id: " + courseId);
         notificationService.sendNotification(notification);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -74,6 +75,13 @@ public class CourseStudentController {
                                                  @RequestParam String downloadUrl) {
 
         courseStudentService.submitAssignment(studentId, contentId, downloadUrl);
+
+        Long submissionId = 0L;
+        SubmissionNotification notification = new SubmissionNotification();
+        notification.setType(NotificationType.ENROLLMENT);
+        notification.setSubmissionId(submissionId);
+        notification.setMessage("An student has submitted assignment into Content Id: " + contentId);
+        notificationService.sendNotification(notification);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

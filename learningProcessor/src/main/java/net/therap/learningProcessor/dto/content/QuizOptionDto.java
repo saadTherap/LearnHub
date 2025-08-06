@@ -11,7 +11,10 @@ import lombok.Data;
 public class QuizOptionDto {
 
     private long id;
+
     private String optionText;
+
     private long quizQuestionId;
+
     private boolean correct;
 }

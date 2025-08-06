@@ -12,8 +12,12 @@ import lombok.Data;
 public class BaseContentDto {
 
     private Long id;
+
     private String title;
+
     private Long moduleId;
+
     private long orderIndex;
+
     private String type;
 }

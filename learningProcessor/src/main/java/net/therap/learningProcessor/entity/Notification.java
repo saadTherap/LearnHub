@@ -29,7 +29,9 @@ import java.util.Objects;
 public abstract class Notification {
 
     private Long id;
-    private String title;
+
+    private String message;
+
     private NotificationType type;
 
     @Override
