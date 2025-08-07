@@ -1,4 +1,4 @@
-package net.therap.validator;
+package net.therap.auth.validator;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSVerifier;
@@ -6,8 +6,8 @@ import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import lombok.extern.slf4j.Slf4j;
-import net.therap.exception.AuthenticationException;
-import net.therap.helper.PublicKeyProvider;
+import net.therap.auth.exception.AuthenticationException;
+import net.therap.auth.helper.PublicKeyProvider;
 import org.springframework.stereotype.Service;
 
 import java.security.interfaces.RSAPublicKey;
@@ -64,19 +64,16 @@ public class TokenValidator {
     private void validateClaims(JWTClaimsSet claims) {
         Date now = Date.from(Instant.now());
         
-        // Check expiration
         Date expirationTime = claims.getExpirationTime();
         if (Objects.nonNull(expirationTime) && expirationTime.before(now)) {
             throw new AuthenticationException("Token has expired");
         }
         
-        // Check not before
         Date notBeforeTime = claims.getNotBeforeTime();
         if (Objects.nonNull(notBeforeTime) && notBeforeTime.after(now)) {
             throw new AuthenticationException("Token not yet valid");
         }
         
-        // Check issued at (optional validation)
         Date issuedAtTime = claims.getIssueTime();
         if (Objects.nonNull(issuedAtTime) && issuedAtTime.after(now)) {
             throw new AuthenticationException("Token issued in the future");

@@ -1,4 +1,4 @@
-package net.therap.util;
+package net.therap.auth.util;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;

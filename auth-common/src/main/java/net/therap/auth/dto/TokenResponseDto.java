@@ -1,4 +1,4 @@
-package net.therap.dto;
+package net.therap.auth.dto;
 
 import lombok.Data;
 

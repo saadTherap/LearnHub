@@ -1,10 +1,10 @@
-package net.therap.service;
+package net.therap.auth.service;
 
 import lombok.extern.slf4j.Slf4j;
-import net.therap.client.TokenClient;
-import net.therap.dto.RefreshTokenRequestDto;
-import net.therap.dto.TokenResponseDto;
-import net.therap.exception.AuthenticationException;
+import net.therap.auth.client.TokenClient;
+import net.therap.auth.dto.RefreshTokenRequestDto;
+import net.therap.auth.dto.TokenResponseDto;
+import net.therap.auth.exception.AuthenticationException;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;

@@ -1,4 +1,4 @@
-package net.therap.exception;
+package net.therap.auth.exception;
 
 /**
  * @author apurboturjo

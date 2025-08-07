@@ -1,7 +1,7 @@
-package net.therap.client;
+package net.therap.auth.client;
 
-import net.therap.dto.RefreshTokenRequestDto;
-import net.therap.dto.TokenResponseDto;
+import net.therap.auth.dto.RefreshTokenRequestDto;
+import net.therap.auth.dto.TokenResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;

@@ -1,4 +1,4 @@
-package net.therap.config;
+package net.therap.auth.config;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;

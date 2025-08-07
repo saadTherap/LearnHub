@@ -1,4 +1,4 @@
-package net.therap.filter;
+package net.therap.auth.filter;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import jakarta.servlet.FilterChain;
@@ -6,8 +6,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import net.therap.exception.AuthenticationException;
-import net.therap.validator.TokenValidator;
+import net.therap.auth.exception.AuthenticationException;
+import net.therap.auth.validator.TokenValidator;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;

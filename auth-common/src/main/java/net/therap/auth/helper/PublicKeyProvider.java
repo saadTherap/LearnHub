@@ -1,17 +1,13 @@
-package net.therap.helper;
+package net.therap.auth.helper;
 
 import com.nimbusds.jose.jwk.RSAKey;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import net.therap.client.PublicKeyClient;
-import net.therap.config.AuthProperties;
+import net.therap.auth.client.PublicKeyClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.time.Instant;

@@ -1,4 +1,4 @@
-package net.therap.config;
+package net.therap.auth.util;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
