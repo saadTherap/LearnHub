@@ -3,7 +3,11 @@ package net.therap.learningProcessor.controller;
 import lombok.RequiredArgsConstructor;
 import net.therap.learningProcessor.dto.StudentDto;
 import net.therap.learningProcessor.dto.submission.StudentSubmissionDto;
+import net.therap.learningProcessor.entity.EnrollmentNotification;
 import net.therap.learningProcessor.entity.Student;
+import net.therap.learningProcessor.entity.SubmissionNotification;
+import net.therap.learningProcessor.eum.NotificationType;
+import net.therap.learningProcessor.service.NotificationService;
 import net.therap.learningProcessor.service.StudentService;
 import net.therap.learningProcessor.service.StudentSubmissionService;
 import org.springframework.http.HttpStatus;
@@ -26,6 +30,7 @@ public class SubmissionController {
 
     private final StudentSubmissionService submissionService;
     private final StudentService studentService;
+    private final NotificationService notificationService;
 
     @PostMapping(consumes =  MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StudentSubmissionDto> submitAssignment(
@@ -36,6 +41,12 @@ public class SubmissionController {
         StudentDto studentDto = studentService.getStudentById(studentId);
 
         StudentSubmissionDto submissionDto = submissionService.submit(studentDto, contentId, file);
+
+        SubmissionNotification notification = new SubmissionNotification();
+        notification.setType(NotificationType.SUBMISSION);
+        notification.setSubmissionId(submissionDto.getId());
+        notification.setMessage("An student has made a submission into content Id: " + submissionDto.getContentId());
+        notificationService.sendNotification(notification);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(submissionDto);
     }

@@ -19,7 +19,7 @@ import java.util.Map;
 public class CourseClient {
 
     private static final String SERVICE_NAME = "course-configurator";
-    private static final String BASE_PATH = "/myApp/api";
+    private static final String BASE_PATH = "/course-configurator/api";
 
     @Autowired
     private ServiceDiscoveryCache serviceDiscoveryCache;
