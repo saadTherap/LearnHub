@@ -1,18 +1,18 @@
-package net.therap.auth.service;
+package net.therap.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.therap.auth.dto.JwtResponse;
-import net.therap.auth.dto.LoginRequest;
-import net.therap.auth.dto.RegisterRequest;
+import net.therap.dto.JwtResponse;
+import net.therap.dto.LoginRequest;
+import net.therap.dto.RegisterRequest;
 import net.therap.entity.User;
 import net.therap.entity.VerificationToken;
-import net.therap.auth.exception.TokenVerificationException;
+import net.therap.exception.TokenVerificationException;
 import net.therap.respository.VerificationTokenRepository;
-import net.therap.auth.service.interfaces.AuthService;
-import net.therap.auth.service.interfaces.EmailService;
-import net.therap.auth.util.MessageUtil;
+import net.therap.service.interfaces.AuthService;
+import net.therap.service.interfaces.EmailService;
+import net.therap.util.MessageUtil;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
-import static net.therap.auth.util.JwtUtil.toSystemFormatUserRole;
+import static net.therap.util.JwtUtil.toSystemFormatUserRole;
 
 /**
  * @author apurboturjo

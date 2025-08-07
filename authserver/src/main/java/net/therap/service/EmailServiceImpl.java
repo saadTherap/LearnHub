@@ -1,11 +1,11 @@
-package net.therap.auth.service;
+package net.therap.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.therap.auth.service.interfaces.EmailService;
-import net.therap.auth.util.MessageUtil;
+import net.therap.service.interfaces.EmailService;
+import net.therap.util.MessageUtil;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;

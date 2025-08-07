@@ -2,10 +2,10 @@ package net.therap.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import net.therap.auth.dto.JwtResponse;
-import net.therap.auth.dto.LoginRequest;
-import net.therap.auth.dto.RegisterRequest;
-import net.therap.auth.service.interfaces.AuthService;
+import net.therap.dto.JwtResponse;
+import net.therap.dto.LoginRequest;
+import net.therap.dto.RegisterRequest;
+import net.therap.service.interfaces.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

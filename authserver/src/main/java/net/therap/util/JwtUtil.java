@@ -1,8 +1,8 @@
-package net.therap.auth.util;
+package net.therap.util;
 
 import lombok.extern.slf4j.Slf4j;
 import net.therap.enums.UserRole;
-import net.therap.auth.exception.InvalidRoleSpecifiedException;
+import net.therap.exception.InvalidRoleSpecifiedException;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

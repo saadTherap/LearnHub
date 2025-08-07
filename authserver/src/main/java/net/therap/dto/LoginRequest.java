@@ -1,4 +1,4 @@
-package net.therap.auth.dto;
+package net.therap.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

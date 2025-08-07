@@ -1,12 +1,12 @@
 package net.therap.handler;
 
 import lombok.RequiredArgsConstructor;
-import net.therap.auth.dto.ErrorResponse;
-import net.therap.auth.exception.InvalidRoleSpecifiedException;
-import net.therap.auth.exception.TokenVerificationException;
-import net.therap.auth.exception.UserExistenceException;
-import net.therap.auth.exception.UserPersistenceException;
-import net.therap.auth.util.MessageUtil;
+import net.therap.dto.ErrorResponse;
+import net.therap.exception.InvalidRoleSpecifiedException;
+import net.therap.exception.TokenVerificationException;
+import net.therap.exception.UserExistenceException;
+import net.therap.exception.UserPersistenceException;
+import net.therap.util.MessageUtil;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.therap.auth.util.HandlerUtil.buildErrorResponse;
+import static net.therap.util.HandlerUtil.buildErrorResponse;
 
 /**
  * @author apurboturjo

@@ -1,4 +1,4 @@
-package net.therap.auth.filter;
+package net.therap.filter;
 
 
 import io.jsonwebtoken.JwtException;
@@ -8,8 +8,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.therap.auth.service.CustomUserDetailsService;
-import net.therap.auth.service.JwtService;
+import net.therap.service.CustomUserDetailsService;
+import net.therap.service.JwtService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static net.therap.auth.util.PublicEndpoints.WHITELIST;
+import static net.therap.util.PublicEndpoints.WHITELIST;
 
 /**
  * @author apurboturjo

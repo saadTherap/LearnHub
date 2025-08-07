@@ -1,4 +1,4 @@
-package net.therap.auth.service;
+package net.therap.service;
 
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -12,7 +12,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.entity.User;
-import net.therap.auth.util.JwtUtil;
+import net.therap.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;

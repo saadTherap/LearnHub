@@ -1,11 +1,11 @@
-package net.therap.auth.service;
+package net.therap.service;
 
 import lombok.RequiredArgsConstructor;
 import net.therap.entity.User;
-import net.therap.auth.exception.UserExistenceException;
-import net.therap.auth.exception.UserPersistenceException;
+import net.therap.exception.UserExistenceException;
+import net.therap.exception.UserPersistenceException;
 import net.therap.respository.UserRepository;
-import net.therap.auth.util.MessageUtil;
+import net.therap.util.MessageUtil;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

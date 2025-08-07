@@ -64,19 +64,16 @@ public class TokenValidator {
     private void validateClaims(JWTClaimsSet claims) {
         Date now = Date.from(Instant.now());
         
-        // Check expiration
         Date expirationTime = claims.getExpirationTime();
         if (Objects.nonNull(expirationTime) && expirationTime.before(now)) {
             throw new AuthenticationException("Token has expired");
         }
         
-        // Check not before
         Date notBeforeTime = claims.getNotBeforeTime();
         if (Objects.nonNull(notBeforeTime) && notBeforeTime.after(now)) {
             throw new AuthenticationException("Token not yet valid");
         }
         
-        // Check issued at (optional validation)
         Date issuedAtTime = claims.getIssueTime();
         if (Objects.nonNull(issuedAtTime) && issuedAtTime.after(now)) {
             throw new AuthenticationException("Token issued in the future");

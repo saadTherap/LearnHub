@@ -1,6 +1,6 @@
-package net.therap.auth.util;
+package net.therap.util;
 
-import net.therap.auth.dto.ErrorResponse;
+import net.therap.dto.ErrorResponse;
 
 import java.time.LocalDateTime;
 import java.util.Map;

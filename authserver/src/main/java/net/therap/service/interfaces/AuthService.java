@@ -1,8 +1,8 @@
-package net.therap.auth.service.interfaces;
+package net.therap.service.interfaces;
 
-import net.therap.auth.dto.JwtResponse;
-import net.therap.auth.dto.LoginRequest;
-import net.therap.auth.dto.RegisterRequest;
+import net.therap.dto.JwtResponse;
+import net.therap.dto.LoginRequest;
+import net.therap.dto.RegisterRequest;
 
 /**
  * @author apurboturjo

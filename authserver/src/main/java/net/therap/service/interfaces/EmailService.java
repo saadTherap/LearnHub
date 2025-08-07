@@ -1,4 +1,4 @@
-package net.therap.auth.service.interfaces;
+package net.therap.service.interfaces;
 
 /**
  * @author apurboturjo
