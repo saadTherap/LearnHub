@@ -21,6 +21,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static java.util.Objects.isNull;
+import static net.therap.app.util.CollectionUtil.isEmptyCollection;
 
 /**
  * @author gazizafor
@@ -48,6 +49,7 @@ public class ContentHelper {
         content.setTitle(contentCatalogueDTO.getTitle());
         content.setModule(getModule(contentCatalogueDTO.getModuleId()));
         content.setImageUrl(""); // to be updated
+        content.setContentReleases(new ArrayList<>());
         
         return content;
     }
@@ -97,8 +99,27 @@ public class ContentHelper {
         return moduleOptional.get();
     }
     
+    public boolean isValidForPublication(ContentRelease draft) {
+        logger.info("Checking if draft is ready for publication: {}", draft.getId());
+        
+        if (draft.getRelease() == ReleaseStatus.DRAFT.getReleaseNumber()) {
+            if (draft instanceof Quiz) {
+                return isValidQuiz((Quiz) draft);
+            } else {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    private boolean isValidQuiz(Quiz quiz) {
+        return !isEmptyCollection(quiz.getQuestions());
+    }
+    
     public boolean isValidForPublication(ContentRelease previousRelease, ContentRelease newRelease) {
         logger.info("Checking if content release is valid, previous releaseNum is {}", previousRelease.getRelease());
+        
         if (previousRelease.getRelease() == ReleaseStatus.DRAFT.getReleaseNumber() && !(previousRelease instanceof Quiz)) {
             return true;
         }
@@ -111,6 +132,11 @@ public class ContentHelper {
         };
         
         logger.info("isSame Content: {}", !b);
+        
+        if (previousRelease.getRelease() == ReleaseStatus.DRAFT.getReleaseNumber()) {
+            return true;
+        }
+        
         return b;
     }
     

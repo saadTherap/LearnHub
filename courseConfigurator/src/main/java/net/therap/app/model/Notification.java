@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -27,7 +29,7 @@ import java.util.Objects;
         @JsonSubTypes.Type(value = EnrollmentNotification.class, name = "ENROLLMENT"),
         @JsonSubTypes.Type(value = SubmissionNotification.class, name = "SUBMISSION")
 })
-public abstract class Notification {
+public abstract class Notification implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "final_learnhub_notification_seq_gen")
@@ -38,8 +40,14 @@ public abstract class Notification {
     private Long id;
 
     @Column(nullable = false)
-    private String title;
-
+    private String message;
+    
+//    @Column(name = "notification_type", nullable = false)
+//    private NotificationType type;
+    
+    @Transient
+    private NotificationType type;
+    
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;

@@ -14,4 +14,7 @@ public class EnrollmentNotification extends Notification {
 
     @Column(nullable = false)
     private Long studentId;
+    
+    @Column(nullable = false)
+    private Long courseId;
 }

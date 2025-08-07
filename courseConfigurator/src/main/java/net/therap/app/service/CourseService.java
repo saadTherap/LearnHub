@@ -1,20 +1,19 @@
 package net.therap.app.service;
 
 import net.therap.app.constants.CacheConstants;
+import net.therap.app.dto.ReorderDTO;
 import net.therap.app.model.Course;
 import net.therap.app.model.Module;
 import net.therap.app.repository.CourseRepository;
 import net.therap.app.util.CacheInvalidationUtil;
+import org.apache.coyote.BadRequestException;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author gazizafor
@@ -23,7 +22,6 @@ import java.util.Optional;
 @Service
 @Transactional(readOnly = true)
 public class CourseService {
-    
 
     private final CacheInvalidationUtil cacheInvalidationUtil;
     private final CourseRepository courseRepository;
@@ -90,5 +88,57 @@ public class CourseService {
         }
         
         return false;
+    }
+    
+    public List<Course> findByInstructor(long instructorId) {
+        return courseRepository.findByInstructor_Id((instructorId));
+    }
+    
+    public List<Course> findAllDrafts() {
+        return courseRepository.findAllDrafts();
+    }
+    
+    // find specific draft by id
+    public Optional<Course> findDraftById(long id) {
+        return courseRepository.findDraftById(id);
+    }
+    
+    @Transactional
+    public List<Module> reorderModules(List<ReorderDTO> sortedModules) throws BadRequestException {
+        Map<Long,Module> moduleMap = new HashMap();
+        
+        for (ReorderDTO dto : sortedModules) {
+            Optional<Module> moduleOptional = moduleService.findById(dto.getId());
+            
+            if (moduleOptional.isEmpty()) {
+                throw new NoSuchElementException(messageSource.getMessage("not.found.module", null, Locale.getDefault()));
+            }
+            
+            moduleMap.put(dto.getId(), moduleOptional.get());
+        }
+        
+        validateModuleForOrdering(moduleMap);
+        
+        sortedModules.forEach(dto -> {
+            moduleMap.get(dto.getId()).setOrderIndex(dto.getOrderIndex());
+        });
+        
+        return moduleMap.values().stream().toList();
+    }
+    
+    private void validateModuleForOrdering(Map<Long,Module> modules) throws BadRequestException {
+        Module module = modules.values().iterator().next();
+        
+        if (modules.size() != module.getCourse().getModules().size()) {
+            throw new BadRequestException(messageSource.getMessage("validation.module.failed", null, Locale.getDefault()));
+        }
+        
+        long courseId = module.getCourse().getId();
+        
+        for (Module moduleItem : modules.values()) {
+            if (moduleItem.getCourse().getId() != courseId) {
+                throw new BadRequestException(messageSource.getMessage("validation.module.failed", null, Locale.getDefault()));
+            }
+        }
     }
 }

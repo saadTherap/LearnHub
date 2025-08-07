@@ -10,6 +10,8 @@ import net.therap.app.model.enums.ReleaseStatus;
 import net.therap.app.repository.ContentRepository;
 import net.therap.app.util.CacheInvalidationUtil;
 import org.hibernate.Hibernate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class ContentService {
     
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ContentRepository contentRepository;
     private final DtoHelper dtoHelper;
     private final CacheInvalidationUtil cacheInvalidationUtil;
@@ -43,7 +46,7 @@ public class ContentService {
     
     public Optional<Content> findContentByContentReleaseId(long contentReleaseId) {
         Optional<Content> contentOptional = contentRepository.findContentByContentReleaseId(contentReleaseId);
-        
+        logger.info("Optional isPresent => {}", contentOptional.isPresent());
         contentOptional.ifPresent(content -> Hibernate.initialize(content.getContentReleases()));
         
         return contentOptional;
@@ -99,26 +102,32 @@ public class ContentService {
     
     @Transactional
     public Content save(Content content) {
-        String key = content.getId() + ":" + content.getCurrentContentRelease().getRelease();
-        cacheInvalidationUtil.invalidateCacheAfterCommit(String.valueOf(content.getId()), CacheConstants.CONTENT_CATALOG, CacheConstants.CONTENT_RELEASE_LIST);
-        cacheInvalidationUtil.invalidateCacheAfterCommit(key, CacheConstants.CONTENT_RELEASES);
+        if (content.getCurrentContentRelease() != null) {
+            String key = content.getId() + ":" + content.getCurrentContentRelease().getRelease();
+            cacheInvalidationUtil.invalidateCacheAfterCommit(String.valueOf(content.getId()), CacheConstants.CONTENT_CATALOG, CacheConstants.CONTENT_RELEASE_LIST);
+            cacheInvalidationUtil.invalidateCacheAfterCommit(key, CacheConstants.CONTENT_RELEASES);
+        }
 
         return contentRepository.save(content);
     }
     
     @Transactional
     public Content deleteById(long id) {
+        logger.info("Content id deletion: {}",id);
         Optional<Content> contentOptional = contentRepository.findById(id);
         
         if (contentOptional.isEmpty()) {
             throw new NoSuchElementException(messageSource.getMessage("not.found.content", null, Locale.getDefault()));
         }
         
+        long releaseNum = contentOptional.get().getCurrentContentRelease().getRelease();
+        
         Content content = contentOptional.get();
         content.setDeleted(true);
+        contentOptional.get().setCurrentContentRelease(null);
         Content deletedContent = contentRepository.save(content);
         
-        String key = content.getId() + ":" + content.getCurrentContentRelease().getRelease();
+        String key = content.getId() + ":" + releaseNum;
         cacheInvalidationUtil.invalidateCacheAfterCommit(String.valueOf(content.getId()), CacheConstants.CONTENT_CATALOG, CacheConstants.CONTENT_RELEASE_LIST);
         cacheInvalidationUtil.invalidateCacheAfterCommit(key, CacheConstants.CONTENT_RELEASES);
         

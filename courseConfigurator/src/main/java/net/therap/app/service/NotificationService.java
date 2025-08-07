@@ -3,6 +3,8 @@ package net.therap.app.service;
 import jakarta.transaction.Transactional;
 import net.therap.app.model.Notification;
 import net.therap.app.repository.NotificationRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class NotificationService {
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final NotificationRepository notificationRepository;
 
     public NotificationService(NotificationRepository notificationRepository) {
@@ -20,6 +23,8 @@ public class NotificationService {
 
     @Transactional
     public void saveNotification(Notification notification) {
-        this.notificationRepository.save(notification);
+//        this.notificationRepository.save(notification);
+        logger.info("-------------- Received and saving notification ---------------------");
+        logger.info("{}", notification);
     }
 }

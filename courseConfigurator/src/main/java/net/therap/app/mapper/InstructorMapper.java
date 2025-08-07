@@ -18,6 +18,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 )
 public interface InstructorMapper {
     
+    @Mapping(target = "courses",  ignore = true)
     Instructor toInstructor(InstructorDTO instructorDTO);
     
     InstructorDTO toInstructorDTO(Instructor instructor);
