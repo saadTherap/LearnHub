@@ -1,8 +1,8 @@
 package net.therap.security;
 
 import lombok.RequiredArgsConstructor;
-import net.therap.filter.JwtAuthFilter;
-import net.therap.service.CustomUserDetailsService;
+import net.therap.auth.filter.JwtAuthFilter;
+import net.therap.auth.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import static net.therap.util.PublicEndpoints.WHITELIST;
+import static net.therap.auth.util.PublicEndpoints.WHITELIST;
 
 /**
  * @author apurboturjo
