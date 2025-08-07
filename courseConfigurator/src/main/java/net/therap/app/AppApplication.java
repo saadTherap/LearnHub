@@ -19,8 +19,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableJpaRepositories(basePackages = "net.therap.app.repository")
 @EnableScheduling
 @EntityScan("net.therap.app.model")
-//@EnableFeignClients(basePackages = "net.therap.auth.client")
-//@ComponentScan(basePackages = "net.therap.auth")
+@EnableFeignClients(basePackages = "net.therap.auth.client")
+@ComponentScan(basePackages = "net.therap.auth")
 public class AppApplication {
 	
 	public static void main(String[] args) {
