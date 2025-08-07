@@ -23,7 +23,7 @@ public interface CourseStudentService {
 
     boolean completeContent(Long studentId, Long contentId);
 
-    void submitAssignment(Long studentId, Long contentId, String downloadUrl);
+//    void submitAssignment(Long studentId, Long contentId, String downloadUrl);
 
     List<StudentContentCompletionDto> getContentStatusByStudentId(Long studentId);
 

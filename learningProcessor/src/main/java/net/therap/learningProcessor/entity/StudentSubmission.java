@@ -34,9 +34,15 @@ public class StudentSubmission extends Persistent {
     @Column(name = "content_id", nullable = false)
     private long contentId;
 
-    @Column(name = "submitted_at", nullable = false)
-    private LocalDateTime submittedAt;
+    @Column(name = "file_id", nullable = false)
+    private Long fileId;
 
     @Column(name = "download_url")
     private String downloadUrl;
+
+    @Column(name = "original_file_name")
+    private String originalFileName;
+
+    @Column(name = "submitted_at", nullable = false)
+    private LocalDateTime submittedAt;
 }

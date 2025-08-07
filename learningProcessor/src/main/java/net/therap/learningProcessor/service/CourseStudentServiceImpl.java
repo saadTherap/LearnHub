@@ -114,24 +114,24 @@ public class CourseStudentServiceImpl implements CourseStudentService {
         return true;
     }
 
-    @Override
-    @Transactional
-    public void submitAssignment(Long studentId, Long contentId, String downloadUrl) {
-        studentValidator.validateStudentExists(studentId);
-        courseValidator.validateContentExists(contentId);
-
-        StudentSubmission submission = studentSubmissionRepository.findByStudentIdAndContentId(studentId, contentId)
-                .orElseGet(StudentSubmission::new);
-
-        Student student = studentRepository.findById(studentId).orElseThrow();
-
-        submission.setStudent(student);
-        submission.setContentId(contentId);
-        submission.setDownloadUrl(downloadUrl);
-        submission.setSubmittedAt(LocalDateTime.now());
-
-        studentSubmissionRepository.save(submission);
-    }
+//    @Override
+//    @Transactional
+//    public void submitAssignment(Long studentId, Long contentId, String downloadUrl) {
+//        studentValidator.validateStudentExists(studentId);
+//        courseValidator.validateContentExists(contentId);
+//
+//        StudentSubmission submission = studentSubmissionRepository.findByStudentIdAndContentId(studentId, contentId)
+//                .orElseGet(StudentSubmission::new);
+//
+//        Student student = studentRepository.findById(studentId).orElseThrow();
+//
+//        submission.setStudent(student);
+//        submission.setContentId(contentId);
+//        submission.setDownloadUrl(downloadUrl);
+//        submission.setSubmittedAt(LocalDateTime.now());
+//
+//        studentSubmissionRepository.save(submission);
+//    }
 
     @Override
     public List<StudentContentCompletionDto> getContentStatusByStudentId(Long studentId) {

@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         CacheAutoConfiguration.class,
         HazelcastAutoConfiguration.class
 })
-//@EnableFeignClients(basePackages = "net.therap.learningProcessor.client")
+@EnableFeignClients(basePackages = "net.therap.learningProcessor.client")
 @EnableScheduling
 public class LearningProcessorApplication {
 
