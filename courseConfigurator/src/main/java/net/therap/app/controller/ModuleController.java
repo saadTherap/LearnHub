@@ -1,15 +1,17 @@
 package net.therap.app.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import net.therap.app.dto.ErrorResponse;
-import net.therap.app.dto.ModuleDTO;
+import net.therap.app.dto.*;
 import net.therap.app.helper.DtoHelper;
 import net.therap.app.mapper.ModuleMapper;
+import net.therap.app.model.Content;
 import net.therap.app.model.Course;
 import net.therap.app.model.Module;
 import net.therap.app.service.CourseService;
 import net.therap.app.service.HazelcastCacheService;
 import net.therap.app.service.ModuleService;
+import net.therap.app.validation.OnUpdate;
+import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -20,9 +22,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static net.therap.app.util.CollectionUtil.isValidOrderedList;
 
 /**
  * @author gazizafor
@@ -105,6 +111,28 @@ public class ModuleController {
         
         return new ResponseEntity<>(moduleMapper.toModuleDTO(savedModule), HttpStatus.CREATED);
     }
+    
+    @PostMapping("/contents/reorder")
+    public ResponseEntity<List<ContentCatalogueDTO>> reorderModules(@RequestBody @Validated(OnUpdate.class) List<ReorderDTO> contents) throws BadRequestException {
+        if (!isValidOrderedList(contents)) {
+            throw new BadRequestException(messageSource.getMessage("invalid.reorder", null, Locale.getDefault()));
+        }
+        
+        List<ReorderDTO> sortedContents = contents.stream()
+                .sorted(Comparator.comparingLong(ReorderDTO::getOrderIndex))
+                .toList();
+        
+        long newOrderIndex = 1;
+        for (ReorderDTO module : sortedContents) {
+            module.setOrderIndex(newOrderIndex++);
+        }
+        
+//        List<Content> updatedContents = moduleService.reorderContents(sortedContents);
+        
+//        return ResponseEntity.ok(updatedContents.stream().map(dtoHelper::toContentCatalogueDTO).toList());
+        return ResponseEntity.ok(null);
+    }
+    
     
     @PatchMapping("/{id}")
     public ResponseEntity<ModuleDTO> updateModule(@PathVariable long id, @RequestBody @Validated ModuleDTO moduleDTO) {

@@ -131,6 +131,7 @@ public class DtoHelper {
         
         if (module.getContents() != null && !module.getContents().isEmpty()) {
             dto.setContents(module.getContents().stream()
+                                    .filter(content -> content.getCurrentContentRelease() != null)
                                     .map(this::toContentCatalogueDTO)
                                     .collect(Collectors.toList()));
         }

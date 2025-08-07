@@ -18,9 +18,6 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
     @Query("SELECT DISTINCT c FROM Content c JOIN FETCH c.currentContentRelease WHERE c.module.id = :moduleId")
     List<Content> findContentReleaseByModuleId(@Param("moduleId") long moduleId);
     
-    @Query("SELECT c " +
-            "FROM Content c JOIN FETCH c.currentContentRelease " +
-            "WHERE c.currentContentRelease.id = :contentReleaseId " +
-            "ORDER BY c.currentContentRelease.orderIndex ASC")
+    @Query("SELECT c FROM Content c JOIN FETCH c.contentReleases cr WHERE cr.id = :contentReleaseId")
     Optional<Content> findContentByContentReleaseId(@Param("contentReleaseId") long contentReleaseId);
 }

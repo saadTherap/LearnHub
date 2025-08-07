@@ -20,8 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -159,20 +157,25 @@ public class ContentController {
             throw new BadRequestException();
         }
         
-        content.setCurrentContentRelease(contentRelease);
-        contentService.save(content);
+        Content savedContent = contentService.save(content);
+        ContentRelease savedContentRelease;
         
         if (contentRelease instanceof Lecture) {
-            lectureService.save((Lecture) contentRelease);
+            savedContentRelease = lectureService.save((Lecture) contentRelease);
             
         } else if (contentRelease instanceof Quiz) {
-            quizService.save((Quiz) contentRelease);
+            savedContentRelease = quizService.save((Quiz) contentRelease);
             
         } else {
-            submissionService.save((Submission) contentRelease);
+            savedContentRelease = submissionService.save((Submission) contentRelease);
         }
         
-        return new ResponseEntity<>(dtoHelper.toContentReleaseDTO(contentRelease), HttpStatus.CREATED);
+        savedContent.setCurrentContentRelease(savedContentRelease);
+        savedContent.getContentReleases().add(savedContentRelease);
+        
+        contentService.save(savedContent);
+        
+        return new ResponseEntity<>(dtoHelper.toContentReleaseDTO(savedContentRelease), HttpStatus.CREATED);
     }
     
     @PatchMapping("/publish/{contentReleaseId}")
@@ -190,7 +193,7 @@ public class ContentController {
         
         if (contentHelper.isValidForPublication(contentRelease, contentReleaseToPublish)) {
             if (course.getCurrentRelease() == ReleaseStatus.DRAFT.getReleaseNumber()) {
-                logger.info("Publishing a COURSE from draft version: {}", course.getId());
+                logger.info("Publishing a COURSE from draft version: courseId => {}", course.getId());
                 contentReleaseToPublish.setRelease(ReleaseStatus.INITIAL_PUBLISHED.getReleaseNumber());
                 course.setCurrentRelease(ReleaseStatus.INITIAL_PUBLISHED.getReleaseNumber());
                 contentReleaseService.save(contentReleaseToPublish);
@@ -264,12 +267,10 @@ public class ContentController {
         
         if (contentRelease.getRelease() == ReleaseStatus.DRAFT.getReleaseNumber()) {
             contentReleaseService.delete(contentRelease.getId());
-            contentOptional.get().setCurrentContentRelease(null);
             contentService.deleteById(contentOptional.get().getId());
             
         } else {
             contentReleaseService.delete(contentRelease.getId());
-            contentOptional.get().setCurrentContentRelease(null);
             contentService.deleteById(contentOptional.get().getId());
         }
         
