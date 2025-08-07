@@ -13,6 +13,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author apurboturjo
@@ -25,10 +26,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
     
+    private final List<String> excludedPaths;
     private final TokenValidator tokenValidator;
     
-    public JwtAuthFilter(TokenValidator tokenValidator) {
+    public JwtAuthFilter(TokenValidator tokenValidator, List<String> excludedPaths) {
         this.tokenValidator = tokenValidator;
+        this.excludedPaths = excludedPaths;
+    }
+    
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        
+        return excludedPaths.stream().anyMatch(path::startsWith);
     }
     
     @Override
