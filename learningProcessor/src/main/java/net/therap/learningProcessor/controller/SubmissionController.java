@@ -1,0 +1,80 @@
+package net.therap.learningProcessor.controller;
+
+import lombok.RequiredArgsConstructor;
+import net.therap.learningProcessor.dto.StudentDto;
+import net.therap.learningProcessor.dto.submission.StudentSubmissionDto;
+import net.therap.learningProcessor.entity.Student;
+import net.therap.learningProcessor.service.StudentService;
+import net.therap.learningProcessor.service.StudentSubmissionService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * @author avidewan
+ * @since 8/7/25
+ */
+@RestController
+@RequestMapping("/api/submissions")
+@RequiredArgsConstructor
+public class SubmissionController {
+
+    private final StudentSubmissionService submissionService;
+    private final StudentService studentService;
+
+    @PostMapping(consumes =  MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<StudentSubmissionDto> submitAssignment(
+            @RequestParam Long studentId,
+            @RequestParam Long contentId,
+            @RequestParam("file") MultipartFile file) {
+
+        StudentDto studentDto = studentService.getStudentById(studentId);
+
+        StudentSubmissionDto submissionDto = submissionService.submit(studentDto, contentId, file);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(submissionDto);
+    }
+
+    @GetMapping("/student/{studentId}")
+    public ResponseEntity<List<StudentSubmissionDto>> getSubmissionsByStudent(@PathVariable Long studentId) {
+        List<StudentSubmissionDto> submissions = submissionService.getAllByStudentId(studentId);
+
+        return ResponseEntity.ok(submissions);
+    }
+
+    @GetMapping("/content/{contentId}")
+    public ResponseEntity<List<StudentSubmissionDto>> getSubmissionsByContent(@PathVariable Long contentId) {
+        List<StudentSubmissionDto> submissions = submissionService.getAllByContentId(contentId);
+
+        return ResponseEntity.ok(submissions);
+    }
+
+    @GetMapping("/student/{studentId}/content/{contentId}")
+    public ResponseEntity<List<StudentSubmissionDto>> getSubmissionsByStudentAndContent(@PathVariable Long studentId,
+                                                                                        @PathVariable Long contentId) {
+        List<StudentSubmissionDto> submissions = submissionService.getAllByStudentIdAndContentId(studentId, contentId);
+
+        return ResponseEntity.ok(submissions);
+    }
+
+    @GetMapping("/latest/student/{studentId}/content/{contentId}")
+    public ResponseEntity<StudentSubmissionDto> getLatestSubmissionByStudentAndContent(@PathVariable Long studentId,
+                                                                                       @PathVariable Long contentId) {
+        Optional<StudentSubmissionDto> latestSubmission = submissionService.getLatestByStudentIdAndContentId(studentId, contentId);
+
+        return latestSubmission.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/latest/content/{contentId}")
+    public ResponseEntity<List<StudentSubmissionDto>> getLatestSubmissionPerStudentByContent(@PathVariable Long contentId) {
+        List<StudentSubmissionDto> latestSubmissions = submissionService.getLatestSubmissionPerStudentByContentId(contentId);
+
+        return ResponseEntity.ok(latestSubmissions);
+    }
+}
