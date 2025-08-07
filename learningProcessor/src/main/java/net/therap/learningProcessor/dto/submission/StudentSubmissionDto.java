@@ -23,6 +23,8 @@ public class StudentSubmissionDto {
 
     private Long contentId;
 
+    private String studentName;
+
     private String originalFileName;
 
     private String downloadUrl;
