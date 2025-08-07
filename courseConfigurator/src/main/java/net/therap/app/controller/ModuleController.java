@@ -127,10 +127,10 @@ public class ModuleController {
             module.setOrderIndex(newOrderIndex++);
         }
         
-//        List<Content> updatedContents = moduleService.reorderContents(sortedContents);
+        List<Content> updatedContents = moduleService.reorderContents(sortedContents);
         
-//        return ResponseEntity.ok(updatedContents.stream().map(dtoHelper::toContentCatalogueDTO).toList());
-        return ResponseEntity.ok(null);
+        return ResponseEntity.ok(updatedContents.stream().map(dtoHelper::toContentCatalogueDTO).toList());
+//        return ResponseEntity.ok(null);
     }
     
     

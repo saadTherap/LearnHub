@@ -120,7 +120,9 @@ public class CourseService {
         validateModuleForOrdering(moduleMap);
         
         sortedModules.forEach(dto -> {
-            moduleMap.get(dto.getId()).setOrderIndex(dto.getOrderIndex());
+            Module module = moduleMap.get(dto.getId());
+            module.setOrderIndex(dto.getOrderIndex());
+            moduleService.save(module);
         });
         
         return moduleMap.values().stream().toList();
@@ -128,16 +130,23 @@ public class CourseService {
     
     private void validateModuleForOrdering(Map<Long,Module> modules) throws BadRequestException {
         Module module = modules.values().iterator().next();
+        long numberOfModulesInCourse = 0;
         
-        if (modules.size() != module.getCourse().getModules().size()) {
-            throw new BadRequestException(messageSource.getMessage("validation.module.failed", null, Locale.getDefault()));
+        for (Module item : module.getCourse().getModules()) {
+            if (!item.isDeleted()) {
+                numberOfModulesInCourse ++;
+            }
+        }
+        
+        if (modules.size() != numberOfModulesInCourse) {
+            throw new BadRequestException(messageSource.getMessage("validation.module.reorder.failed", null, Locale.getDefault()));
         }
         
         long courseId = module.getCourse().getId();
         
         for (Module moduleItem : modules.values()) {
             if (moduleItem.getCourse().getId() != courseId) {
-                throw new BadRequestException(messageSource.getMessage("validation.module.failed", null, Locale.getDefault()));
+                throw new BadRequestException(messageSource.getMessage("validation.module.reorder.failed", null, Locale.getDefault()));
             }
         }
     }

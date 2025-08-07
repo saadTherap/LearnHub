@@ -52,6 +52,10 @@ public class ContentService {
         return contentOptional;
     }
     
+    public Optional<Content> findById(long contentId) {
+        return contentRepository.findById(contentId);
+    }
+    
     public List<ContentRelease> findAllContents() {
         List<Content> contents = contentRepository.findAll();
         

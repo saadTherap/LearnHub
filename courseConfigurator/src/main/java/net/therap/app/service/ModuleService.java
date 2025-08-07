@@ -3,15 +3,15 @@ package net.therap.app.service;
 import net.therap.app.dto.ReorderDTO;
 import net.therap.app.model.Content;
 import net.therap.app.model.Module;
-import net.therap.app.repository.CourseRepository;
 import net.therap.app.repository.ModuleRepository;
 import org.apache.coyote.BadRequestException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+
+import static java.util.Objects.isNull;
 
 /**
  * @author gazizafor
@@ -24,11 +24,13 @@ public class ModuleService {
     private final ModuleRepository moduleRepository;
     private final ContentService contentService;
     private final MessageSource messageSource;
+    private final ContentReleaseService contentReleaseService;
     
-    public ModuleService(ModuleRepository moduleRepository, ContentService contentService, MessageSource messageSource) {
+    public ModuleService(ModuleRepository moduleRepository, ContentService contentService, MessageSource messageSource, ContentReleaseService contentReleaseService) {
         this.moduleRepository = moduleRepository;
         this.contentService = contentService;
         this.messageSource = messageSource;
+        this.contentReleaseService = contentReleaseService;
     }
     
     public List<Module> findAll() {
@@ -70,42 +72,56 @@ public class ModuleService {
         return false;
     }
     
-//    @Transactional
-//    public List<Content> reorderContents(List<ReorderDTO> sortedContents) {
-//        Map<Long,Module> moduleMap = new HashMap();
-//
-//        for (ReorderDTO dto : sortedModules) {
-//            Optional<Module> moduleOptional = moduleService.findById(dto.getId());
-//
-//            if (moduleOptional.isEmpty()) {
-//                throw new NoSuchElementException(messageSource.getMessage("not.found.module", null, Locale.getDefault()));
-//            }
-//
-//            moduleMap.put(dto.getId(), moduleOptional.get());
-//        }
-//
-//        validateModuleForOrdering(moduleMap);
-//
-//        sortedModules.forEach(dto -> {
-//            moduleMap.get(dto.getId()).setOrderIndex(dto.getOrderIndex());
-//        });
-//
-//        return moduleMap.values().stream().toList();
-//    }
-//
-//    private void validateContentForReordering(Map<Long,Content> contentMap) throws BadRequestException {
-//        Module module = contentMap.values().iterator().next();
-//
-//        if (contentMap.size() != module.getCourse().getModules().size()) {
-//            throw new BadRequestException(messageSource.getMessage("validation.content.failed", null, Locale.getDefault()));
-//        }
-//
-//        long courseId = module.getCourse().getId();
-//
-//        for (Content item : contentMap.values()) {
-//            if (item.getCourse().getId() != courseId) {
-//                throw new BadRequestException(messageSource.getMessage("validation.content.failed", null, Locale.getDefault()));
-//            }
-//        }
-//    }
+    @Transactional
+    public List<Content> reorderContents(List<ReorderDTO> sortedContents) throws BadRequestException {
+        Map<Long, Content> contentMap = new HashMap();
+
+        for (ReorderDTO dto : sortedContents) {
+            Optional<Content> contentOptional = contentService.findById(dto.getId());
+
+            if (contentOptional.isEmpty()) {
+                throw new NoSuchElementException(messageSource.getMessage("not.found.content", null, Locale.getDefault()));
+            }
+
+            contentMap.put(dto.getId(), contentOptional.get());
+        }
+
+        validateContentForReordering(contentMap);
+        
+        for (ReorderDTO dto : sortedContents) {
+            Content content = contentMap.get(dto.getId());
+            
+            if (isNull(content.getCurrentContentRelease())) {
+                throw new BadRequestException(messageSource.getMessage("reorder.deleted.content", null, Locale.getDefault()));
+            }
+            
+            content.getCurrentContentRelease().setOrderIndex(dto.getOrderIndex());
+            contentReleaseService.save(content.getCurrentContentRelease());
+        }
+        
+        return contentMap.values().stream().toList();
+    }
+
+    private void validateContentForReordering(Map<Long,Content> contentMap) throws BadRequestException {
+        Content content = contentMap.values().iterator().next();
+        long numberOfContentsInModule = 0;
+        
+        for (Content item : content.getModule().getContents()) {
+            if (!item.isDeleted()) {
+                numberOfContentsInModule++;
+            }
+        }
+        
+        if (contentMap.size() != numberOfContentsInModule) {
+            throw new BadRequestException(messageSource.getMessage("validation.content.reorder.failed", null, Locale.getDefault()));
+        }
+
+        long moduleId = content.getModule().getId();
+
+        for (Content item : contentMap.values()) {
+            if (item.getModule().getId() != moduleId) {
+                throw new BadRequestException(messageSource.getMessage("validation.content.reorder.failed", null, Locale.getDefault()));
+            }
+        }
+    }
 }
