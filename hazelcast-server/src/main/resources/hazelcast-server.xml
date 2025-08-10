@@ -8,10 +8,10 @@
         <port auto-increment="true">5701</port>
         <join>
             <tcp-ip enabled="true">
-                <member>hazelcast-node-1:5701</member>
-                <member>hazelcast-node-2:5701
+                <member>192.168.0.215:5701</member>
+                <member>192.168.0.215:5702
                 </member>
-                <member>hazelcast-node-3:5701</member>
+                <member>192.168.0.215:5703</member>
             </tcp-ip>
             <multicast enabled="false"/>
         </join>
