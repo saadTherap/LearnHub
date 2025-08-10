@@ -26,7 +26,7 @@ import java.util.List;
  * @since 22/7/25
  */
 @RestController
-@RequestMapping("/api/contents/quiz/questions")
+@RequestMapping("/contents/quiz/questions")
 public class QuizController {
     
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

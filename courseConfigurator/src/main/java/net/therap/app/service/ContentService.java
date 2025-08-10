@@ -63,11 +63,26 @@ public class ContentService {
     }
     
     public List<ContentRelease> findAllReleases(long contentReleaseId) throws NoSuchElementException {
-        Optional<Content> contentOptional = findContentByContentReleaseId(contentReleaseId);
+        Optional<Content> contentOptional = contentRepository.findByContentReleaseIdWithReleases(contentReleaseId);
         
         if (contentOptional.isEmpty()) {
             throw new NoSuchElementException();
         }
+        
+        Hibernate.initialize(contentOptional.get().getContentReleases());
+        logger.info("ContentReleases: {}", contentOptional.get().getContentReleases().size());
+        
+        return contentOptional.get().getContentReleases();
+    }
+    
+    public List<ContentRelease> findAllReleasesOfContent(long contentId) {
+        Optional<Content> contentOptional = contentRepository.findById(contentId);
+        
+        if (contentOptional.isEmpty()) {
+            throw new NoSuchElementException(messageSource.getMessage("not.found.content", null, Locale.getDefault()));
+        }
+        
+        Hibernate.initialize(contentOptional.get().getContentReleases());
         
         return contentOptional.get().getContentReleases();
     }

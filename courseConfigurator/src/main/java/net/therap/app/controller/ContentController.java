@@ -38,7 +38,7 @@ import static net.therap.app.util.StringUtil.isEmpty;
  * @since 27/7/25
  */
 @RestController
-@RequestMapping("/api/contents")
+@RequestMapping("/contents")
 public class ContentController {
     
     private final Logger logger = LoggerFactory.getLogger(ContentController.class);
@@ -129,6 +129,13 @@ public class ContentController {
 
         hazelcastCacheService.put(CacheConstants.CONTENT_RELEASE_LIST, contentReleaseId, dtos);
         return ResponseEntity.ok(dtos);
+    }
+    
+    @GetMapping("/releases/{contentId}")
+    public ResponseEntity<List<ContentReleaseDTO>> getContentReleases(@PathVariable long contentId) {
+        List<ContentRelease> releases = contentService.findAllReleasesOfContent(contentId);
+        
+        return ResponseEntity.ok(releases.stream().map(dtoHelper::toContentReleaseDTO).toList());
     }
 
     @GetMapping("/{contentReleaseId}/releases/{releaseNum}")

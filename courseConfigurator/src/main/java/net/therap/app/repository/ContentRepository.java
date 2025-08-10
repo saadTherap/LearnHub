@@ -20,4 +20,7 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
     
     @Query("SELECT c FROM Content c JOIN FETCH c.contentReleases cr WHERE cr.id = :contentReleaseId")
     Optional<Content> findContentByContentReleaseId(@Param("contentReleaseId") long contentReleaseId);
+    
+    @Query("SELECT c FROM Content c LEFT JOIN FETCH c.contentReleases r WHERE r.id = :contentReleaseId")
+    Optional<Content> findByContentReleaseIdWithReleases(@Param("contentReleaseId") long contentReleaseId);
 }
