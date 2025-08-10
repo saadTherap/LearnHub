@@ -1,6 +1,6 @@
 package net.therap.learningProcessor.client;
 
-import net.therap.learningProcessor.config.FeignMultipartSupportConfig;
+import net.therap.learningProcessor.config.FeignConfig;
 import net.therap.learningProcessor.dto.StoredFileDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.core.io.Resource;
@@ -18,7 +18,7 @@ import java.util.List;
 @FeignClient(name = "secure-file-server",
         url = "${secure-file-server.url}",
         path = "/api/files",
-        configuration = FeignMultipartSupportConfig.class)
+        configuration = FeignConfig.class)
 public interface FileClient {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
