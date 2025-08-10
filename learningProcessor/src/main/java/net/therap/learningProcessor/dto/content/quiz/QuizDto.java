@@ -1,8 +1,9 @@
-package net.therap.learningProcessor.dto.content;
+package net.therap.learningProcessor.dto.content.quiz;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import net.therap.learningProcessor.dto.content.ContentDetailDto;
 
 import java.util.List;
 

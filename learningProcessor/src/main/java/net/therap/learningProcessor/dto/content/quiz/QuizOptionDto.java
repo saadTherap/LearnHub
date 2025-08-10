@@ -1,4 +1,4 @@
-package net.therap.learningProcessor.dto.content;
+package net.therap.learningProcessor.dto.content.quiz;
 
 import lombok.Data;
 

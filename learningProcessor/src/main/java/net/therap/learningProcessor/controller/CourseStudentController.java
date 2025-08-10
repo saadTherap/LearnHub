@@ -21,7 +21,7 @@ import java.util.List;
  * @since 7/27/25
  */
 @RestController
-@RequestMapping("/api/learning-processor/student-course")
+@RequestMapping("/student-course")
 @RequiredArgsConstructor
 public class CourseStudentController {
 
