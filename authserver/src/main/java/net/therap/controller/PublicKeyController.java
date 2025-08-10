@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 8/3/25
  */
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/pk")
 public class PublicKeyController {
     
     private final JwtService jwtService;
@@ -21,7 +21,7 @@ public class PublicKeyController {
         this.jwtService = jwtService;
     }
     
-    @GetMapping("/pk")
+    @GetMapping()
     public ResponseEntity<String> getPublicKey(@RequestParam("kid") String keyId) {
         if (!keyId.equals(jwtService.getKeyId())) {
             return ResponseEntity.notFound().build();

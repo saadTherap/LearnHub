@@ -1,0 +1,35 @@
+plugins {
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'net.therap'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    implementation 'com.hazelcast:hazelcast:5.4.0'
+    implementation "com.hazelcast:hazelcast-spring:5.4.0"
+
+    implementation 'org.yaml:snakeyaml:2.2'
+
+    implementation 'org.slf4j:slf4j-api:2.0.9'
+    runtimeOnly 'org.slf4j:slf4j-simple:2.0.9'
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'net.therap.HazelcastServerApp'
+        )
+    }
+}
+
+
+application {
+    mainClass = 'net.therap.HazelcastServerApp'
+}

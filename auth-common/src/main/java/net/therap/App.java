@@ -10,7 +10,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  */
 
 @SpringBootApplication
-@EnableFeignClients(basePackages = "net.therap.client")
+@EnableFeignClients(basePackages = "net.therap")
 public class App {
     public static void main(String[] args) {
         SpringApplication.run(App.class, args);

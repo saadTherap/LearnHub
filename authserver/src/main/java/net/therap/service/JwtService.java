@@ -29,7 +29,6 @@ import java.util.UUID;
  * @since 7/27/25
  */
 @Slf4j
-@Getter
 @Service
 public class JwtService {
     
@@ -165,8 +164,8 @@ public class JwtService {
                     .claim("userId", user.getId())
                     .claim("role", user.getRole().name())
                     .claim("tokenType", tokenType)
-                    .issuer("therap-auth-server")
-                    .audience("therap-clients")
+                    .issuer("learnhub-auth-server")
+                    .audience("learnhub-clients")
                     .issueTime(Date.from(now))
                     .expirationTime(Date.from(expiration))
                     .jwtID(UUID.randomUUID().toString())
