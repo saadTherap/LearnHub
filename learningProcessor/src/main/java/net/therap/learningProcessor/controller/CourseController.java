@@ -18,33 +18,33 @@ import java.util.List;
  * @since 7/27/25
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/courses")
 @RequiredArgsConstructor
 public class CourseController {
 
     private final CourseService courseService;
 
-    @GetMapping("/courses")
+    @GetMapping("/public")
     public List<CourseCatalogDto> getAllCourses() {
         return courseService.getCourseCatalogs();
     }
 
-    @GetMapping("/courses/{courseId}")
+    @GetMapping("/public/{courseId}")
     public CourseCatalogDto getCourseCatalog(@PathVariable long courseId) {
         return courseService.getCourseCatalogByID(courseId);
     }
 
-    @GetMapping("/auth/courses/{courseId}")
+    @GetMapping("/{courseId}")
     public CourseDetailWithProgressDto getCourseDetail(@PathVariable long courseId) {
         return courseService.getCourseDetail(courseId);
     }
 
-    @GetMapping("/auth/courses/modules/{moduleId}/contents")
+    @GetMapping("/modules/{moduleId}/contents")
     public List<BaseContentDto> getContentsByModule(@PathVariable long moduleId) {
         return courseService.getContentsByModuleId(moduleId);
     }
 
-    @GetMapping("auth/courses/contents/{contentId}")
+    @GetMapping("/contents/{contentId}")
     public ContentDetailDto getContentDetail(@PathVariable long contentId) {
         return courseService.getContentDetail(contentId);
     }
