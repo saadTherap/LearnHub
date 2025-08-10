@@ -20,7 +20,7 @@ import java.util.Objects;
  * @since 7/27/25
  */
 @RestController
-@RequestMapping("/api/learning-processor/students")
+@RequestMapping("/students")
 @RequiredArgsConstructor
 @Validated
 public class StudentController {
