@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since 6/8/25
  */
 @Component
-public class ServiceDiscoveryCache {
+public class ServiceDiscoveryCacheForAuthCommon {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
