@@ -18,7 +18,7 @@ import java.util.List;
  * @since 7/27/25
  */
 @RestController
-@RequestMapping("/api/courses")
+@RequestMapping("/api/learning-processor/courses")
 @RequiredArgsConstructor
 public class CourseController {
 
