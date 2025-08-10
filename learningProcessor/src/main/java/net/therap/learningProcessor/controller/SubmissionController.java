@@ -24,7 +24,7 @@ import java.util.Optional;
  * @since 8/7/25
  */
 @RestController
-@RequestMapping("/api/submissions")
+@RequestMapping("/api/learning-processor/submissions")
 @RequiredArgsConstructor
 public class SubmissionController {
 

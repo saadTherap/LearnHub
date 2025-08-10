@@ -23,7 +23,7 @@ import java.util.List;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/test")
+@RequestMapping("api/learning-processor/test")
 public class TestController {
 
     private final CourseClient courseClient;

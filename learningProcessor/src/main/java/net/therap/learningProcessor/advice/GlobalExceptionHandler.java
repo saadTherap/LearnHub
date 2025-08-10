@@ -1,6 +1,8 @@
 package net.therap.learningProcessor.advice;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import feign.FeignException;
+import feign.RetryableException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +34,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex,
                                                                 HttpServletRequest req) {
-
         Map<String, String> errors = new HashMap<>();
 
         for(FieldError fieldError: ex.getBindingResult().getFieldErrors()) {
@@ -83,6 +84,41 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
+
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<ErrorResponse> handleFeignStatusException(FeignException ex, HttpServletRequest request) {
+        String errorMessage = messageSource.getMessage(
+                "error.dependent.service.notWorking",
+                null,
+                request.getLocale()
+        );
+
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                errorMessage,
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+    }
+
+    @ExceptionHandler(RetryableException.class)
+    public ResponseEntity<ErrorResponse> handleFeignRetryableException(RetryableException ex, HttpServletRequest request) {
+        String errorMessage = messageSource.getMessage(
+                "error.dependent.service.notReachable",
+                null,
+                request.getLocale()
+        );
+
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                errorMessage,
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex,

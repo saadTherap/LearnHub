@@ -21,7 +21,7 @@ import java.util.List;
  * @since 7/27/25
  */
 @RestController
-@RequestMapping("/api/student-course")
+@RequestMapping("/api/learning-processor/student-course")
 @RequiredArgsConstructor
 public class CourseStudentController {
 
@@ -68,23 +68,6 @@ public class CourseStudentController {
 
         return ResponseEntity.noContent().build();
     }
-
-//    @PostMapping("/submissions")
-//    public ResponseEntity<Void> submitAssignment(@RequestParam Long studentId,
-//                                                 @RequestParam Long contentId,
-//                                                 @RequestParam String downloadUrl) {
-//
-//        courseStudentService.submitAssignment(studentId, contentId, downloadUrl);
-//
-//        Long submissionId = 0L;
-//        SubmissionNotification notification = new SubmissionNotification();
-//        notification.setType(NotificationType.ENROLLMENT);
-//        notification.setSubmissionId(submissionId);
-//        notification.setMessage("An student has submitted assignment into Content Id: " + contentId);
-//        notificationService.sendNotification(notification);
-//
-//        return ResponseEntity.status(HttpStatus.CREATED).build();
-//    }
 
     @GetMapping("/content-status/{studentId}")
     public ResponseEntity<List<StudentContentCompletionDto>> getContentStatus(@PathVariable Long studentId) {
