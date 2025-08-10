@@ -33,7 +33,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class JwtService {
 
-    private static final long ACCESS_EXPIRATION_MINUTES = 15L;
+    private static final long ACCESS_EXPIRATION_MINUTES = 1440L;
     private static final long REFRESH_EXPIRATION_MINUTES = 60L * 24 * 7;
 
     private final UserService userService;
@@ -176,6 +176,7 @@ public class JwtService {
         try {
             Instant now = Instant.now();
             Instant expiration = now.plus(expirationMinutes, ChronoUnit.MINUTES);
+            System.out.println("Now time: " + Date.from(now) + ", Expiration time: (Auth Server) " + Date.from(expiration) + ", Access Time: " + expirationMinutes);
 
             JWTClaimsSet claims = new JWTClaimsSet.Builder()
                     .subject(user.getEmail())

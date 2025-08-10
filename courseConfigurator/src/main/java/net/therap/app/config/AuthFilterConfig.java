@@ -25,18 +25,4 @@ public class AuthFilterConfig {
 
         return new JwtAuthFilter(tokenValidator, excludedPaths);
     }
-
-    @Bean
-    public FilterRegistrationBean<JwtAuthFilter> authFilterFilterRegistration(JwtAuthFilter jwtAuthFilter) {
-        FilterRegistrationBean<JwtAuthFilter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(jwtAuthFilter);
-        registration.addUrlPatterns("/*");
-        registration.setEnabled(true);
-        registration.setName("JwtAuthFilter");
-        registration.setOrder(1);
-
-        System.out.println("Registration bean created");
-
-        return registration;
-    }
 }

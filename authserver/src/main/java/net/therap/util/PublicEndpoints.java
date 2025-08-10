@@ -10,6 +10,7 @@ public class PublicEndpoints {
 
     public static final String[] WHITELIST = {
             "/auth/api/",
+            "/auth/pk",
             "/auth/swagger-ui/",
             "/auth/swagger-ui.html",
             "/auth/v3/api-docs",

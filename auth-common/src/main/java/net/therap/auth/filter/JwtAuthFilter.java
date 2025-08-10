@@ -39,10 +39,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String requestURI = request.getRequestURI();
         String contextPath = request.getContextPath();
 
-        // Extract the path after context path
         String path = contextPath.isEmpty() ? requestURI : requestURI.substring(contextPath.length());
 
-        // Debug logging
         System.out.println("=== SHOULD NOT FILTER DEBUG ===");
         System.out.println("Request URI: " + requestURI);
         System.out.println("Context Path: '" + contextPath + "'");
@@ -82,8 +80,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             JWTClaimsSet claims = tokenValidator.validate(token);
-            log.debug("Token validated successfully for user: {}", claims.getSubject());
+            System.out.println("Token validated successfully for user: {} ===> " + claims);
 
+            System.out.println("Response: " + response);
             filterChain.doFilter(request, response);
 
         } catch (AuthenticationException e) {
