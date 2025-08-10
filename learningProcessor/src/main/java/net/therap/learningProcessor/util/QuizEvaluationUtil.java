@@ -35,7 +35,7 @@ public class QuizEvaluationUtil {
             }
         }
 
-        double percentage = (correctCount * 100.0) / totalQuestions;
+        double percentage = totalQuestions == 0 ? 0.0 : (correctCount * 100.0) / totalQuestions;
         boolean passed = percentage >= PASS_MARKS_PERCENT;
 
         return QuizSubmissionResultDto.builder()
