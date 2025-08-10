@@ -20,7 +20,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EntityScan("net.therap.app.model")
 @EnableFeignClients(basePackages = "net.therap.auth.client")
-@ComponentScan(basePackages = "net.therap.auth")
+@ComponentScan(basePackages = {"net.therap.auth", "net.therap.app"})
 public class AppApplication {
 	
 	public static void main(String[] args) {

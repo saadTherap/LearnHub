@@ -3,7 +3,7 @@ package net.therap.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.therap.entity.User;
-import net.therap.service.CustomUserDetailsService;
+import net.therap.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -17,18 +17,18 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserController {
     
-    private final CustomUserDetailsService customUserDetailsService;
+    private final UserService userService;
     
     @PutMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<User> update(@Valid @RequestBody User user) {
-        return ResponseEntity.ok(customUserDetailsService.updateUser(user));
+        return ResponseEntity.ok(userService.updateUser(user));
     }
     
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        customUserDetailsService.deleteById(id);
+        userService.deleteById(id);
         
         return ResponseEntity.ok().build();
     }

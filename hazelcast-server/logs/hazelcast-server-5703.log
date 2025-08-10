@@ -1,60 +1,188 @@
-Aug 03, 2025 9:58:45 AM com.hazelcast.instance.impl.HazelcastInstanceFactory
+Aug 10, 2025 11:51:01 AM com.hazelcast.instance.impl.HazelcastInstanceFactory
 WARNING: Hazelcast is starting in a Java modular environment (Java 9 and newer) but without proper access to required Java packages. Use additional Java arguments to provide Hazelcast access to Java internal API. The internal API access is used to get the best performance results. Arguments to be used:
  --add-modules java.se --add-exports java.base/jdk.internal.ref=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.management/sun.management=ALL-UNNAMED --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED
-Aug 03, 2025 9:58:45 AM com.hazelcast.instance.AddressPicker
-INFO: [LOCAL] [learnhub] [5.4.0] Interfaces is disabled, trying to pick one address from TCP-IP config addresses: [172.16.2.115]
-Aug 03, 2025 9:58:45 AM com.hazelcast.system.logo
-INFO: [172.16.2.115]:5703 [learnhub] [5.4.0] 
+Aug 10, 2025 11:51:01 AM com.hazelcast.instance.AddressPicker
+INFO: [LOCAL] [learnhub] [5.4.0] Interfaces is disabled, trying to pick one address from TCP-IP config addresses: [192.168.0.215]
+Aug 10, 2025 11:51:01 AM com.hazelcast.system.logo
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] 
 	o    o     o     o---o   o--o o      o---o     o     o----o o--o--o
 	|    |    / \       /         |     /         / \    |         |   
 	o----o       o     o   o----o |    o             o   o----o    |   
 	|    |  *     \   /           |     \       *     \       |    |   
 	o    o *       o o---o   o--o o----o o---o *       o o----o    o   
-Aug 03, 2025 9:58:45 AM com.hazelcast.system
-INFO: [172.16.2.115]:5703 [learnhub] [5.4.0] Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
-Aug 03, 2025 9:58:45 AM com.hazelcast.system
-INFO: [172.16.2.115]:5703 [learnhub] [5.4.0] Hazelcast Platform 5.4.0 (20240415) starting at [172.16.2.115]:5703
-Aug 03, 2025 9:58:45 AM com.hazelcast.system
-INFO: [172.16.2.115]:5703 [learnhub] [5.4.0] Cluster name: learnhub
-Aug 03, 2025 9:58:45 AM com.hazelcast.system
-INFO: [172.16.2.115]:5703 [learnhub] [5.4.0] Integrity Checker is disabled. Fail-fast on corrupted executables will not be performed. For more information, see the documentation for Integrity Checker.
-Aug 03, 2025 9:58:45 AM com.hazelcast.system
-INFO: [172.16.2.115]:5703 [learnhub] [5.4.0] The Jet engine is disabled.
+Aug 10, 2025 11:51:01 AM com.hazelcast.system
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
+Aug 10, 2025 11:51:01 AM com.hazelcast.system
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Hazelcast Platform 5.4.0 (20240415) starting at [192.168.0.215]:5703
+Aug 10, 2025 11:51:01 AM com.hazelcast.system
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Cluster name: learnhub
+Aug 10, 2025 11:51:01 AM com.hazelcast.system
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Integrity Checker is disabled. Fail-fast on corrupted executables will not be performed. For more information, see the documentation for Integrity Checker.
+Aug 10, 2025 11:51:01 AM com.hazelcast.system
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] The Jet engine is disabled.
 To enable the Jet engine on the members, do one of the following:
   - Change member config using Java API: config.getJetConfig().setEnabled(true)
   - Change XML/YAML configuration property: Set hazelcast.jet.enabled to true
   - Add system property: -Dhz.jet.enabled=true (for Hazelcast embedded, works only when loading config via Config.load)
   - Add environment variable: HZ_JET_ENABLED=true (recommended when running container image. For Hazelcast embedded, works only when loading config via Config.load)
-Aug 03, 2025 9:58:46 AM com.hazelcast.system.security
-INFO: [172.16.2.115]:5703 [learnhub] [5.4.0] Enable DEBUG/FINE log level for log category com.hazelcast.system.security  or use -Dhazelcast.security.recommendations system property to see 🔒 security recommendations and the status of current config.
-Aug 03, 2025 9:58:46 AM com.hazelcast.instance.impl.Node
-INFO: [172.16.2.115]:5703 [learnhub] [5.4.0] Using TCP/IP discovery
-Aug 03, 2025 9:58:46 AM com.hazelcast.cp.CPSubsystem
-WARNING: [172.16.2.115]:5703 [learnhub] [5.4.0] CP Subsystem is not enabled. CP data structures will operate in UNSAFE mode! Please note that UNSAFE mode will not provide strong consistency guarantees.
-Aug 03, 2025 9:58:46 AM com.hazelcast.internal.diagnostics.Diagnostics
-INFO: [172.16.2.115]:5703 [learnhub] [5.4.0] Diagnostics disabled. To enable add -Dhazelcast.diagnostics.enabled=true to the JVM arguments.
-Aug 03, 2025 9:58:46 AM com.hazelcast.core.LifecycleService
-INFO: [172.16.2.115]:5703 [learnhub] [5.4.0] [172.16.2.115]:5703 is STARTING
-Aug 03, 2025 9:58:46 AM com.hazelcast.internal.server.tcp.TcpServerConnection
-INFO: [172.16.2.115]:5703 [learnhub] [5.4.0] Initialized new cluster connection between /172.16.2.115:41823 and /172.16.2.115:5701
-Aug 03, 2025 9:58:46 AM com.hazelcast.internal.server.tcp.TcpServerConnection
-INFO: [172.16.2.115]:5703 [learnhub] [5.4.0] Initialized new cluster connection between /172.16.2.115:36167 and /172.16.2.115:5702
-Aug 03, 2025 9:58:46 AM com.hazelcast.internal.cluster.ClusterService
-INFO: [172.16.2.115]:5703 [learnhub] [5.4.0] 
+Aug 10, 2025 11:51:01 AM com.hazelcast.system.security
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Enable DEBUG/FINE log level for log category com.hazelcast.system.security  or use -Dhazelcast.security.recommendations system property to see 🔒 security recommendations and the status of current config.
+Aug 10, 2025 11:51:01 AM com.hazelcast.instance.impl.Node
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Using TCP/IP discovery
+Aug 10, 2025 11:51:01 AM com.hazelcast.cp.CPSubsystem
+WARNING: [192.168.0.215]:5703 [learnhub] [5.4.0] CP Subsystem is not enabled. CP data structures will operate in UNSAFE mode! Please note that UNSAFE mode will not provide strong consistency guarantees.
+Aug 10, 2025 11:51:02 AM com.hazelcast.internal.diagnostics.Diagnostics
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Diagnostics disabled. To enable add -Dhazelcast.diagnostics.enabled=true to the JVM arguments.
+Aug 10, 2025 11:51:02 AM com.hazelcast.core.LifecycleService
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] [192.168.0.215]:5703 is STARTING
+Aug 10, 2025 11:51:02 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:42035 and /192.168.0.215:5701
+Aug 10, 2025 11:51:02 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:56983 and /192.168.0.215:5702
+Aug 10, 2025 11:51:02 AM com.hazelcast.internal.cluster.ClusterService
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] 
 
 Members {size:3, ver:3} [
-	Member [172.16.2.115]:5701 - ce2fa594-f317-4871-99bb-869aa230451b
-	Member [172.16.2.115]:5702 - 41a782f3-fa2f-4e05-81c3-16075e9d39c8
-	Member [172.16.2.115]:5703 - 123a9276-f0c8-40f2-bec8-b9804d72f77c this
+	Member [192.168.0.215]:5701 - e5cdee78-ba5f-43df-bf9b-43ecedb332ca
+	Member [192.168.0.215]:5702 - 409cec8f-3eee-4316-9f44-49563a81d139
+	Member [192.168.0.215]:5703 - d93382f9-6b7c-4fc2-86e0-9a743219b15c this
 ]
 
-Aug 03, 2025 9:58:46 AM com.hazelcast.internal.cluster.impl.ClusterJoinManager
-INFO: [172.16.2.115]:5703 [learnhub] [5.4.0] The address ([172.16.2.115]:5701) will be added as a temporary member address to the TCP-IP joiner configuration.
-Aug 03, 2025 9:58:46 AM com.hazelcast.internal.cluster.impl.ClusterJoinManager
-INFO: [172.16.2.115]:5703 [learnhub] [5.4.0] The address ([172.16.2.115]:5701) will be added as a temporary member address to the TCP-IP joiner configuration.
-Aug 03, 2025 9:58:46 AM com.hazelcast.internal.cluster.impl.ClusterJoinManager
-INFO: [172.16.2.115]:5703 [learnhub] [5.4.0] The address ([172.16.2.115]:5701) will be added as a temporary member address to the TCP-IP joiner configuration.
-Aug 03, 2025 9:58:46 AM com.hazelcast.core.LifecycleService
-INFO: [172.16.2.115]:5703 [learnhub] [5.4.0] [172.16.2.115]:5703 is STARTED
-Hazelcast server started on port 5701, cluster size: 3
-Hazelcast server stopped.
+Aug 10, 2025 11:51:02 AM com.hazelcast.internal.cluster.impl.ClusterJoinManager
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] The address ([192.168.0.215]:5701) will be added as a temporary member address to the TCP-IP joiner configuration.
+Aug 10, 2025 11:51:02 AM com.hazelcast.internal.cluster.impl.ClusterJoinManager
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] The address ([192.168.0.215]:5701) will be added as a temporary member address to the TCP-IP joiner configuration.
+Aug 10, 2025 11:51:02 AM com.hazelcast.internal.cluster.impl.ClusterJoinManager
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] The address ([192.168.0.215]:5701) will be added as a temporary member address to the TCP-IP joiner configuration.
+Aug 10, 2025 11:51:02 AM com.hazelcast.core.LifecycleService
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] [192.168.0.215]:5703 is STARTED
+Hazelcast server started on port: 5701, cluster size: 3
+Aug 10, 2025 11:52:15 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:5703 and /192.168.0.215:48843
+Aug 10, 2025 11:52:15 AM com.hazelcast.internal.cluster.impl.operations.SplitBrainMergeValidationOp
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Ignoring join check from [192.168.0.215]:5704, because this node is not master...
+Aug 10, 2025 11:52:15 AM com.hazelcast.internal.cluster.impl.operations.SplitBrainMergeValidationOp
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] A split-brain merge validation request was received, but the current member is not a master. The master address will be sent to the request source ([192.168.0.215]:5704)
+Aug 10, 2025 11:52:15 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Connection[id=3, /192.168.0.215:5703->/192.168.0.215:48843, qualifier=null, endpoint=[192.168.0.215]:5704, remoteUuid=74a9407c-b1eb-46a1-a626-c376d9c9a738, alive=false, connectionType=MEMBER, planeIndex=0] closed. Reason: Connection closed by the other side
+Aug 10, 2025 11:52:15 AM com.hazelcast.internal.cluster.ClusterService
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] 
+
+Members {size:4, ver:4} [
+	Member [192.168.0.215]:5701 - e5cdee78-ba5f-43df-bf9b-43ecedb332ca
+	Member [192.168.0.215]:5702 - 409cec8f-3eee-4316-9f44-49563a81d139
+	Member [192.168.0.215]:5703 - d93382f9-6b7c-4fc2-86e0-9a743219b15c this
+	Member [192.168.0.215]:5704 - 53579c0d-0d31-4435-a733-24eaa4f70573
+]
+
+Aug 10, 2025 11:52:15 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:33967 and /192.168.0.215:5704
+Aug 10, 2025 11:52:17 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:5703 and /192.168.0.215:41013
+Aug 10, 2025 11:52:17 AM com.hazelcast.internal.cluster.impl.operations.SplitBrainMergeValidationOp
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Ignoring join check from [192.168.0.215]:5705, because this node is not master...
+Aug 10, 2025 11:52:17 AM com.hazelcast.internal.cluster.impl.operations.SplitBrainMergeValidationOp
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] A split-brain merge validation request was received, but the current member is not a master. The master address will be sent to the request source ([192.168.0.215]:5705)
+Aug 10, 2025 11:52:17 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Connection[id=5, /192.168.0.215:5703->/192.168.0.215:41013, qualifier=null, endpoint=[192.168.0.215]:5705, remoteUuid=fa917c0d-c87d-4a27-92e8-4150fc26997f, alive=false, connectionType=MEMBER, planeIndex=0] closed. Reason: Connection closed by the other side
+Aug 10, 2025 11:52:17 AM com.hazelcast.internal.cluster.ClusterService
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] 
+
+Members {size:5, ver:5} [
+	Member [192.168.0.215]:5701 - e5cdee78-ba5f-43df-bf9b-43ecedb332ca
+	Member [192.168.0.215]:5702 - 409cec8f-3eee-4316-9f44-49563a81d139
+	Member [192.168.0.215]:5703 - d93382f9-6b7c-4fc2-86e0-9a743219b15c this
+	Member [192.168.0.215]:5704 - 53579c0d-0d31-4435-a733-24eaa4f70573
+	Member [192.168.0.215]:5705 - 5b808fcb-da57-4a16-a5a1-6bbd0d657443
+]
+
+Aug 10, 2025 11:52:17 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:42339 and /192.168.0.215:5705
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:5703 and /192.168.0.215:48625
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.cluster.impl.operations.SplitBrainMergeValidationOp
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Ignoring join check from [192.168.0.215]:5706, because this node is not master...
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.cluster.impl.operations.SplitBrainMergeValidationOp
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] A split-brain merge validation request was received, but the current member is not a master. The master address will be sent to the request source ([192.168.0.215]:5706)
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Connection[id=7, /192.168.0.215:5703->/192.168.0.215:48625, qualifier=null, endpoint=[192.168.0.215]:5706, remoteUuid=f99f2b53-82b7-4667-ae7d-523bf74c1862, alive=false, connectionType=MEMBER, planeIndex=0] closed. Reason: Connection closed by the other side
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.cluster.ClusterService
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] 
+
+Members {size:6, ver:6} [
+	Member [192.168.0.215]:5701 - e5cdee78-ba5f-43df-bf9b-43ecedb332ca
+	Member [192.168.0.215]:5702 - 409cec8f-3eee-4316-9f44-49563a81d139
+	Member [192.168.0.215]:5703 - d93382f9-6b7c-4fc2-86e0-9a743219b15c this
+	Member [192.168.0.215]:5704 - 53579c0d-0d31-4435-a733-24eaa4f70573
+	Member [192.168.0.215]:5705 - 5b808fcb-da57-4a16-a5a1-6bbd0d657443
+	Member [192.168.0.215]:5706 - 68cdc783-7726-403d-b9fc-9357fa2ec01f
+]
+
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:38851 and /192.168.0.215:5706
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5703 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:5703 and /192.168.0.215:55021
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:48625 and /192.168.0.215:5703
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.cluster.impl.ClusterJoinManager
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] The address ([192.168.0.215]:5701) will be added as a temporary member address to the TCP-IP joiner configuration.
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:35849 and /192.168.0.215:5702
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.cluster.impl.ClusterJoinManager
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] The address ([192.168.0.215]:5701) will be added as a temporary member address to the TCP-IP joiner configuration.
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:52819 and /192.168.0.215:5701
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.cluster.impl.ClusterJoinManager
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] We should merge to [192.168.0.215]:5701 because their data member count is bigger than ours [5 > 1]
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.cluster.impl.ClusterJoinManager
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] The address ([192.168.0.215]:5701) will be added as a temporary member address to the TCP-IP joiner configuration.
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.cluster.impl.TcpIpJoiner
+WARNING: [192.168.0.215]:5706 [learnhub] [5.4.0] [192.168.0.215]:5706 is merging [tcp/ip] to [192.168.0.215]:5701
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.cluster.impl.operations.LockClusterStateOp
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] Locking cluster state. Initiator: [192.168.0.215]:5706, lease-time: 60000
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.cluster.impl.operations.LockClusterStateOp
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] Extending cluster state lock. Initiator: [192.168.0.215]:5706, lease-time: 20000
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.cluster.impl.operations.CommitClusterStateOp
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] Changing cluster state from ClusterState{state=ACTIVE, lock=LockGuard{lockOwner=[192.168.0.215]:5706, lockOwnerId='aa3ca54a-cce9-4004-8933-611ec8d7421b', lockExpiryTime=1754805219378}} to ClusterStateChange{type=class com.hazelcast.cluster.ClusterState, newState=FROZEN}, initiator: [192.168.0.215]:5706, transient: false
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.cluster.impl.operations.MergeClustersOp
+WARNING: [192.168.0.215]:5706 [learnhub] [5.4.0] [192.168.0.215]:5706 is merging to [192.168.0.215]:5701, because: instructed by master [192.168.0.215]:5706
+Aug 10, 2025 11:52:19 AM com.hazelcast.core.LifecycleService
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] [192.168.0.215]:5706 is MERGING
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.cluster.ClusterService
+WARNING: [192.168.0.215]:5706 [learnhub] [5.4.0] Resetting local member UUID. Previous: f99f2b53-82b7-4667-ae7d-523bf74c1862, new: 68cdc783-7726-403d-b9fc-9357fa2ec01f
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] Connection[id=20, /192.168.0.215:52819->/192.168.0.215:5701, qualifier=null, endpoint=[192.168.0.215]:5701, remoteUuid=e5cdee78-ba5f-43df-bf9b-43ecedb332ca, alive=false, connectionType=MEMBER, planeIndex=0] closed. Reason: TcpServer is stopping
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] Connection[id=19, /192.168.0.215:35849->/192.168.0.215:5702, qualifier=null, endpoint=[192.168.0.215]:5702, remoteUuid=409cec8f-3eee-4316-9f44-49563a81d139, alive=false, connectionType=MEMBER, planeIndex=0] closed. Reason: TcpServer is stopping
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] Connection[id=18, /192.168.0.215:48625->/192.168.0.215:5703, qualifier=null, endpoint=[192.168.0.215]:5703, remoteUuid=d93382f9-6b7c-4fc2-86e0-9a743219b15c, alive=false, connectionType=MEMBER, planeIndex=0] closed. Reason: TcpServer is stopping
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnector
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] Connecting to /192.168.0.215:5701, timeout: 10000, bind-any: true
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:56999 and /192.168.0.215:5701
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:5706 and /192.168.0.215:56427
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:5706 and /192.168.0.215:35529
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:5706 and /192.168.0.215:55411
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:5706 and /192.168.0.215:38851
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.cluster.ClusterService
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] 
+
+Members {size:6, ver:6} [
+	Member [192.168.0.215]:5701 - e5cdee78-ba5f-43df-bf9b-43ecedb332ca
+	Member [192.168.0.215]:5702 - 409cec8f-3eee-4316-9f44-49563a81d139
+	Member [192.168.0.215]:5703 - d93382f9-6b7c-4fc2-86e0-9a743219b15c
+	Member [192.168.0.215]:5704 - 53579c0d-0d31-4435-a733-24eaa4f70573
+	Member [192.168.0.215]:5705 - 5b808fcb-da57-4a16-a5a1-6bbd0d657443
+	Member [192.168.0.215]:5706 - 68cdc783-7726-403d-b9fc-9357fa2ec01f this
+]
+
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnector
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] Connecting to /192.168.0.215:5703, timeout: 10000, bind-any: true
+Aug 10, 2025 11:52:19 AM com.hazelcast.internal.server.tcp.TcpServerConnection
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] Initialized new cluster connection between /192.168.0.215:55021 and /192.168.0.215:5703
+Aug 10, 2025 11:52:20 AM com.hazelcast.core.LifecycleService
+INFO: [192.168.0.215]:5706 [learnhub] [5.4.0] [192.168.0.215]:5706 is MERGED

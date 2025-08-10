@@ -30,7 +30,7 @@ import static net.therap.util.JwtUtil.toSystemFormatUserRole;
  */
 @Service
 @RequiredArgsConstructor
-@Slf4j // Using Lombok for logging
+@Slf4j
 public class AuthServiceImpl implements AuthService {
     
     private final JwtService jwtService;
@@ -38,7 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authManager;
-    private final CustomUserDetailsService customUserDetailsService;
+    private final UserService userService;
     private final VerificationTokenRepository verificationTokenRepository;
     
     @Override
@@ -49,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
         user.setRole(toSystemFormatUserRole(request.getRole()));
         user.setEnabled(false);
         
-        User savedUser = customUserDetailsService.saveUser(user);
+        User savedUser = userService.saveUser(user);
         
         generateAndSendVerificationToken(savedUser);
         
@@ -73,10 +73,8 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public JwtResponse refreshToken(String refreshToken) {
         String email = jwtService.extractEmail(refreshToken);
-        
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
-        
-        if (!jwtService.isValid(refreshToken, userDetails)) {
+
+        if (!jwtService.isValid(refreshToken)) {
             throw new TokenVerificationException(messageUtil.getMessage("err.refresh.token.invalid"));
         }
         
@@ -108,7 +106,7 @@ public class AuthServiceImpl implements AuthService {
         
         User userToVerify = verificationToken.getUser();
         userToVerify.setEnabled(true);
-        customUserDetailsService.updateUser(userToVerify);
+        userService.updateUser(userToVerify);
         
         verificationTokenRepository.delete(verificationToken);
     }
@@ -134,10 +132,10 @@ public class AuthServiceImpl implements AuthService {
     }
     
     private User getUser(String email) {
-        return customUserDetailsService.findByEmail(email);
+        return userService.findByEmail(email);
     }
     
     private User getUser(Long userId) {
-        return customUserDetailsService.findById(userId);
+        return userService.findById(userId);
     }
 }

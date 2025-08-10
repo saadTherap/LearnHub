@@ -12,17 +12,30 @@ import java.util.List;
 public class AuthFilterConfig {
 
     @Bean
-    public FilterRegistrationBean<JwtAuthFilter> authFilterFilterRegistration(TokenValidator tokenValidator) {
+    public JwtAuthFilter jwtAuthFilter(TokenValidator tokenValidator) {
         List<String> excludedPaths = List.of(
                 "/swagger-ui/",
-                "/course-configurator/public/"
+                "/swagger-resources/",
+                "/v3/api-docs",
+                "/webjars/",
+                "/public/"
         );
 
+        System.out.println("Filter bean created");
+
+        return new JwtAuthFilter(tokenValidator, excludedPaths);
+    }
+
+    @Bean
+    public FilterRegistrationBean<JwtAuthFilter> authFilterFilterRegistration(JwtAuthFilter jwtAuthFilter) {
         FilterRegistrationBean<JwtAuthFilter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(new JwtAuthFilter(tokenValidator));
+        registration.setFilter(jwtAuthFilter);
         registration.addUrlPatterns("/*");
+        registration.setEnabled(true);
         registration.setName("JwtAuthFilter");
         registration.setOrder(1);
+
+        System.out.println("Registration bean created");
 
         return registration;
     }
