@@ -23,8 +23,10 @@ public class NotificationService {
 
     @Transactional
     public void saveNotification(Notification notification) {
-//        this.notificationRepository.save(notification);
         logger.info("-------------- Received and saving notification ---------------------");
         logger.info("{}", notification);
+        Notification savedNotification = notificationRepository.save(notification);
+        logger.info("Notification after saving: {}", savedNotification);
+        logger.info("--------------- Saved notification ----------------------");
     }
 }

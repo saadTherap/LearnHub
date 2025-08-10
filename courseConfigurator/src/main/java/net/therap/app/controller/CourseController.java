@@ -31,7 +31,7 @@ import static net.therap.app.util.CollectionUtil.isValidOrderedList;
  * @since 22/7/25
  */
 @RestController
-@RequestMapping("/api/courses")
+@RequestMapping("/courses")
 public class CourseController {
     
     private final Logger logger = LoggerFactory.getLogger(CourseController.class);
@@ -107,7 +107,7 @@ public class CourseController {
     }
     
     @GetMapping("/{id}/details")
-    public ResponseEntity<CourseDTO> getCourseByIdTesting(@PathVariable long id) {
+    public ResponseEntity<CourseDTO> getCourseByIdDetails(@PathVariable long id) {
         
         CourseDTO cached = hazelcastCacheService.get(CacheConstants.COURSES, id);
         if (cached != null) {

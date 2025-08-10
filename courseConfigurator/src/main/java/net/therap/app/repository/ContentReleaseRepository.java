@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -15,5 +16,7 @@ import java.util.Optional;
  */
 @Repository
 public interface ContentReleaseRepository extends JpaRepository<ContentRelease, Long> {
-
+    
+    @Query("SELECT cr FROM Content c JOIN c.currentContentRelease cr WHERE c.module.course.instructor.id = :instructorId")
+    List<ContentRelease> findByInstructorId(@Param("instructorId") long instructorId);
 }

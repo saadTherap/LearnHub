@@ -1,0 +1,13 @@
+{
+  "properties": [
+    {
+      "name": "enrollment.client.name",
+      "type": "java.lang.String",
+      "description": "Description for enrollment.client.name."
+    },
+    {
+      "name": "enrollment.client.url",
+      "type": "java.lang.String",
+      "description": "Description for enrollment.client.url."
+    }
+  ] }

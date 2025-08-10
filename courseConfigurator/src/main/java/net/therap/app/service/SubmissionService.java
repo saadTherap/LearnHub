@@ -1,5 +1,6 @@
 package net.therap.app.service;
 
+import net.therap.app.model.ContentRelease;
 import net.therap.app.model.Module;
 import net.therap.app.model.Submission;
 import net.therap.app.repository.ModuleRepository;

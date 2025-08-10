@@ -16,10 +16,10 @@ import lombok.EqualsAndHashCode;
 @Data
 public class EnrollmentNotification extends Notification {
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "student_id")
     private Long studentId;
     
-    @Column(nullable = false)
+    @Column(nullable = false, name = "course_id")
     private Long courseId;
     
     @Override
