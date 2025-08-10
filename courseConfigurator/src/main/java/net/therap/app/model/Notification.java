@@ -17,6 +17,7 @@ import java.util.Objects;
 @Setter
 @Getter
 @Entity
+@Table(name = "final_learnhub_notification")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 @JsonTypeInfo(

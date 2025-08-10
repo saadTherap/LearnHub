@@ -16,7 +16,7 @@ import lombok.EqualsAndHashCode;
 @Data
 public class SubmissionNotification extends Notification {
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "submission_id")
     private Long submissionId;
     
     @Override

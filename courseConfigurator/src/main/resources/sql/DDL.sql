@@ -595,3 +595,27 @@ ALTER TABLE final_learnhub_instructor
         email           VARCHAR2(255) NOT NULL,
         date_of_birth   DATE NOT NULL
         );
+
+
+--==================== K  A  F  K  A =============================
+
+-- Sequence for Notification ID generation
+CREATE SEQUENCE final_learnhub_notification_seq_gen START WITH 1 INCREMENT BY 1;
+
+-- Table for the Notification inheritance hierarchy (SINGLE_TABLE strategy)
+CREATE TABLE Notification (
+    id BIGINT NOT NULL,
+    message VARCHAR(255) NOT NULL,
+
+    -- Discriminator column to distinguish between subclasses
+    type VARCHAR(31) NOT NULL, -- The discriminator column, named 'type' as per @DiscriminatorColumn
+
+    -- Columns from SubmissionNotification
+    submissionId BIGINT, -- Nullable because it only applies to SubmissionNotification
+
+    -- Columns from EnrollmentNotification
+    studentId BIGINT, -- Nullable because it only applies to EnrollmentNotification
+    courseId BIGINT, -- Nullable because it only applies to EnrollmentNotification
+
+    PRIMARY KEY (id)
+);
