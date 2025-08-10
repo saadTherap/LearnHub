@@ -12,7 +12,7 @@ public class PublicEndpoints {
             "/auth/api/",
             "/auth/swagger-ui/",
             "/auth/swagger-ui.html",
-            "/auth/v3/api-docs/",
+            "/auth/v3/api-docs",
             "/auth/swagger-resources/",
             "/auth/webjars/",
             "/auth/favicon.ico",

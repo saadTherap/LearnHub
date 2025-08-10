@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 8/3/25
  */
 @RestController
-@RequestMapping("/auth/pk")
+@RequestMapping("/pk")
 public class PublicKeyController {
     
     private final JwtService jwtService;

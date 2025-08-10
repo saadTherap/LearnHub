@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import net.therap.entity.User;
 import net.therap.service.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -20,13 +19,11 @@ public class UserController {
     private final UserService userService;
     
     @PutMapping
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<User> update(@Valid @RequestBody User user) {
         return ResponseEntity.ok(userService.updateUser(user));
     }
     
     @DeleteMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         userService.deleteById(id);
         

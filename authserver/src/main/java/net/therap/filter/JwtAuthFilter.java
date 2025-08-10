@@ -8,10 +8,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.service.JwtService;
+import net.therap.service.UserService;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -32,60 +31,47 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
-    private final AntPathMatcher pathMatcher = new AntPathMatcher();
-
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        log.warn("doFilterInternal ==>> path: {}", request.getServletPath());
+        log.debug("doFilterInternal ==>> path: {}", request.getServletPath());
 
         final String authHeader = request.getHeader("Authorization");
-        String email = null;
-        String jwt = null;
 
-        if (Objects.nonNull(authHeader) && authHeader.startsWith("Bearer ")) {
-            jwt = authHeader.substring(7);
+        if (Objects.isNull(authHeader) || !authHeader.startsWith("Bearer ")) {
+            log.warn("No valid Authorization header found");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid Authorization header");
 
-            try {
-                email = jwtService.extractEmail(jwt);
-
-                UserDetails userDetails = userService.loadUserByEmail(email);
-
-                if (userDetails == null) {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User not found");
-                    return;
-                }
-
-                if (jwtService.isValid(jwt, userDetails)) {
-                    request.setAttribute("authenticatedUserEmail", email);
-                } else {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
-                    return;
-                }
-
-            } catch (JwtException ex) {
-                log.warn("JWT token parsing failed: {}", ex.getMessage());
-            }
+            return;
         }
 
-        if (Objects.nonNull(email)) {
-            try {
-                if (jwtService.isValid(jwt, email)) {
-                    request.setAttribute("authenticatedUserEmail", email);
-                }
+        String jwt = authHeader.substring(7);
+        String email;
 
-            } catch (JwtException ex) {
-                log.warn("Authentication failed for JWT token: {}", ex.getMessage());
+        try {
+            if (!jwtService.isValid(jwt)) {
+                log.warn("Invalid or expired token");
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+
                 return;
             }
 
-        } else {
-            log.warn("No valid JWT token found in request");
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid token");
+            email = jwtService.extractEmail(jwt);
+            Long userId = jwtService.extractUserId(jwt);
+            String role = jwtService.extractRole(jwt);
+
+            request.setAttribute("authenticatedUserEmail", email);
+            request.setAttribute("authenticatedUserId", userId);
+            request.setAttribute("authenticatedUserRole", role);
+
+            log.debug("Successfully authenticated user: {}", email);
+
+        } catch (RuntimeException ex) {
+            log.warn("JWT token validation failed: {}", ex.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
 
             return;
         }
@@ -97,18 +83,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String requestURI = request.getRequestURI();
 
-        log.warn("=== SHOULD NOT FILTER DEBUG ===");
-        log.warn("Request URI: {}", requestURI);
-        log.warn("Excluded Paths: {}", (Object) WHITELIST);
+        log.debug("=== SHOULD NOT FILTER DEBUG ===");
+        log.debug("Request URI: {}", requestURI);
+        log.debug("Excluded Paths: {}", (Object) WHITELIST);
 
         boolean shouldExclude = Stream.of(WHITELIST).anyMatch(excludedPath -> {
             boolean matches = requestURI.startsWith(excludedPath);
-            System.out.println("Checking '" + requestURI + "' starts with '" + excludedPath + "': " + matches);
+            log.debug("Checking '{}' starts with '{}': {}", requestURI, excludedPath, matches);
             return matches;
         });
 
-        log.warn("Should exclude (shouldNotFilter): {}", shouldExclude);
-        log.warn("===============================");
+        log.debug("Should exclude (shouldNotFilter): {}", shouldExclude);
+        log.debug("===============================");
 
         return shouldExclude;
     }
