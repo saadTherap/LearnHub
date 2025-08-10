@@ -35,7 +35,7 @@ import static net.therap.app.util.CollectionUtil.isValidOrderedList;
  * @since 22/7/25
  */
 @RestController
-@RequestMapping("/api/modules")
+@RequestMapping("/modules")
 public class ModuleController {
     
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

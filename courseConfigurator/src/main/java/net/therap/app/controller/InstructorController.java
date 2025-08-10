@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * @since 21/7/25
  */
 @RestController
-@RequestMapping("/api/instructors")
+@RequestMapping("/instructors")
 public class InstructorController {
     
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

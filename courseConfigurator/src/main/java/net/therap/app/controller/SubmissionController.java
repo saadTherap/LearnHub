@@ -23,7 +23,7 @@ import java.util.Optional;
  * @since 7/8/25
  */
 @RestController
-@RequestMapping("/api/submission")
+@RequestMapping("/submission")
 public class SubmissionController {
     
     private final SubmissionService submissionService;
