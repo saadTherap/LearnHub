@@ -57,34 +57,6 @@ public class CourseController {
                 courses.stream().map(dtoHelper::toDetailedCourseCatalogDTO).collect(Collectors.toList());
         return ResponseEntity.ok(courseDTOs);
     }
-    
-    @GetMapping("/public")
-    public ResponseEntity<List<CourseCatalogDTO>> getAllCoursesCatalog() {
-        List<Course> courses = courseService.findAll();
-        List<CourseCatalogDTO> courseCatalogDTOs =
-                courses.stream().filter(course -> course.getCurrentRelease() > ReleaseStatus.DRAFT.getReleaseNumber()).map(dtoHelper::toCourseCatalogDTO).collect(Collectors.toList());
-        return ResponseEntity.ok(courseCatalogDTOs);
-    }
-
-    @GetMapping("/public/{id}")
-    public ResponseEntity<CourseCatalogDTO> getCourseByIdPublic(@PathVariable Long id) {
-
-        CourseCatalogDTO cached = hazelcastCacheService.get(CacheConstants.COURSE_CATALOG, id);
-        if (cached != null) {
-            return ResponseEntity.ok(cached);
-        }
-
-        Optional<Course> courseOptional = courseService.findById(id);
-
-        if (courseOptional.isPresent() && courseOptional.get().getCurrentRelease() > ReleaseStatus.DRAFT.getReleaseNumber()) {
-            CourseCatalogDTO dto = dtoHelper.toCourseCatalogDTO(courseOptional.get());
-            hazelcastCacheService.put(CacheConstants.COURSE_CATALOG, id, dto);
-            return ResponseEntity.ok(dto);
-        }
-
-        return ResponseEntity.notFound().build();
-    }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<CourseCatalogDTO> getCourseById(@PathVariable long id) {
