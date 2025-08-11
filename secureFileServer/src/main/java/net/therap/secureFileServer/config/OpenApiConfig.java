@@ -1,0 +1,44 @@
+package net.therap.secureFileServer.config;
+
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * @author avidewan
+ * @since 8/11/25
+ */
+@Configuration
+public class OpenApiConfig {
+
+    @Bean
+    public OpenAPI customOpenAPI() {
+        String clientIdScheme = "Client ID";
+        String signatureScheme = "HMAC Signature";
+
+        return new OpenAPI()
+                .info(new Info()
+                        .title("Secure File Server API")
+                        .version("v1"))
+                .addSecurityItem(new SecurityRequirement()
+                        .addList(clientIdScheme)
+                        .addList(signatureScheme))
+                .components(new Components()
+                        .addSecuritySchemes(clientIdScheme,
+                                new SecurityScheme()
+                                        .name("X-Client-Id")
+                                        .type(SecurityScheme.Type.APIKEY)
+                                        .in(SecurityScheme.In.HEADER)
+                                        .description("Name of the calling client (e.g. learningProcessorClient)"))
+                        .addSecuritySchemes(signatureScheme,
+                                new SecurityScheme()
+                                        .name("X-Signature")
+                                        .type(SecurityScheme.Type.APIKEY)
+                                        .in(SecurityScheme.In.HEADER)
+                                        .description("HMAC signature for the request")));
+    }
+}
