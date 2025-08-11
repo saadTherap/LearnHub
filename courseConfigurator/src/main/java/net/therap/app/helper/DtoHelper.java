@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import net.therap.app.model.Module;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -71,7 +70,7 @@ public class DtoHelper {
         }
         
         CourseCatalogDTO dto = new CourseCatalogDTO();
-        dto.setCourseId(course.getId());
+        dto.setId(course.getId());
         dto.setName(course.getName());
         dto.setDescription(course.getDescription());
         dto.setCurrentPublishedVersion(course.getCurrentRelease());
@@ -93,7 +92,7 @@ public class DtoHelper {
         }
         
         CourseCatalogDTO dto = new CourseCatalogDTO();
-        dto.setCourseId(course.getId());
+        dto.setId(course.getId());
         dto.setName(course.getName());
         dto.setDescription(course.getDescription());
         dto.setCurrentPublishedVersion(course.getCurrentRelease());
