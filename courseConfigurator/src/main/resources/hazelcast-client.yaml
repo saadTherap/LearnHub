@@ -59,3 +59,66 @@ hazelcast-client:
         eviction-policy: LRU
         max-size-policy: ENTRY_COUNT
         size: 500
+
+    modules:
+      in-memory-format: OBJECT
+      time-to-live-seconds: 900
+      invalidate-on-change: true
+      eviction:
+        eviction-policy: LRU
+        max-size-policy: ENTRY_COUNT
+        size: 500
+
+    modulesByCourse:
+      in-memory-format: OBJECT
+      time-to-live-seconds: 900
+      invalidate-on-change: true
+      eviction:
+        eviction-policy: LRU
+        max-size-policy: ENTRY_COUNT
+        size: 500
+
+    contentReleases:
+      in-memory-format: OBJECT
+      time-to-live-seconds: 900
+      invalidate-on-change: true
+      eviction:
+        eviction-policy: LRU
+        max-size-policy: ENTRY_COUNT
+        size: 500
+
+    contentReleaseList:
+      in-memory-format: OBJECT
+      time-to-live-seconds: 900
+      invalidate-on-change: true
+      eviction:
+        eviction-policy: LRU
+        max-size-policy: ENTRY_COUNT
+        size: 500
+
+    contentCatalog:
+      in-memory-format: OBJECT
+      time-to-live-seconds: 900
+      invalidate-on-change: true
+      eviction:
+        eviction-policy: LRU
+        max-size-policy: ENTRY_COUNT
+        size: 500
+
+    submissions:
+      in-memory-format: OBJECT
+      time-to-live-seconds: 900
+      invalidate-on-change: true
+      eviction:
+        eviction-policy: LRU
+        max-size-policy: ENTRY_COUNT
+        size: 500
+
+    submissionByInstructor:
+      in-memory-format: OBJECT
+      time-to-live-seconds: 900
+      invalidate-on-change: true
+      eviction:
+        eviction-policy: LRU
+        max-size-policy: ENTRY_COUNT
+        size: 500
