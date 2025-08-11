@@ -22,6 +22,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -80,7 +81,9 @@ public class JwtService {
     public String extractEmail(String token) {
         try {
             JWTClaimsSet claims = parseAndValidateToken(token);
+            
             return claims.getSubject();
+            
         } catch (Exception e) {
             log.error("Failed to extract email from token", e);
             throw new RuntimeException("Invalid token", e);
@@ -90,7 +93,9 @@ public class JwtService {
     public Long extractUserId(String token) {
         try {
             JWTClaimsSet claims = parseAndValidateToken(token);
+            
             return claims.getLongClaim("userId");
+            
         } catch (Exception e) {
             log.error("Failed to extract user ID from token", e);
             throw new RuntimeException("Invalid token", e);
@@ -100,9 +105,12 @@ public class JwtService {
     public String extractRole(String token) {
         try {
             JWTClaimsSet claims = parseAndValidateToken(token);
+            
             return claims.getStringClaim("role");
+            
         } catch (Exception e) {
             log.error("Failed to extract role from token", e);
+            
             throw new RuntimeException("Invalid token", e);
         }
     }
@@ -110,9 +118,12 @@ public class JwtService {
     public Date extractExpiration(String token) {
         try {
             JWTClaimsSet claims = parseAndValidateToken(token);
+            
             return claims.getExpirationTime();
+            
         } catch (Exception e) {
             log.error("Failed to extract expiration from token", e);
+            
             throw new RuntimeException("Invalid token", e);
         }
     }
@@ -127,13 +138,13 @@ public class JwtService {
             }
 
             String email = claims.getSubject();
-            if (email == null || email.trim().isEmpty()) {
+            if (Objects.isNull(email) || email.trim().isEmpty()) {
                 log.debug("Token has no subject (email)");
                 return false;
             }
 
             User user = userService.findByEmail(email);
-            if (user == null) {
+            if (Objects.isNull(user)) {
                 log.debug("User not found for email: {}", email);
                 return false;
             }
@@ -154,9 +165,12 @@ public class JwtService {
     public boolean isExpired(String token) {
         try {
             Date expiration = extractExpiration(token);
+            
             return expiration.before(new Date());
+        
         } catch (Exception e) {
             log.debug("Failed to check token expiration: {}", e.getMessage());
+            
             return true;
         }
     }

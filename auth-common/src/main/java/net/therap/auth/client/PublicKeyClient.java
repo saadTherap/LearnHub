@@ -7,7 +7,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Map;
-
 /**
  * @author apurboturjo
  * @since 8/3/25
@@ -27,7 +26,7 @@ public class PublicKeyClient {
         Map<String, Object> instance = serviceDiscoveryCacheForAuthCommon.getInstance(SERVICE_NAME);
         String host = (String) instance.get("host");
         Integer port = (Integer) instance.get("port");
-        return "http://" + host + ":" + port;
+        return "http:" + host + ":" + port;
     }
 
     public ResponseEntity<String> getPublicKey(String keyId) {

@@ -17,7 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
-import java.util.UUID;
 
 import static net.therap.util.JwtUtil.toSystemFormatUserRole;
 
@@ -33,6 +32,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final MessageUtil messageUtil;
     private final EmailService emailService;
+    private final VerificationTokenService verificationTokenService;
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
     private final VerificationTokenRepository verificationTokenRepository;
@@ -47,7 +47,7 @@ public class AuthServiceImpl implements AuthService {
 
         User savedUser = userService.saveUser(user);
 
-        generateAndSendVerificationToken(savedUser);
+        verificationTokenService.generateAndSendVerificationToken(savedUser);
 
         return new JwtResponse(messageUtil.getMessage("reg.success.verify_pending"));
     }
@@ -117,16 +117,6 @@ public class AuthServiceImpl implements AuthService {
         return user;
     }
 
-    private void generateAndSendVerificationToken(User user) {
-        verificationTokenRepository.deleteByUser(user);
-
-        String token = UUID.randomUUID().toString();
-        VerificationToken verificationToken = new VerificationToken(token, user);
-        verificationTokenRepository.save(verificationToken);
-
-        emailService.sendVerificationEmail(user.getEmail(), token);
-    }
-
     private JwtResponse generateTokenPair(Long userId) {
         User user = getUser(userId);
 
@@ -137,7 +127,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private User getUser(String email) {
-        return userService.findByEmailOrThrow(email);
+        return userService.findByEmail(email);
     }
 
     private User getUser(Long userId) {

@@ -31,7 +31,7 @@ public class TokenClient {
         Map<String, Object> instance = serviceDiscoveryCacheForAuthCommon.getInstance(SERVICE_NAME);
         String host = (String) instance.get("host");
         Integer port = (Integer) instance.get("port");
-        return "http://" + host + ":" + port;
+        return "http:" + host + ":" + port;
     }
 
     public TokenResponseDto refreshToken(RefreshTokenRequestDto requestDto) {

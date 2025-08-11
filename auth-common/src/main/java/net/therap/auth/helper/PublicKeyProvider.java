@@ -35,13 +35,10 @@ public class PublicKeyProvider {
 
 //    @PostConstruct
 //    public void initializeCache() {
-//        // 1. Fetch the RSAPublicKey from the dev method
 //        RSAPublicKey publicKey = fetchFromDev();
 //
-//        // 2. Create a new CachedKey object using the fetched public key
 //        CachedKey cachedKey = new CachedKey(publicKey);
 //
-//        // 3. Put the new CachedKey object into the cache
 //        keyCache.put("learnhub", cachedKey);
 //
 //        log.info("Initialized key cache with dev key.");

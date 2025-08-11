@@ -35,20 +35,29 @@ public class UserService {
     }
 
     public User findByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
-
-    public User findByEmailOrThrow(String email) {
         return Optional.ofNullable(userRepository.findByEmail(email))
                 .orElseThrow(() -> new UserExistenceException(messageUtil.getMessage("err.user.not.found")));
     }
-
+    
     public User saveUser(User user) {
-        if (userExistsByEmail(user.getEmail())) {
-            throw new UserExistenceException(messageUtil.getMessage("err.user.exists"));
-        }
+        Optional<User> existingUserOptional = Optional.ofNullable(userRepository.findByEmail(user.getEmail()));
+        
+        if (existingUserOptional.isPresent()) {
+            User existingUser = existingUserOptional.get();
+            
+            if (existingUser.isEnabled()) {
+                throw new UserExistenceException(messageUtil.getMessage("err.user.exists"));
+                
+            } else {
+                existingUser.setPassword(user.getPassword());
+                existingUser.setRole(user.getRole());
 
-        return userRepository.save(user);
+                return userRepository.save(existingUser);
+            }
+            
+        } else {
+            return userRepository.save(user);
+        }
     }
 
     public User updateUser(User user) {
