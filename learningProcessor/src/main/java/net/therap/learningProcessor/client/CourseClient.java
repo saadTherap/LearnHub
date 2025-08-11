@@ -19,7 +19,7 @@ import java.util.Map;
 public class CourseClient {
 
     private static final String SERVICE_NAME = "course-configurator";
-    private static final String BASE_PATH = "/course-configurator/api";
+    private static final String BASE_PATH = "/api/course-configurator";
 
     @Autowired
     private ServiceDiscoveryCache serviceDiscoveryCache;
@@ -34,12 +34,12 @@ public class CourseClient {
     }
 
     public List<CourseCatalogDto> getAllCourseCatalogs() {
-        String url = getServiceBaseUrl() + "/courses/public";
+        String url = getServiceBaseUrl() + "/public/courses";
         return restTemplate.getForObject(url, List.class);
     }
 
     public CourseCatalogDto getCourseCatalog(Long courseId) {
-        String url = getServiceBaseUrl() + "/courses/public/" + courseId;
+        String url = getServiceBaseUrl() + "/public/courses" + courseId;
         return restTemplate.getForObject(url, CourseCatalogDto.class);
     }
 
