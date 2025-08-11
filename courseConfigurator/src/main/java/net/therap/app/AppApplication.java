@@ -11,6 +11,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import java.util.TimeZone;
+
 @SpringBootApplication(exclude = {
 		CacheAutoConfiguration.class,
 		HazelcastAutoConfiguration.class,
@@ -20,10 +22,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EntityScan("net.therap.app.model")
 @EnableFeignClients(basePackages = "net.therap.auth.client")
-//@ComponentScan(basePackages = "net.therap.auth")
+@ComponentScan(basePackages = {"net.therap.auth", "net.therap.app"})
 public class AppApplication {
 	
 	public static void main(String[] args) {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+
 		SpringApplication.run(AppApplication.class, args);
 	}
 	

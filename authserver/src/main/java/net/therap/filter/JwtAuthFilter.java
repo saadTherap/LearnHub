@@ -1,6 +1,5 @@
 package net.therap.filter;
 
-
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,20 +7,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.therap.service.CustomUserDetailsService;
 import net.therap.service.JwtService;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import net.therap.service.UserService;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import static net.therap.util.PublicEndpoints.WHITELIST;
 
@@ -31,63 +25,77 @@ import static net.therap.util.PublicEndpoints.WHITELIST;
  */
 @Component
 @RequiredArgsConstructor
+@Order(1)
 @Slf4j
 public class JwtAuthFilter extends OncePerRequestFilter {
-    
+
     private final JwtService jwtService;
-    
-    private final CustomUserDetailsService customUserDetailsService;
-    
-    private final AntPathMatcher pathMatcher = new AntPathMatcher();
-    
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-        
+
+        log.debug("doFilterInternal ==>> path: {}", request.getServletPath());
+
         final String authHeader = request.getHeader("Authorization");
-        String email = null;
-        String jwt = null;
-        
-        if (Objects.nonNull(authHeader) && authHeader.startsWith("Bearer ")) {
-            jwt = authHeader.substring(7);
-            
-            try {
-                email = jwtService.extractEmail(jwt);
-                
-            } catch (JwtException ex) {
-                log.warn("JWT token parsing failed: {}", ex.getMessage());
-            }
+
+        if (Objects.isNull(authHeader) || !authHeader.startsWith("Bearer ")) {
+            log.warn("No valid Authorization header found");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid Authorization header");
+
+            return;
         }
-        
-        if (Objects.nonNull(email) && Objects.isNull(SecurityContextHolder.getContext().getAuthentication())) {
-            try {
-                UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
-                
-                if (jwtService.isValid(jwt, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                    );
-                    
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
-                
-            } catch (UsernameNotFoundException | JwtException ex) {
-                log.warn("Authentication failed for JWT token: {}", ex.getMessage());
+
+        String jwt = authHeader.substring(7);
+        String email;
+
+        try {
+            if (!jwtService.isValid(jwt)) {
+                log.warn("Invalid or expired token");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+
+                return;
             }
+
+            email = jwtService.extractEmail(jwt);
+            Long userId = jwtService.extractUserId(jwt);
+            String role = jwtService.extractRole(jwt);
+
+            request.setAttribute("authenticatedUserEmail", email);
+            request.setAttribute("authenticatedUserId", userId);
+            request.setAttribute("authenticatedUserRole", role);
+
+            log.debug("Successfully authenticated user: {}", email);
+
+        } catch (RuntimeException ex) {
+            log.warn("JWT token validation failed: {}", ex.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+
+            return;
         }
-        
+
         filterChain.doFilter(request, response);
     }
-    
+
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI();
-        
-        return Arrays.stream(WHITELIST).anyMatch(whitelist -> pathMatcher.match(whitelist, path));
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String requestURI = request.getRequestURI();
+
+        log.debug("=== SHOULD NOT FILTER DEBUG ===");
+        log.debug("Request URI: {}", requestURI);
+        log.debug("Excluded Paths: {}", (Object) WHITELIST);
+
+        boolean shouldExclude = Stream.of(WHITELIST).anyMatch(excludedPath -> {
+            boolean matches = requestURI.startsWith(excludedPath);
+            log.debug("Checking '{}' starts with '{}': {}", requestURI, excludedPath, matches);
+            return matches;
+        });
+
+        log.debug("Should exclude (shouldNotFilter): {}", shouldExclude);
+        log.debug("===============================");
+
+        return shouldExclude;
     }
 }

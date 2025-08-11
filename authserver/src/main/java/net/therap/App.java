@@ -7,9 +7,14 @@ import org.springframework.boot.autoconfigure.hazelcast.HazelcastAutoConfigurati
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import java.util.TimeZone;
+
 @SpringBootApplication
+@EnableScheduling
 public class App {
     public static void main(String[] args) {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+
         SpringApplication.run(App.class, args);
         
     }
