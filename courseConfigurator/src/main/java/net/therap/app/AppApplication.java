@@ -1,5 +1,6 @@
 package net.therap.app;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.hazelcast.HazelcastHealthContributorAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -24,10 +25,13 @@ import java.util.TimeZone;
 @EnableFeignClients(basePackages = "net.therap.auth.client")
 @ComponentScan(basePackages = {"net.therap.auth", "net.therap.app"})
 public class AppApplication {
+
+    @PostConstruct
+    public void init() {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+    }
 	
 	public static void main(String[] args) {
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-
 		SpringApplication.run(AppApplication.class, args);
 	}
 	

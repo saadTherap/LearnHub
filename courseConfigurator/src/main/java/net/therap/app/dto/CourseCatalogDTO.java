@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 public class CourseCatalogDTO {
-    private long courseId;
+    private long id;
     private String name;
     private String description;
     private String instructorName;

@@ -1,14 +1,17 @@
-package net.therap.app.config;
+package net.therap.learningProcessor.config;
 
 import net.therap.auth.context.RequestTokenContext;
 import net.therap.auth.filter.JwtAuthFilter;
 import net.therap.auth.validator.TokenValidator;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
+/**
+ * @author apurboturjo
+ * @since 8/11/25
+ */
 @Configuration
 public class AuthFilterConfig {
 

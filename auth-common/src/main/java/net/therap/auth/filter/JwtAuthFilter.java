@@ -6,8 +6,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import net.therap.auth.context.RequestTokenContext;
 import net.therap.auth.exception.AuthenticationException;
 import net.therap.auth.validator.TokenValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -29,9 +31,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final List<String> excludedPaths;
     private final TokenValidator tokenValidator;
 
-    public JwtAuthFilter(TokenValidator tokenValidator, List<String> excludedPaths) {
+    @Autowired
+    private final RequestTokenContext context;
+
+    public JwtAuthFilter(TokenValidator tokenValidator, List<String> excludedPaths, RequestTokenContext context) {
         this.tokenValidator = tokenValidator;
         this.excludedPaths = excludedPaths;
+        this.context = context;
     }
 
     @Override
@@ -81,6 +87,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             JWTClaimsSet claims = tokenValidator.validate(token);
             System.out.println("Token validated successfully for user: {} ===> " + claims);
+            context.setToken(token);
 
             System.out.println("Response: " + response);
             filterChain.doFilter(request, response);
@@ -88,6 +95,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         } catch (AuthenticationException e) {
             log.warn("Token validation failed: {}", e.getMessage());
             sendUnauthorizedError(response, "Invalid or expired token");
+
+        } finally {
+            context.clear();
         }
     }
 
