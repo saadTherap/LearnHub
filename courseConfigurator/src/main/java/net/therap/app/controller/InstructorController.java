@@ -73,32 +73,6 @@ public class InstructorController {
         return ResponseEntity.ok(instructorDTOs);
     }
     
-    @GetMapping("/public")
-    public ResponseEntity<List<InstructorDtoCatalog>> getAllInstructorsPublic() {
-        List<Instructor> instructors = instructorService.getAllInstructors();
-        List<InstructorDtoCatalog> instructorDTOs = instructors.stream()
-                .map(instructorMapper::toInstructorDtoCatalog)
-                .collect(Collectors.toList());
-        
-        return ResponseEntity.ok(instructorDTOs);
-    }
-
-    @GetMapping("/public/{id}")
-    public ResponseEntity<InstructorDtoCatalog> getInstructorByIdPublic(@PathVariable long id) {
-        InstructorDtoCatalog cached = hazelcastCacheService.get(CacheConstants.INSTRUCTOR_CATALOG, id);
-        if (cached != null) {
-            return ResponseEntity.ok(cached);
-        }
-
-        return instructorService.getInstructorById(id)
-                .map(instructor -> {
-                    InstructorDtoCatalog dto = instructorMapper.toInstructorDtoCatalog(instructor);
-                    hazelcastCacheService.put(CacheConstants.INSTRUCTOR_CATALOG, id, dto);
-                    return ResponseEntity.ok(dto);
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-    
     @PostMapping
     public ResponseEntity<InstructorDTO> createInstructor(@RequestBody @Validated(OnCreate.class) InstructorDTO instructorDTO) {
         Instructor instructorToCreate = instructorMapper.toInstructor(instructorDTO);
