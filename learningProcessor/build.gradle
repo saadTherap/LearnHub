@@ -37,6 +37,8 @@ dependencies {
     implementation  'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.14'
+    implementation 'io.github.openfeign:feign-httpclient:13.2.1'
 
     implementation "com.hazelcast:hazelcast:5.3.6"
     implementation "com.hazelcast:hazelcast-spring:5.3.6"

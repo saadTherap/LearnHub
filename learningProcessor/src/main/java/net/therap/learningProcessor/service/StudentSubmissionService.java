@@ -1,8 +1,7 @@
 package net.therap.learningProcessor.service;
 
 import net.therap.learningProcessor.dto.StudentDto;
-import net.therap.learningProcessor.dto.submission.StudentSubmissionDto;
-import net.therap.learningProcessor.entity.Student;
+import net.therap.learningProcessor.dto.content.submission.StudentSubmissionDto;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;

@@ -2,12 +2,13 @@ package net.therap.learningProcessor.controller;
 
 import lombok.RequiredArgsConstructor;
 import net.therap.learningProcessor.dto.StudentDto;
-import net.therap.learningProcessor.dto.submission.StudentSubmissionDto;
-import net.therap.learningProcessor.entity.EnrollmentNotification;
-import net.therap.learningProcessor.entity.Student;
+import net.therap.learningProcessor.dto.content.quiz.QuizSubmissionRequestDto;
+import net.therap.learningProcessor.dto.content.quiz.QuizSubmissionResultDto;
+import net.therap.learningProcessor.dto.content.submission.StudentSubmissionDto;
 import net.therap.learningProcessor.entity.SubmissionNotification;
 import net.therap.learningProcessor.eum.NotificationType;
 import net.therap.learningProcessor.service.NotificationService;
+import net.therap.learningProcessor.service.QuizService;
 import net.therap.learningProcessor.service.StudentService;
 import net.therap.learningProcessor.service.StudentSubmissionService;
 import org.springframework.http.HttpStatus;
@@ -24,15 +25,16 @@ import java.util.Optional;
  * @since 8/7/25
  */
 @RestController
-@RequestMapping("/api/learning-processor/submissions")
+@RequestMapping("/submissions")
 @RequiredArgsConstructor
 public class SubmissionController {
 
     private final StudentSubmissionService submissionService;
+    private final QuizService quizService;
     private final StudentService studentService;
     private final NotificationService notificationService;
 
-    @PostMapping(consumes =  MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/assignments", consumes =  MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StudentSubmissionDto> submitAssignment(
             @RequestParam Long studentId,
             @RequestParam Long contentId,
@@ -49,6 +51,13 @@ public class SubmissionController {
         notificationService.sendNotification(notification);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(submissionDto);
+    }
+
+    @PostMapping("/quizzes")
+    public ResponseEntity<QuizSubmissionResultDto> submitQuiz(@RequestBody QuizSubmissionRequestDto submissionRequestDto) {
+        QuizSubmissionResultDto result = quizService.submitAndEvaluate(submissionRequestDto);
+
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/student/{studentId}")

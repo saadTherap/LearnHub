@@ -1,6 +1,6 @@
 package net.therap.learningProcessor.mapper;
 
-import net.therap.learningProcessor.dto.submission.StudentSubmissionDto;
+import net.therap.learningProcessor.dto.content.submission.StudentSubmissionDto;
 import net.therap.learningProcessor.entity.StudentSubmission;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

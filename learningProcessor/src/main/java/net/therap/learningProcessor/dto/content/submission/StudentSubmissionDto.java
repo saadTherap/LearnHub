@@ -1,4 +1,4 @@
-package net.therap.learningProcessor.dto.submission;
+package net.therap.learningProcessor.dto.content.submission;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
