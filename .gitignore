@@ -2,7 +2,7 @@
 !.gitignore
 *.ipr
 *.iws
-*.iml
+**/*.iml
 *.log
 atlassian-ide-plugin.xml
 target
@@ -13,6 +13,10 @@ gradlew
 gradlew.bat
 # Ignore Gradle project-specific cache directory
 .gradle 
-learningProcessor/bin/
-secureFileServer/bin/
-courseConfigurator/bin/
+
+**/bin/
+**/.gradle
+**/build
+**/gradle
+
+hazlecast-server/logs/
