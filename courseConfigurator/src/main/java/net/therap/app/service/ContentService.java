@@ -121,36 +121,90 @@ public class ContentService {
     
     @Transactional
     public Content save(Content content) {
-        if (content.getCurrentContentRelease() != null) {
-            String key = content.getId() + ":" + content.getCurrentContentRelease().getRelease();
-            cacheInvalidationUtil.invalidateCacheAfterCommit(String.valueOf(content.getId()), CacheConstants.CONTENT_CATALOG, CacheConstants.CONTENT_RELEASE_LIST);
-            cacheInvalidationUtil.invalidateCacheAfterCommit(key, CacheConstants.CONTENT_RELEASES);
+        Content saved = contentRepository.save(content);
+
+        String moduleId = String.valueOf(saved.getModule().getId());
+        String courseId = String.valueOf(saved.getModule().getCourse().getId());
+
+        cacheInvalidationUtil.invalidateCacheAfterCommit(
+                moduleId,
+                CacheConstants.MODULES
+        );
+        cacheInvalidationUtil.invalidateCacheAfterCommit(
+                courseId,
+                CacheConstants.MODULES_BY_COURSE,
+                CacheConstants.COURSES,
+                CacheConstants.COURSE_CATALOG
+        );
+
+        if (saved.getId() > 0) {
+            cacheInvalidationUtil.invalidateCacheAfterCommit(
+                    String.valueOf(saved.getId()),
+                    CacheConstants.CONTENT_CATALOG,
+                    CacheConstants.CONTENT_RELEASE_LIST
+            );
+
+            if (saved.getCurrentContentRelease() != null) {
+                String key = saved.getId() + ":" + saved.getCurrentContentRelease().getRelease();
+                cacheInvalidationUtil.invalidateCacheAfterCommit(
+                        key,
+                        CacheConstants.CONTENT_RELEASES
+                );
+            }
         }
 
-        return contentRepository.save(content);
+        return saved;
     }
     
     @Transactional
     public Content deleteById(long id) {
-        logger.info("Content id deletion: {}",id);
-        Optional<Content> contentOptional = contentRepository.findById(id);
-        
-        if (contentOptional.isEmpty()) {
-            throw new NoSuchElementException(messageSource.getMessage("not.found.content", null, Locale.getDefault()));
+        logger.info("Content id deletion: {}", id);
+
+        Content content = contentRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException(
+                        messageSource.getMessage("not.found.content", null, Locale.getDefault())
+                ));
+
+        long contentId = content.getId();
+        String moduleId = String.valueOf(content.getModule().getId());
+        String courseId = String.valueOf(content.getModule().getCourse().getId());
+
+        Long releaseNum = null;
+        if (content.getCurrentContentRelease() != null) {
+            releaseNum = content.getCurrentContentRelease().getRelease();
         }
-        
-        long releaseNum = contentOptional.get().getCurrentContentRelease().getRelease();
-        
-        Content content = contentOptional.get();
+
         content.setDeleted(true);
-        contentOptional.get().setCurrentContentRelease(null);
-        Content deletedContent = contentRepository.save(content);
-        
-        String key = content.getId() + ":" + releaseNum;
-        cacheInvalidationUtil.invalidateCacheAfterCommit(String.valueOf(content.getId()), CacheConstants.CONTENT_CATALOG, CacheConstants.CONTENT_RELEASE_LIST);
-        cacheInvalidationUtil.invalidateCacheAfterCommit(key, CacheConstants.CONTENT_RELEASES);
-        
-        return deletedContent;
+        content.setCurrentContentRelease(null);
+        Content saved = contentRepository.save(content);
+
+        if (contentId > 0) {
+            cacheInvalidationUtil.invalidateCacheAfterCommit(
+                    String.valueOf(contentId),
+                    CacheConstants.CONTENT_CATALOG,
+                    CacheConstants.CONTENT_RELEASE_LIST
+            );
+        }
+        if (releaseNum != null && releaseNum > 0) {
+            String releaseKey = contentId + ":" + releaseNum;
+            cacheInvalidationUtil.invalidateCacheAfterCommit(
+                    releaseKey,
+                    CacheConstants.CONTENT_RELEASES
+            );
+        }
+
+        cacheInvalidationUtil.invalidateCacheAfterCommit(
+                moduleId,
+                CacheConstants.MODULES
+        );
+        cacheInvalidationUtil.invalidateCacheAfterCommit(
+                courseId,
+                CacheConstants.MODULES_BY_COURSE,
+                CacheConstants.COURSES,
+                CacheConstants.COURSE_CATALOG
+        );
+
+        return saved;
     }
     
     public void loadQuestions(Quiz previousQuiz) {

@@ -11,5 +11,5 @@ import lombok.Setter;
 @Setter
 public class UpdateInfo {
 
-    private Long sourceId;
+    private Long courseId;
 }

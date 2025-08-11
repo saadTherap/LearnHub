@@ -13,7 +13,10 @@ public final class CacheConstants {
     public static final String INSTRUCTOR_CATALOG = "instructorCatalog";
     public static final String MODULES = "modules";
     public static final String MODULES_CATALOG = "moduleCatalog";
+    public static final String MODULES_BY_COURSE = "moduleByCourse";
     public static final String CONTENT_RELEASES = "contentReleases";
     public static final String CONTENT_RELEASE_LIST = "contentReleaseList";
     public static final String CONTENT_CATALOG = "contentCatalog";
+    public static final String SUBMISSIONS = "submissions";
+    public static final String SUBMISSION_BY_INSTRUCTOR = "submissionByInstructor";
 }
