@@ -103,6 +103,7 @@ public class CourseController {
             
             return ResponseEntity.ok(dto);
         }
+
         return ResponseEntity.notFound().build();
     }
     
