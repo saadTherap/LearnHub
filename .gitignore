@@ -4,6 +4,7 @@
 *.iws
 **/*.iml
 *.log
+*.out
 atlassian-ide-plugin.xml
 target
 build
@@ -18,5 +19,6 @@ gradlew.bat
 **/.gradle
 **/build
 **/gradle
+**/.gitignore
 
 hazlecast-server/logs/
