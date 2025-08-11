@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Build the project first
-./gradlew shadowJar || { echo "Gradle build failed!"; exit 1; }
+gradle shadowJar || { echo "Gradle build failed!"; exit 1; }
 
 mkdir -p logs
 

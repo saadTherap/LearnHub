@@ -40,14 +40,19 @@ public class TokenValidator {
             }
             
             RSAPublicKey publicKey = keyProvider.getPublicKey(kid);
+//            System.out.println(publicKey);
             JWSVerifier verifier = new RSASSAVerifier(publicKey);
             
             if (!signedJWT.verify(verifier)) {
                 throw new AuthenticationException("Token signature verification failed");
             }
+            System.out.println("Signature verified successfully");
             
             JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
             validateClaims(claims);
+            System.out.println("Token & Claims validated successfully =>" + claims);
+
+            System.out.println("---------------------------------------------------------------------------------------------");
             
             return claims;
             
@@ -65,6 +70,8 @@ public class TokenValidator {
         Date now = Date.from(Instant.now());
         
         Date expirationTime = claims.getExpirationTime();
+        System.out.println("Expiration time: " + expirationTime);
+        System.out.println("Now: " + now);
         if (Objects.nonNull(expirationTime) && expirationTime.before(now)) {
             throw new AuthenticationException("Token has expired");
         }
@@ -73,6 +80,7 @@ public class TokenValidator {
         if (Objects.nonNull(notBeforeTime) && notBeforeTime.after(now)) {
             throw new AuthenticationException("Token not yet valid");
         }
+        System.out.println("IssueTime: "  + claims.getIssueTime());
         
         Date issuedAtTime = claims.getIssueTime();
         if (Objects.nonNull(issuedAtTime) && issuedAtTime.after(now)) {
