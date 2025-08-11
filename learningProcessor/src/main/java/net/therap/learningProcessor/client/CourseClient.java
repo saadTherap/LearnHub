@@ -44,42 +44,42 @@ public class CourseClient {
         Map<String, Object> instance = serviceDiscoveryCache.getInstance(SERVICE_NAME);
         String host = (String) instance.get("host");
         Integer port = (Integer) instance.get("port");
-        
+
         logger.info("host: {}, port: {}", host, port);
-        
+
         return "http://" + host + ":" + port + BASE_PATH;
     }
-    
+
     public CourseCatalogDto getCourseCatalog(Long courseId) {
-        String url = getServiceBaseUrl() + "/courses/public/" + courseId;
-        
+        String url = getServiceBaseUrl() + "/public/courses/" + courseId;
+
         return restTemplate.getForObject(url, CourseCatalogDto.class);
     }
-    
+
     public List<CourseCatalogDto> getAllCourseCatalogs() {
-        String url = getServiceBaseUrl() + "/courses/public";
-        
+        String url = getServiceBaseUrl() + "/public/courses";
+
         return restTemplate.getForObject(url, List.class);
     }
-    
+
     public CourseDetailWithProgressDto getCourseDetail(Long courseId) {
         String url = getServiceBaseUrl() + "/courses/" + courseId;
 
         return restTemplate.getForObject(url, CourseDetailWithProgressDto.class);
     }
-    
+
     public List<ModuleWithProgressDto> getModulesByCourse(Long courseId) {
         String url = getServiceBaseUrl() + "/modules/byCourse/" + courseId;
 
         return restTemplate.getForObject(url, List.class);
     }
-    
+
     public List<BaseContentDto> getContentsByModule(Long moduleId) {
         String url = getServiceBaseUrl() + "/contents/byModule/" + moduleId;
 
         return restTemplate.getForObject(url, List.class);
     }
-    
+
     public ContentDetailDto getContentDetail(Long contentId) {
         String url = getServiceBaseUrl() + "/contents/detail/" + contentId;
 
