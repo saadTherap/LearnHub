@@ -23,7 +23,7 @@ import java.util.Map;
  */
 @Component
 public class CourseClient {
-    
+
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final String SERVICE_NAME = "course-configurator";
     private static final String BASE_PATH = "/api/course-configurator";
@@ -62,24 +62,6 @@ public class CourseClient {
         return restTemplate.getForObject(url, List.class);
     }
     
-    public CourseDetailWithProgressDto getCourseDetail(Long courseId) {
-        String url = getServiceBaseUrl() + "/courses/" + courseId;
-        
-        return "http://" + host + ":" + port + BASE_PATH;
-    }
-
-    public CourseCatalogDto getCourseCatalog(Long courseId) {
-        String url = getServiceBaseUrl() + "/courses/public/" + courseId;
-
-        return restTemplate.getForObject(url, CourseCatalogDto.class);
-    }
-
-    public List<CourseCatalogDto> getAllCourseCatalogs() {
-        String url = getServiceBaseUrl() + "/courses/public";
-
-        return restTemplate.getForObject(url, List.class);
-    }
-
     public CourseDetailWithProgressDto getCourseDetail(Long courseId) {
         String url = getServiceBaseUrl() + "/courses/" + courseId;
 
