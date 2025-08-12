@@ -29,7 +29,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/files")
 @Tag(name = "File API", description = "Endpoints for uploading, downloading, listing and deleting files")
-@SecurityRequirement(name = "HMAC Auth")
 public class FileController {
 
     private final FileStorageService fileService;
