@@ -8,8 +8,11 @@ public final class CacheConstants {
     private CacheConstants() {}
 
     public static final String STUDENTS = "students";
-    public static final String COURSE_CATALOG = "courseCatalog";
-    public static final String LESSONS = "lessons";
-    public static final String SUBMISSIONS = "submissions";
-    public static final String MODULES = "modules";
+    public static final String STUDENTS_BY_COURSE = "studentsByCourse";
+    public static final String COURSE_PROGRESS_DETAIL = "courseProgressDetail";
+    public static final String STUDENT_COURSE_PROGRESS = "studentCourseProgress";
+    public static final String ALL_STUDENT_PROGRESS_BY_COURSE = "allStudentProgressByCourse";
+    public static final String MODULE_CONTENTS =  "moduleContents";
+    public static final String CONTENT_DETAIL =  "contentDetail";
+    public static final String COURSE_CATALOG_LP = "courseCatalogLP";
 }
