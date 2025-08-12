@@ -27,7 +27,7 @@ import java.util.List;
  * @since 7/22/25
  */
 @RestController
-@RequestMapping("/api/files")
+@RequestMapping("/files")
 @Tag(name = "File API", description = "Endpoints for uploading, downloading, listing and deleting files")
 public class FileController {
 

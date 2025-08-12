@@ -17,7 +17,7 @@ import java.util.List;
  */
 @FeignClient(name = "secure-file-server",
         url = "${secure-file-server.url}",
-        path = "/api/files",
+        path = "/api/secure-file-server/files",
         configuration = FeignConfig.class)
 public interface FileClient {
 

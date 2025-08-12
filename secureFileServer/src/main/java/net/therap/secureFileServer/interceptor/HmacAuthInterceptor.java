@@ -19,7 +19,7 @@ import java.time.Instant;
 public class HmacAuthInterceptor implements HandlerInterceptor {
 
     private final ApiKeyProperties apiKeyProperties;
-    private static final long ALLOWED_TIME_DRIFT_SECONDS = 300; // 5 minutes
+    private static final long ALLOWED_TIME_DRIFT_SECONDS = 300;
 
     public HmacAuthInterceptor(ApiKeyProperties apiKeyProperties) {
         this.apiKeyProperties = apiKeyProperties;

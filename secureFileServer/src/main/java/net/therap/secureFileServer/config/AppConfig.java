@@ -58,9 +58,9 @@ public class AppConfig implements WebMvcConfigurer {
         registry.addInterceptor(hmacAuthInterceptor)
                 .addPathPatterns("/api/files/**")
                 .excludePathPatterns(
-                        "/api/files/v3/api-docs/**",
-                        "/api/files/swagger-ui/**",
-                        "/api/files/swagger-ui.html"
+                        "/api/secure-file-server/files/v3/api-docs/**",
+                        "/api/secure-file-server/files/swagger-ui/**",
+                        "/api/secure-file-server/files/swagger-ui.html"
                 );
     }
 }
