@@ -14,8 +14,9 @@ public class HmacUtils {
     public static String hmacSHA256(String secret, String data) {
         try {
             Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secretKeySpec =
-                    new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+
+            SecretKeySpec secretKeySpec = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8),
+                    "HmacSHA256");
             sha256_HMAC.init(secretKeySpec);
 
             byte[] hash = sha256_HMAC.doFinal(data.getBytes(StandardCharsets.UTF_8));
@@ -27,4 +28,3 @@ public class HmacUtils {
         }
     }
 }
-
