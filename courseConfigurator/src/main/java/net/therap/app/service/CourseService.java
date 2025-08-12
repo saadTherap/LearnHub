@@ -1,12 +1,20 @@
 package net.therap.app.service;
 
 import net.therap.app.constants.CacheConstants;
+import net.therap.app.dto.ContentCatalogueDTO;
+import net.therap.app.dto.CourseCatalogDTO;
+import net.therap.app.dto.ModuleCatalogDTO;
 import net.therap.app.dto.ReorderDTO;
+import net.therap.app.helper.DtoHelper;
+import net.therap.app.model.Content;
+import net.therap.app.model.ContentRelease;
 import net.therap.app.model.Course;
 import net.therap.app.model.Module;
 import net.therap.app.repository.CourseRepository;
 import net.therap.app.util.CacheInvalidationUtil;
 import org.apache.coyote.BadRequestException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +22,10 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.*;
+import java.util.function.ToIntFunction;
+import java.util.stream.Collectors;
+
+import static java.util.Objects.isNull;
 
 /**
  * @author gazizafor
@@ -23,18 +35,23 @@ import java.util.*;
 @Transactional(readOnly = true)
 public class CourseService {
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final CacheInvalidationUtil cacheInvalidationUtil;
     private final CourseRepository courseRepository;
     private final ModuleService moduleService;
     private final HazelcastCacheService hazelcastCacheService;
     private final MessageSource messageSource;
+    private final DtoHelper dtoHelper;
+    private final ContentService contentService;
     
-    public CourseService(CacheInvalidationUtil cacheInvalidationUtil, CourseRepository courseRepository, ModuleService moduleService, HazelcastCacheService hazelcastCacheService, MessageSource messageSource) {
+    public CourseService(CacheInvalidationUtil cacheInvalidationUtil, CourseRepository courseRepository, ModuleService moduleService, HazelcastCacheService hazelcastCacheService, MessageSource messageSource, DtoHelper dtoHelper, ContentService contentService) {
         this.cacheInvalidationUtil = cacheInvalidationUtil;
         this.courseRepository = courseRepository;
         this.moduleService = moduleService;
         this.hazelcastCacheService = hazelcastCacheService;
         this.messageSource = messageSource;
+        this.dtoHelper = dtoHelper;
+        this.contentService = contentService;
     }
     
     public List<Course> findAll() {
@@ -149,5 +166,64 @@ public class CourseService {
                 throw new BadRequestException(messageSource.getMessage("validation.module.reorder.failed", null, Locale.getDefault()));
             }
         }
+    }
+    
+    public CourseCatalogDTO findSpecificVersion(long id, int releaseNum) {
+        Optional<Course> courseOptional = courseRepository.findById(id);
+        
+        if (courseOptional.isEmpty()) {
+            throw new NoSuchElementException(messageSource.getMessage("not.found.course", null, Locale.getDefault()));
+        }
+        
+        Course course = courseOptional.get();
+        CourseCatalogDTO courseCatalogDTO = dtoHelper.toCourseCatalogDTO(course);
+        courseCatalogDTO.setModules(new ArrayList<>());
+        for (Module module : course.getModules()) {
+            ModuleCatalogDTO moduleCatalogDTO = dtoHelper.toModuleCatalogueDTO(module);
+            moduleCatalogDTO.setContents(new ArrayList<>());
+            for (Content c :  module.getContents()) {
+                if (c.getCurrentContentRelease() == null || c.getCurrentContentRelease().getRelease() == 0) {
+                    continue;
+                }
+                
+                ContentRelease contentRelease = getSpecificContentRelease(c, releaseNum);
+                if (isNull(contentRelease)) {
+                    continue;
+                }
+                ContentCatalogueDTO contentCatalogueDTO = contentService.toDetailedContentCatalogueDTO(contentRelease);
+                logger.info("found content catalogue: {}", contentCatalogueDTO);
+                moduleCatalogDTO.getContents().add(contentCatalogueDTO);
+            }
+            
+            courseCatalogDTO.getModules().add(moduleCatalogDTO);
+        }
+        
+        return courseCatalogDTO;
+    }
+    
+    private ContentRelease getSpecificContentRelease(Content content, int releaseNum) {
+        // Sort releases by their number and filter to find those less than the target
+        List<ContentRelease> toSort = new ArrayList<>();
+        for (ContentRelease contentRelease : content.getContentReleases()) {
+            logger.info("contentRelease: {}",contentRelease);
+            toSort.add(contentRelease);
+        }
+        
+        // sort and find the highest of those
+        ContentRelease contentRelease = null;
+        long max = -1L;
+        for (ContentRelease cr : content.getContentReleases()) {
+            if (isNull(cr)) {
+                continue;
+            }
+            
+            if (cr.getRelease() > max && cr.getRelease() <= releaseNum && !cr.isDeleted()) {
+                contentRelease = cr;
+                max = cr.getRelease();
+            }
+        }
+        
+        logger.info("contentRelease of course release {} is: {}",releaseNum,contentRelease);
+        return contentRelease;
     }
 }

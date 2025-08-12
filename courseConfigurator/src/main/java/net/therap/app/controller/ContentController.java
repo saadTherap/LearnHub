@@ -188,57 +188,83 @@ public class ContentController {
     @PatchMapping("/publish/{contentReleaseId}")
     public ResponseEntity<ContentReleaseDTO> publishContentRelease(@PathVariable long contentReleaseId,
                                                                    @RequestBody @Validated(OnUpdate.class) ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
+        
         Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
         
         if (contentOptional.isEmpty()) {
             throw new NoSuchElementException(messageSource.getMessage("not.found.content", null, Locale.getDefault()));
         }
         
-        ContentRelease contentRelease = contentOptional.get().getCurrentContentRelease();
-        Course course = contentRelease.getContent().getModule().getCourse();
-        ContentRelease contentReleaseToPublish = cloneContentRelease(contentRelease, contentCatalogueDTO);
+        Content content = contentOptional.get();
+        ContentRelease oldContentRelease = content.getCurrentContentRelease();
+        Course course = oldContentRelease.getContent().getModule().getCourse();
         
-        if (contentHelper.isValidForPublication(contentRelease, contentReleaseToPublish)) {
+        ContentRelease newContentRelease = createNewContentRelease(oldContentRelease, contentCatalogueDTO);
+        
+        if (contentHelper.isValidForPublication(oldContentRelease, newContentRelease)) {
             if (course.getCurrentRelease() == ReleaseStatus.DRAFT.getReleaseNumber()) {
                 logger.info("Publishing a COURSE from draft version: courseId => {}", course.getId());
-                contentReleaseToPublish.setRelease(ReleaseStatus.INITIAL_PUBLISHED.getReleaseNumber());
+                newContentRelease.setRelease(ReleaseStatus.INITIAL_PUBLISHED.getReleaseNumber());
                 course.setCurrentRelease(ReleaseStatus.INITIAL_PUBLISHED.getReleaseNumber());
-                contentReleaseService.save(contentReleaseToPublish);
-                
-                List<ContentRelease> contentReleases = contentOptional.get().getContentReleases();
-                contentReleases.add(contentReleaseToPublish);
-                contentOptional.get().setContentReleases(contentReleases);
-                contentService.save(contentOptional.get());
-                
-                courseService.save(course);
                 
             } else {
                 logger.info("Publishing a new version of COURSE id:{} from prev version: {}", course.getId(),
                             course.getCurrentRelease());
-                logger.info("Content version: {}", contentRelease.getRelease());
+                logger.info("Content version: {}", oldContentRelease.getRelease());
                 
-                if (contentRelease.getRelease() != ReleaseStatus.DRAFT.getReleaseNumber()) {
-                    contentReleaseToPublish.setId(0);
-                }
+                // Set ID to 0 to ensure Hibernate treats it as a new entity
+                newContentRelease.setId(0L);
                 
-                contentReleaseToPublish.setRelease(course.getCurrentRelease() + 1);
+                newContentRelease.setRelease(course.getCurrentRelease() + 1);
                 course.setCurrentRelease(course.getCurrentRelease() + 1);
-                
-                contentReleaseService.save(contentReleaseToPublish);
-                
-                contentOptional.get().setCurrentContentRelease(contentReleaseToPublish);
-                List<ContentRelease> contentReleases = contentOptional.get().getContentReleases();
-                contentReleases.add(contentReleaseToPublish);
-                contentOptional.get().setContentReleases(contentReleases);
-                contentService.save(contentOptional.get());
-                
-                courseService.save(course);
             }
             
-            return ResponseEntity.ok(dtoHelper.toContentReleaseDTO(contentReleaseToPublish));
+            // Set the relationships for the new entity
+            newContentRelease.setContent(content);
+            content.setCurrentContentRelease(newContentRelease);
+            content.getContentReleases().add(newContentRelease);
+            
+            // Save all changes within a single transaction
+            contentService.save(content);
+            courseService.save(course);
+            
+            return ResponseEntity.ok(dtoHelper.toContentReleaseDTO(newContentRelease));
         }
         
         throw new BadRequestException(messageSource.getMessage("bad.request.publish.content",null, Locale.getDefault()));
+    }
+    
+    private ContentRelease createNewContentRelease(ContentRelease original,
+                                                   ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
+        ContentRelease newContentRelease;
+        
+        if (original instanceof Lecture) {
+            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("LECTURE")) {
+                throw new BadRequestException();
+            }
+            newContentRelease = new Lecture();
+            // Copy properties from original object
+            BeanUtils.copyProperties(original, newContentRelease, "id"); // Exclude ID
+            // Update new object with DTO data
+            lectureMapper.updateLectureFromLectureCatalogDto((LectureCatalogDTO) contentCatalogueDTO, (Lecture) newContentRelease);
+        } else if (original instanceof Quiz) {
+            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("QUIZ")) {
+                throw new BadRequestException();
+            }
+            newContentRelease = new Quiz();
+            BeanUtils.copyProperties(original, newContentRelease, "id");
+        } else { // Submission
+            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("SUBMISSION")) {
+                throw new BadRequestException();
+            }
+            newContentRelease = new Submission();
+            BeanUtils.copyProperties(original, newContentRelease, "id");
+            submissionMapper.updateSubmissionFromSubmissionCatalogDto((SubmissionCatalogueDTO) contentCatalogueDTO, (Submission) newContentRelease);
+        }
+        
+        // Reset the ID to ensure Hibernate treats it as a new entity
+        newContentRelease.setId(0L);
+        return newContentRelease;
     }
     
     @PatchMapping("/edit/{contentReleaseId}")
@@ -284,38 +310,38 @@ public class ContentController {
         return ResponseEntity.ok(dtoHelper.toContentReleaseDTO(contentRelease));
     }
     
-    private ContentRelease cloneContentRelease(ContentRelease contentRelease,
-                                               ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
-        ContentRelease contentReleaseCopied;
-        
-        if (contentRelease instanceof Lecture) {
-            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("LECTURE")) {
-                throw new BadRequestException();
-            }
-            
-            contentReleaseCopied = new Lecture();
-            BeanUtils.copyProperties(contentRelease, contentReleaseCopied);
-            lectureMapper.updateLectureFromLectureCatalogDto((LectureCatalogDTO) contentCatalogueDTO,
-                                                             (Lecture) contentReleaseCopied);
-            
-        } else if (contentRelease instanceof Quiz) {
-            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("QUIZ")) {
-                throw new BadRequestException();
-            }
-            
-            contentReleaseCopied = new Quiz();
-            
-        } else {
-            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("SUBMISSION")) {
-                throw new BadRequestException();
-            }
-            
-            contentReleaseCopied = new Submission();
-            BeanUtils.copyProperties(contentRelease, contentReleaseCopied);
-            submissionMapper.updateSubmissionFromSubmissionCatalogDto((SubmissionCatalogueDTO) contentCatalogueDTO,
-                                                                      (Submission) contentReleaseCopied);
-        }
-        
-        return contentReleaseCopied;
-    }
+//    private ContentRelease cloneContentRelease(ContentRelease contentRelease,
+//                                               ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
+//        ContentRelease contentReleaseCopied;
+//
+//        if (contentRelease instanceof Lecture) {
+//            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("LECTURE")) {
+//                throw new BadRequestException();
+//            }
+//
+//            contentReleaseCopied = new Lecture();
+//            BeanUtils.copyProperties(contentRelease, contentReleaseCopied);
+//            lectureMapper.updateLectureFromLectureCatalogDto((LectureCatalogDTO) contentCatalogueDTO,
+//                                                             (Lecture) contentReleaseCopied);
+//
+//        } else if (contentRelease instanceof Quiz) {
+//            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("QUIZ")) {
+//                throw new BadRequestException();
+//            }
+//
+//            contentReleaseCopied = new Quiz();
+//
+//        } else {
+//            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("SUBMISSION")) {
+//                throw new BadRequestException();
+//            }
+//
+//            contentReleaseCopied = new Submission();
+//            BeanUtils.copyProperties(contentRelease, contentReleaseCopied);
+//            submissionMapper.updateSubmissionFromSubmissionCatalogDto((SubmissionCatalogueDTO) contentCatalogueDTO,
+//                                                                      (Submission) contentReleaseCopied);
+//        }
+//
+//        return contentReleaseCopied;
+//    }
 }
