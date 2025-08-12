@@ -18,7 +18,7 @@ public class CacheInvalidationUtil {
         this.hazelcastCacheService = hazelcastCacheService;
     }
 
-    public void invalidateCachesAfterCommit(Long id, String... mapNames) {
+    public void invalidateCachesAfterCommit(String id, String... mapNames) {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
