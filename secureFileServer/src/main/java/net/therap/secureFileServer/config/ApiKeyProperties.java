@@ -18,4 +18,10 @@ import java.util.Map;
 public class ApiKeyProperties {
 
     private Map<String, String> clients;
+
+    public void setClients(Map<String, String> clients) {
+        System.out.println("Setting clients: " + clients);
+
+        this.clients = clients;
+    }
 }
