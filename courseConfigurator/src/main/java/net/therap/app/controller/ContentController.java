@@ -155,6 +155,13 @@ public class ContentController {
         return ResponseEntity.ok(dto);
     }
     
+    @GetMapping("/draft")
+    public ResponseEntity<List<ContentReleaseDTO>> getDraftContentReleases() {
+        List<ContentRelease> contentReleases = contentReleaseService.findAllDrafts(1);
+        
+        return ResponseEntity.ok(contentReleases.stream().map(dtoHelper::toContentReleaseDTO).toList());
+    }
+    
     @PostMapping("/draft")
     public ResponseEntity<ContentReleaseDTO> createContent(@RequestBody @Validated(OnCreate.class) ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
         Content content = contentHelper.getContent(contentCatalogueDTO);
