@@ -22,7 +22,6 @@ import java.util.List;
  * @since 8/3/25
  */
 @Slf4j
-//@Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
