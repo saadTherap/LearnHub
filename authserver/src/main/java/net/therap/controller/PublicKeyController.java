@@ -23,6 +23,8 @@ public class PublicKeyController {
     
     @GetMapping()
     public ResponseEntity<String> getPublicKey(@RequestParam("kid") String keyId) {
+        System.out.println("In the method getPublicKey");
+
         if (!keyId.equals(jwtService.getKeyId())) {
             return ResponseEntity.notFound().build();
         }

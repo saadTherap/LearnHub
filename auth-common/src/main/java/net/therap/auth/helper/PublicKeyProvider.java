@@ -1,6 +1,7 @@
 package net.therap.auth.helper;
 
 import com.nimbusds.jose.jwk.RSAKey;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.auth.client.PublicKeyClient;
@@ -32,6 +33,17 @@ public class PublicKeyProvider {
         this.publicKeyClient = publicKeyClient;
     }
 
+//    @PostConstruct
+//    public void initializeCache() {
+//        RSAPublicKey publicKey = fetchFromDev();
+//
+//        CachedKey cachedKey = new CachedKey(publicKey);
+//
+//        keyCache.put("learnhub", cachedKey);
+//
+//        log.info("Initialized key cache with dev key.");
+//    }
+
     public RSAPublicKey getPublicKey(String kid) {
         CachedKey cachedKey = keyCache.get(kid);
 
@@ -62,6 +74,20 @@ public class PublicKeyProvider {
         } catch (Exception e) {
             log.error("Failed to fetch public key from server for kid: {}", kid, e);
             throw new RuntimeException("Failed to fetch public key for kid: " + kid, e);
+        }
+    }
+
+    private RSAPublicKey fetchFromDev() {
+        String jwkJson = "{\"kty\":\"RSA\",\"e\":\"AQAB\",\"kid\":\"learnhub\",\"n\":\"rrE1uZXwj-sKPWTA_3U7yp28Lg8VsY1D6adUyTE3C1UiYBmbTqPLGrCz9LhZqKauIIn5-a6iaxCuMfAbVwkWZ2mKlOw2xB1wWt_aAOZoP9RFgpfzoC5qgQk0yUvnKqyTYHGWsyyrN1gPrCDKzetPRsJRykg9J1r7_cpa6y1sK4ro8xpx07zj7578lXevdfnEZDD50_qTXu0cz2iSOcfPQ8IWJaK-EXopmSxf_kN0orXsed25ErhiqhaFCYPEZnl6RP3zW9KiwEiPq1U6RNqX4eShXkDgc1L3c7rF67laurz_c09kWZAsReOTfLVreqePIn6tdFi3zqaz2znz3Oq3dw\"}";
+
+        try {
+            RSAKey rsaKey = RSAKey.parse(jwkJson);
+
+            return rsaKey.toRSAPublicKey();
+
+        } catch (Exception e) {
+            log.error("Failed to parse hardcoded public key.", e);
+            throw new RuntimeException("Failed to load dev public key", e);
         }
     }
 

@@ -3,9 +3,11 @@ package net.therap.learningProcessor.dto.content;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.therap.learningProcessor.dto.content.lecture.LectureDto;
+import net.therap.learningProcessor.dto.content.quiz.QuizDto;
+import net.therap.learningProcessor.dto.content.submission.SubmissionDto;
 
 /**
  * @author avidewan

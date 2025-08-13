@@ -33,7 +33,34 @@ hazelcast-client:
         max-size-policy: ENTRY_COUNT
         size: 1000
 
-    courses:
+    studentsByCourse:
+      in-memory-format: OBJECT
+      time-to-live-seconds: 1800
+      invalidate-on-change: true
+      eviction:
+        eviction-policy: LRU
+        max-size-policy: ENTRY_COUNT
+        size: 1000
+
+    courseProgressDetail:
+      in-memory-format: OBJECT
+      time-to-live-seconds: 1800
+      invalidate-on-change: true
+      eviction:
+        eviction-policy: LRU
+        max-size-policy: ENTRY_COUNT
+        size: 1000
+
+    studentCourseProgress:
+      in-memory-format: OBJECT
+      time-to-live-seconds: 1800
+      invalidate-on-change: true
+      eviction:
+        eviction-policy: LRU
+        max-size-policy: ENTRY_COUNT
+        size: 1000
+
+    allStudentProgressByCourse:
       in-memory-format: OBJECT
       time-to-live-seconds: 1800
       invalidate-on-change: true

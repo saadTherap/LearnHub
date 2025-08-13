@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import net.therap.learningProcessor.client.FileClient;
 import net.therap.learningProcessor.dto.StoredFileDto;
 import net.therap.learningProcessor.dto.StudentDto;
-import net.therap.learningProcessor.dto.submission.StudentSubmissionDto;
+import net.therap.learningProcessor.dto.content.submission.StudentSubmissionDto;
 import net.therap.learningProcessor.entity.Student;
 import net.therap.learningProcessor.entity.StudentSubmission;
 import net.therap.learningProcessor.mapper.StudentMapper;

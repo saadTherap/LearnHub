@@ -2,6 +2,7 @@ package net.therap.secureFileServer.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import net.therap.secureFileServer.dto.StoredFileDto;
 import net.therap.secureFileServer.entity.StoredFile;
@@ -26,7 +27,7 @@ import java.util.List;
  * @since 7/22/25
  */
 @RestController
-@RequestMapping("/api/files")
+@RequestMapping("/files")
 @Tag(name = "File API", description = "Endpoints for uploading, downloading, listing and deleting files")
 public class FileController {
 
