@@ -2,6 +2,7 @@ package net.therap.learningProcessor.service;
 
 import lombok.RequiredArgsConstructor;
 import net.therap.learningProcessor.client.CourseClient;
+import net.therap.learningProcessor.constants.CacheConstants;
 import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
 import net.therap.learningProcessor.dto.StudentContentCompletionDto;
 import net.therap.learningProcessor.dto.StudentCourseProgressDto;
@@ -18,6 +19,7 @@ import net.therap.learningProcessor.repository.CourseEnrollmentRepository;
 import net.therap.learningProcessor.repository.StudentContentCompletionRepository;
 import net.therap.learningProcessor.repository.StudentRepository;
 import net.therap.learningProcessor.repository.StudentSubmissionRepository;
+import net.therap.learningProcessor.util.CacheInvalidationUtil;
 import net.therap.learningProcessor.util.CourseProgressUtil;
 import net.therap.learningProcessor.validator.CourseValidator;
 import net.therap.learningProcessor.validator.StudentValidator;
@@ -39,6 +41,7 @@ public class CourseStudentServiceImpl implements CourseStudentService {
     private final StudentRepository studentRepository;
     private final CourseEnrollmentRepository courseEnrollmentRepository;
     private final StudentContentCompletionRepository studentContentCompletionRepository;
+    private final CacheInvalidationUtil cacheInvalidationUtil;
 
     private final CourseClient courseClient;
 
@@ -55,16 +58,28 @@ public class CourseStudentServiceImpl implements CourseStudentService {
             throw new ResourceAlreadyExistsException("error.enrollment.alreadyExists", studentId, courseId);
         }
 
-        Student student = studentRepository.findById(studentId).
-                orElseThrow(() -> new ResourceNotFoundException("error.student.notFound", studentId));
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("error.student.notFound", studentId));
 
         courseValidator.validateCourseExists(courseId);
 
         CourseEnrollment enrollment = new CourseEnrollment();
         enrollment.setStudent(student);
         enrollment.setCourseId(courseId);
-
         courseEnrollmentRepository.save(enrollment);
+
+        String scKey = studentId + ":" + courseId;
+        cacheInvalidationUtil.invalidateCachesAfterCommit(
+                scKey,
+                CacheConstants.COURSE_PROGRESS_DETAIL,
+                CacheConstants.STUDENT_COURSE_PROGRESS
+        );
+
+        cacheInvalidationUtil.invalidateCachesAfterCommit(
+                String.valueOf(courseId),
+                CacheConstants.ALL_STUDENT_PROGRESS_BY_COURSE,
+                CacheConstants.STUDENTS_BY_COURSE
+        );
     }
 
     @Override

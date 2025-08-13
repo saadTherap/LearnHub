@@ -1,5 +1,7 @@
 package net.therap.secureFileServer.config;
 
+import lombok.RequiredArgsConstructor;
+import net.therap.secureFileServer.interceptor.HmacAuthInterceptor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +19,10 @@ import java.util.Locale;
  * @since 7/30/25
  */
 @Configuration
+@RequiredArgsConstructor
 public class AppConfig implements WebMvcConfigurer {
+
+    private final HmacAuthInterceptor hmacAuthInterceptor;
 
     @Bean
     public MessageSource messageSource() {
@@ -49,5 +54,13 @@ public class AppConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
+
+        registry.addInterceptor(hmacAuthInterceptor)
+                .addPathPatterns("/files/**")
+                .excludePathPatterns(
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html"
+                );
     }
 }
