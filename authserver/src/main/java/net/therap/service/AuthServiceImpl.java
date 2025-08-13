@@ -11,7 +11,6 @@ import net.therap.entity.VerificationToken;
 import net.therap.exception.AuthenticationException;
 import net.therap.respository.VerificationTokenRepository;
 import net.therap.service.interfaces.AuthService;
-import net.therap.service.interfaces.EmailService;
 import net.therap.util.MessageUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

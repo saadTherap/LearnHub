@@ -1,6 +1,5 @@
 package net.therap.filter;
 
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,7 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.service.JwtService;
-import net.therap.service.UserService;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -17,7 +15,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static net.therap.util.PublicEndpoints.WHITELIST;
+import static net.therap.util.Constants.WHITELIST;
 
 /**
  * @author apurboturjo

@@ -1,12 +1,10 @@
 package net.therap.util;
 
-import java.util.List;
-
 /**
  * @author apurboturjo
  * @since 7/28/25
  */
-public class PublicEndpoints {
+public class Constants {
 
     public static final String[] WHITELIST = {
             "/auth/api/",
@@ -15,7 +13,6 @@ public class PublicEndpoints {
             "/auth/swagger-ui.html",
             "/auth/v3/api-docs",
             "/auth/swagger-resources/",
-            "/auth/webjars/",
             "/auth/favicon.ico",
             "/error"
     };

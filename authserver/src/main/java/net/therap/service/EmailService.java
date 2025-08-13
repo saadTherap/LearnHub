@@ -4,7 +4,6 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.therap.service.interfaces.EmailService;
 import net.therap.util.MessageUtil;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -19,13 +18,12 @@ import java.util.Locale;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class EmailServiceImpl implements EmailService {
+public class EmailService {
     
     private final JavaMailSender mailSender;
     
     private final MessageUtil messageUtil;
     
-    @Override
     public void sendVerificationEmail(String to, String token) {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");

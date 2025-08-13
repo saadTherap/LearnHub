@@ -28,7 +28,7 @@ public class User extends Persistence {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
     
-    @Column(name = "password", nullable = false, unique = true)
+    @Column(name = "password", nullable = false)
     private String password;
     
     @Column(name = "role", nullable = false)
