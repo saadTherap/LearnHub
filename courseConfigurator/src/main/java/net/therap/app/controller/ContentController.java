@@ -249,15 +249,18 @@ public class ContentController {
     
     private ContentRelease createNewContentRelease(ContentRelease original,
                                                    ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
+        
         ContentRelease newContentRelease;
         
         if (original instanceof Lecture) {
             if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("LECTURE")) {
                 throw new BadRequestException();
             }
+            
             newContentRelease = new Lecture();
             BeanUtils.copyProperties(original, newContentRelease, "id");
             lectureMapper.updateLectureFromLectureCatalogDto((LectureCatalogDTO) contentCatalogueDTO, (Lecture) newContentRelease);
+            
         } else if (original instanceof Quiz) {
             if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("QUIZ")) {
                 throw new BadRequestException();
