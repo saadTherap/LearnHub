@@ -2,6 +2,7 @@ package net.therap.learningProcessor.service;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
+import com.hazelcast.query.Predicates;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +36,12 @@ public class HazelcastCacheService {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public <K, V> IMap<K, V> getMap(String mapName) {
+        if (hazelcastInstance == null) return null;
+
+        return hazelcastInstance.getMap(mapName);
     }
     
     // Retrieve multiple entities by keys
@@ -106,5 +113,13 @@ public class HazelcastCacheService {
 
             return false;
         }
+    }
+
+    public void removeKeysEndingWith(String mapName, String suffix) {
+        if (hazelcastInstance == null) return;
+        IMap<String, ?> map = hazelcastInstance.getMap(mapName);
+        if (map == null) return;
+
+        map.removeAll(Predicates.like("__key", "%" + suffix));
     }
 }
