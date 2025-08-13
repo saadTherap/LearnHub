@@ -110,7 +110,7 @@ public class PublicKeyProvider {
             return expired;
         });
     }
-    
+
     @Scheduled(fixedRate = 604800000)
     public void evictKeys() {
         int size = keyCache.size();
