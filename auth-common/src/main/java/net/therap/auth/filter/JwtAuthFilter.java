@@ -94,6 +94,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String email = (String) claims.getSubject();
             String role = (String) claims.getClaim(CLAIM_USER_ROLE);
             UserRequestCache.put(userId, email, role);
+            request.setAttribute(CLAIM_USER_ID, userId);
             
             context.setToken(token);
 
