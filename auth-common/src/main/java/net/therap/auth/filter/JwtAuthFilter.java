@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.auth.context.RequestTokenContext;
+import net.therap.auth.context.UserRequestCache;
 import net.therap.auth.exception.AuthenticationException;
 import net.therap.auth.validator.TokenValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +23,12 @@ import java.util.List;
  * @since 8/3/25
  */
 @Slf4j
-//@Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
+    private static final String CLAIM_USER_ID = "userId";
+    private static final String CLAIM_USER_ROLE = "role";
 
     private final List<String> excludedPaths;
     private final TokenValidator tokenValidator;
@@ -87,6 +89,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             JWTClaimsSet claims = tokenValidator.validate(token);
             System.out.println("Token validated successfully for user: {} ===> " + claims);
+            
+            Long userId = (Long) claims.getClaim(CLAIM_USER_ID);
+            String email = (String) claims.getSubject();
+            String role = (String) claims.getClaim(CLAIM_USER_ROLE);
+            UserRequestCache.put(userId, email, role);
+            
             context.setToken(token);
 
             System.out.println("Response: " + response);
