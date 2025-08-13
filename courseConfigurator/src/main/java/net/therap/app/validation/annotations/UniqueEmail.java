@@ -26,7 +26,7 @@ public @interface UniqueEmail {
     
     String message() default "{validation.email.unique}";
     
-    Class<?>[] groups() default {OnCreate.class, OnUpdate.class};
+    Class<?>[] groups() default {};
     
     Class<? extends Payload>[] payload() default {};
 }
