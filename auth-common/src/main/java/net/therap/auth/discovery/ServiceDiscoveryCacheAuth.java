@@ -1,4 +1,4 @@
-package net.therap.auth.client;
+package net.therap.auth.discovery;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since 6/8/25
  */
 @Component
-public class ServiceDiscoveryCacheForAuthCommon {
+public class ServiceDiscoveryCacheAuth {
 
     private final RestTemplate restTemplate = new RestTemplate();
 

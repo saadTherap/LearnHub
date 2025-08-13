@@ -48,7 +48,7 @@ public class PublicKeyProvider {
     public RSAPublicKey getPublicKey(String kid) {
         CachedKey cachedKey = keyCache.get(kid);
 
-        if (cachedKey != null && !cachedKey.isExpired()) {
+        if (Objects.nonNull(cachedKey) && !cachedKey.isExpired()) {
             log.debug("Using cached public key: {}", kid);
             return cachedKey.getPublicKey();
         }
@@ -70,6 +70,7 @@ public class PublicKeyProvider {
 
             String jwkJson = response.getBody();
             RSAKey rsaKey = RSAKey.parse(jwkJson);
+            
             return rsaKey.toRSAPublicKey();
 
         } catch (Exception e) {
@@ -111,7 +112,7 @@ public class PublicKeyProvider {
         });
     }
     
-    @Scheduled(fixedRate = 3600000)
+    @Scheduled(fixedRate = 604800000)
     public void evictKeys(@Nullable String kid) {
         if (Objects.nonNull(kid) && keyCache.remove(kid) != null) {
             log.info("Evicted key from cache: {}", kid);

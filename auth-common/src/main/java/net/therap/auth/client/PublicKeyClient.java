@@ -1,5 +1,6 @@
 package net.therap.auth.client;
 
+import net.therap.auth.discovery.ServiceDiscoveryCacheAuth;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -19,12 +20,12 @@ public class PublicKeyClient {
     private static final String PUBLIC_KEY_PATH = "/auth/pk";
 
     @Autowired
-    private ServiceDiscoveryCacheForAuthCommon serviceDiscoveryCacheForAuthCommon;
+    private ServiceDiscoveryCacheAuth serviceDiscoveryCacheAuth;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
     private String getServiceBaseUrl() {
-        Map<String, Object> instance = serviceDiscoveryCacheForAuthCommon.getInstance(SERVICE_NAME);
+        Map<String, Object> instance = serviceDiscoveryCacheAuth.getInstance(SERVICE_NAME);
         String host = (String) instance.get("host");
         Integer port = (Integer) instance.get("port");
         return "http://" + host + ":" + port;
