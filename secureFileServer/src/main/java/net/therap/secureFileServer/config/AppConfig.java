@@ -56,11 +56,11 @@ public class AppConfig implements WebMvcConfigurer {
         registry.addInterceptor(localeChangeInterceptor());
 
         registry.addInterceptor(hmacAuthInterceptor)
-                .addPathPatterns("/api/files/**")
+                .addPathPatterns("/files/**")
                 .excludePathPatterns(
-                        "/api/secure-file-server/files/v3/api-docs/**",
-                        "/api/secure-file-server/files/swagger-ui/**",
-                        "/api/secure-file-server/files/swagger-ui.html"
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html"
                 );
     }
 }

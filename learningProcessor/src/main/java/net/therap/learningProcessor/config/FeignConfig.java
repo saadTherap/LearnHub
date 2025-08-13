@@ -57,14 +57,27 @@ public class FeignConfig {
 
             log.info("Feign gives us: '{}'", rawUrl);
 
-            String serverPath = "/api/secure-file-server/files" + rawUrl;
+            String serverPath = "/api/secure-file-server/files";
+
+            if (!"/".equals(rawUrl)) {
+                serverPath = "/api/secure-file-server/files" + rawUrl;
+            }
 
             String message = requestTemplate.method() + serverPath + timestamp;
             String signature = HmacUtils.hmacSHA256(secret, message);
 
+            log.info("=== Outgoing HMAC Auth Request Message ===");
+            log.info("message: {}", message);
+
             requestTemplate.header("X-Api-Key", clientKey);
             requestTemplate.header("X-Timestamp", timestamp);
             requestTemplate.header("X-Signature", signature);
+
+
+            log.info("=== Outgoing HMAC Auth Request ===");
+            log.info("API Key header: {}", clientKey);
+            log.info("Signature header: {}", signature);
+            log.info("Timestamp header: {}", timestamp);
         };
     }
 

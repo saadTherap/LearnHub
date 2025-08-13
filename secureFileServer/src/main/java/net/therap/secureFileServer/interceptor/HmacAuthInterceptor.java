@@ -52,15 +52,19 @@ public class HmacAuthInterceptor implements HandlerInterceptor {
         if (secret == null) {
             log.warn("Invalid API key: {}", apiKey);
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid API key");
+
             return false;
         }
 
         long timestamp;
+
         try {
             timestamp = Long.parseLong(timestampStr);
+
         } catch (NumberFormatException e) {
             log.warn("Invalid timestamp format: {}", timestampStr);
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid timestamp");
+
             return false;
         }
 
@@ -70,6 +74,7 @@ public class HmacAuthInterceptor implements HandlerInterceptor {
         if (timeDiff > ALLOWED_TIME_DRIFT_SECONDS) {
             log.warn("Request expired: drift {}s > allowed {}s", timeDiff, ALLOWED_TIME_DRIFT_SECONDS);
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Request expired");
+
             return false;
         }
 
