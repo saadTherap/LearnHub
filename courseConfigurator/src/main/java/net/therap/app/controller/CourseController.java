@@ -57,10 +57,10 @@ public class CourseController {
                 courses.stream().map(dtoHelper::toDetailedCourseCatalogDTO).collect(Collectors.toList());
         return ResponseEntity.ok(courseDTOs);
     }
-
+    
     @GetMapping("/{id}")
     public ResponseEntity<CourseCatalogDTO> getCourseById(@PathVariable long id) {
-
+        
         CourseCatalogDTO cached = hazelcastCacheService.get(CacheConstants.COURSE_CATALOG, id);
         if (cached != null) {
             return ResponseEntity.ok(cached);
@@ -111,16 +111,11 @@ public class CourseController {
         return ResponseEntity.notFound().build();
     }
     
-    @GetMapping("/{courseId}/versions/{versionNumebr}")
-    public ResponseEntity<CourseDTO> getCourseVersionById(@PathVariable long courseId, @PathVariable int versionNumebr) {
-        Optional<Course> courseOptional = courseService.findById(courseId);
-        if (courseOptional.isPresent()) {
-            Course course = courseOptional.get();
-            CourseDTO dto = dtoHelper.toCourseDTO(course);
-            return ResponseEntity.ok(dto);
-        }
+    @GetMapping("/{id}/versions/{releaseNum}")
+    public ResponseEntity<CourseCatalogDTO> getCourseVersionById(@PathVariable long id,
+                                                          @PathVariable int releaseNum) {
         
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(courseService.findSpecificVersion(id,releaseNum));
     }
     
     @GetMapping("/byInstructor/{instructorId}")
@@ -146,7 +141,7 @@ public class CourseController {
     }
     
     @GetMapping("/draft/{courseId}")
-    public ResponseEntity<CourseDTO> getDraftCourseById(@PathVariable long courseId) {
+    public ResponseEntity<CourseDTO> getSpecificVersionOfCourse(@PathVariable long courseId) {
         Optional<Course> courseOptional = courseService.findDraftById(courseId);
         
         if (courseOptional.isPresent()) {
@@ -162,9 +157,9 @@ public class CourseController {
         Course course = courseMapper.toCourse(courseDTO);
         
         course.setCurrentRelease(0L);
-
+        
         Course savedCourse = courseService.save(course);
-
+        
         return new ResponseEntity<>(dtoHelper.toCourseDTO(savedCourse), HttpStatus.CREATED);
     }
     
@@ -174,9 +169,8 @@ public class CourseController {
             throw new BadRequestException(messageSource.getMessage("invalid.reorder", null, Locale.getDefault()));
         }
         
-        List<ReorderDTO> sortedModules = modules.stream()
-                .sorted(Comparator.comparingLong(ReorderDTO::getOrderIndex))
-                .toList();
+        List<ReorderDTO> sortedModules =
+                modules.stream().sorted(Comparator.comparingLong(ReorderDTO::getOrderIndex)).toList();
         
         long newOrderIndex = 1;
         for (ReorderDTO module : sortedModules) {
@@ -217,12 +211,14 @@ public class CourseController {
             Course course = courseOptional.get();
             
             if (course.getCurrentRelease() > ReleaseStatus.DRAFT.getReleaseNumber()) {
-                ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, messageSource.getMessage("error.course.republish", null, request.getLocale()), request.getRequestURI());
+                ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, messageSource.getMessage(
+                        "error.course.republish", null, request.getLocale()), request.getRequestURI());
                 return new ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST);
             }
             
             if (!isPublishable(course)) {
-                ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, messageSource.getMessage("error.course.not.publishable", null, request.getLocale()), request.getRequestURI());
+                ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, messageSource.getMessage(
+                        "error.course.not.publishable", null, request.getLocale()), request.getRequestURI());
                 return new ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST);
             }
             

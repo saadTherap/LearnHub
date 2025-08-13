@@ -42,6 +42,10 @@ public class InstructorService {
     public List<Instructor> getAllInstructors() {
         return instructorRepository.findAll();
     }
+    
+    public Optional<Instructor> getByEmail(String email) {
+        return instructorRepository.findByEmail(email);
+    }
 
     @Transactional
     public Instructor createInstructor(Instructor instructor) {
@@ -81,5 +85,8 @@ public class InstructorService {
             }
         });
     }
-
+    
+    public boolean isEmailAlreadyInUse(String email) {
+        return instructorRepository.existsByEmail(email);
+    }
 }

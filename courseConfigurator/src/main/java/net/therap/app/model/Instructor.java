@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import net.therap.app.validation.annotations.UniqueEmail;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -13,7 +14,8 @@ import java.util.List;
  * @author gazizafor
  * @since 21/7/25
  */
-@Entity(name = "final_learnhub_instructor")
+@Entity
+@Table(name = "final_learnhub_instructor")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -35,6 +37,7 @@ public class Instructor extends Persistent {
     @Column(nullable = false)
     private String name;
     
+    @UniqueEmail
     @Column(nullable = false)
     private String email;
 

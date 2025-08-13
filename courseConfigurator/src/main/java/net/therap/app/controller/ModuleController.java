@@ -1,6 +1,7 @@
 package net.therap.app.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.*;
 import net.therap.app.helper.DtoHelper;
 import net.therap.app.mapper.ModuleMapper;
@@ -69,23 +70,40 @@ public class ModuleController {
     
     @GetMapping("/byCourse/{courseId}")
     public ResponseEntity<List<ModuleDTO>> getModulesByCourse(@PathVariable long courseId) {
+        List<ModuleDTO> cachedModules = hazelcastCacheService.get(CacheConstants.MODULES_BY_COURSE, courseId);
+        if (cachedModules != null) {
+            return ResponseEntity.ok(cachedModules);
+        }
+
         List<Module> modules = moduleService.findByCourseId(courseId);
-        List<ModuleDTO> moduleDTOs =
-                modules.stream().map(dtoHelper::toModuleDtoLazy).collect(Collectors.toList());
-        
+        List<ModuleDTO> moduleDTOs = modules.stream()
+                .map(dtoHelper::toModuleDtoLazy)
+                .collect(Collectors.toList());
+
+        hazelcastCacheService.put(CacheConstants.MODULES_BY_COURSE, courseId, moduleDTOs);
+
         return ResponseEntity.ok(moduleDTOs);
     }
     
     @GetMapping("/{id}")
     public ResponseEntity<ModuleDTO> getModuleById(@PathVariable long id) {
+        ModuleDTO cachedDto = hazelcastCacheService.get(CacheConstants.MODULES, id);
+        if (cachedDto != null) {
+            return ResponseEntity.ok(cachedDto);
+        }
+
         Optional<Module> moduleOptional = moduleService.findById(id);
-        
-        return moduleOptional.map(module -> {
+        if (moduleOptional.isPresent()) {
+            Module module = moduleOptional.get();
             ModuleDTO dto = new ModuleDTO();
             BeanUtils.copyProperties(module, dto);
-            
+
+            hazelcastCacheService.put(CacheConstants.MODULES, id, dto);
+
             return ResponseEntity.ok(dto);
-        }).orElseGet(() -> ResponseEntity.notFound().build());
+        }
+
+        return ResponseEntity.notFound().build();
     }
     
     @PostMapping

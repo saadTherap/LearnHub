@@ -18,5 +18,6 @@ public class ModuleCatalogDTO {
     private long id;
     private String title;
     private long courseId;
+    private long orderIndex;
     private List<ContentCatalogueDTO> contents;
 }

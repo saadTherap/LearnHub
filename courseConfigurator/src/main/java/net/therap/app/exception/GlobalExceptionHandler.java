@@ -1,6 +1,7 @@
 package net.therap.app.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import net.therap.app.dto.ErrorResponse;
 import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -50,6 +52,37 @@ public class GlobalExceptionHandler {
         
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, messageSource.getMessage("error.validation.failed", null, currentLocale),
                                                         request.getRequestURI(), errors);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+    
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolationExceptions(ConstraintViolationException ex, HttpServletRequest request) {
+        logger.error("ConstraintViolationException: {}", ex.getMessage());
+        Map<String, String> errors = new HashMap<>();
+        Locale currentLocale = LocaleContextHolder.getLocale();
+        
+        ex.getConstraintViolations().forEach(violation -> {
+            String fieldName = violation.getPropertyPath().toString();
+
+            int lastDotIndex = fieldName.lastIndexOf('.');
+            
+            if (lastDotIndex != -1) {
+                fieldName = fieldName.substring(lastDotIndex + 1);
+            }
+            
+            String errorMessage = messageSource.getMessage(violation.getMessageTemplate(), null, violation.getMessage(), currentLocale);
+            errors.put(fieldName, errorMessage);
+        });
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Validation Error",
+                "One or more validation errors occurred.",
+                request.getRequestURI(),
+                errors
+        );
+        
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
     

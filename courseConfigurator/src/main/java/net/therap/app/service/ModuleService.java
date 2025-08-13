@@ -1,9 +1,11 @@
 package net.therap.app.service;
 
+import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.ReorderDTO;
 import net.therap.app.model.Content;
 import net.therap.app.model.Module;
 import net.therap.app.repository.ModuleRepository;
+import net.therap.app.util.CacheInvalidationUtil;
 import org.apache.coyote.BadRequestException;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
@@ -25,12 +27,14 @@ public class ModuleService {
     private final ContentService contentService;
     private final MessageSource messageSource;
     private final ContentReleaseService contentReleaseService;
+    private final CacheInvalidationUtil cacheInvalidationUtil;
     
-    public ModuleService(ModuleRepository moduleRepository, ContentService contentService, MessageSource messageSource, ContentReleaseService contentReleaseService) {
+    public ModuleService(ModuleRepository moduleRepository, ContentService contentService, MessageSource messageSource, ContentReleaseService contentReleaseService, CacheInvalidationUtil cacheInvalidationUtil) {
         this.moduleRepository = moduleRepository;
         this.contentService = contentService;
         this.messageSource = messageSource;
         this.contentReleaseService = contentReleaseService;
+        this.cacheInvalidationUtil = cacheInvalidationUtil;
     }
     
     public List<Module> findAll() {
@@ -47,21 +51,44 @@ public class ModuleService {
     
     @Transactional
     public Module save(Module module) {
-        return moduleRepository.save(module);
+
+        Module saved = moduleRepository.save(module);
+
+        cacheInvalidationUtil.invalidateCacheAfterCommit(
+                String.valueOf(saved.getId()),
+                CacheConstants.MODULES
+        );
+        cacheInvalidationUtil.invalidateCacheAfterCommit(
+                String.valueOf(saved.getCourse().getId()),
+                CacheConstants.MODULES_BY_COURSE, CacheConstants.COURSES, CacheConstants.COURSE_CATALOG
+        );
+
+        return saved;
     }
-    
+
     @Transactional
     public Module deleteById(long id) {
-        Optional<Module> module = moduleRepository.findById(id);
-        
-        if (module.isPresent()) {
-            module.get().setDeleted(true);
-            return moduleRepository.save(module.get());
-        }
-        
-        throw new NoSuchElementException(messageSource.getMessage("not.found.module", null, Locale.getDefault()));
+        Module module = moduleRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException(
+                        messageSource.getMessage("not.found.module", null, Locale.getDefault())
+                ));
+
+        String moduleId = String.valueOf(id);
+        String courseId = String.valueOf(module.getCourse().getId());
+
+        module.setDeleted(true);
+        Module saved = moduleRepository.save(module);
+
+        cacheInvalidationUtil.invalidateCacheAfterCommit(
+                moduleId, CacheConstants.MODULES
+        );
+        cacheInvalidationUtil.invalidateCacheAfterCommit(
+                courseId, CacheConstants.MODULES_BY_COURSE, CacheConstants.COURSES, CacheConstants.COURSE_CATALOG
+        );
+
+        return saved;
     }
-    
+
     public boolean isPublishable(Module module) {
         for (Content content : module.getContents()) {
             if (contentService.isPublishable(content)) {
