@@ -1,5 +1,7 @@
 package net.therap.util;
 
+import java.util.List;
+
 /**
  * @author apurboturjo
  * @since 7/28/25
@@ -7,13 +9,14 @@ package net.therap.util;
 public class PublicEndpoints {
 
     public static final String[] WHITELIST = {
-            "/api/auth/**",
-            "/swagger-ui/**",
-            "/swagger-ui.html",
-            "/v3/api-docs/**",
-            "/swagger-resources/**",
-            "/webjars/**",
-            "/favicon.ico",
+            "/auth/api/",
+            "/auth/pk",
+            "/auth/swagger-ui/",
+            "/auth/swagger-ui.html",
+            "/auth/v3/api-docs",
+            "/auth/swagger-resources/",
+            "/auth/webjars/",
+            "/auth/favicon.ico",
             "/error"
     };
 }

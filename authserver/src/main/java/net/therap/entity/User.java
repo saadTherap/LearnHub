@@ -37,4 +37,9 @@ public class User extends Persistence {
     
     @Column(name = "enabled", nullable = false)
     private boolean enabled;
+    
+    @Override
+    public String toString() {
+        return email + " ," + role;
+    }
 }

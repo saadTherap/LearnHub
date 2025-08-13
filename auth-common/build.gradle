@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'java-library'
     id 'maven-publish'
     id 'io.spring.dependency-management' version '1.1.7'
 }
@@ -10,6 +10,8 @@ ext {
     springDependencyManagementVersion = '1.1.7'
     jjwtVersion = '0.11.5'
     lombokVersion = '1.18.32'
+    nimbusVersion = '9.23'
+    junitVersion = '5.10.0'
 }
 
 group = 'net.therap'
@@ -37,7 +39,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
-    implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.23'
+    implementation "com.nimbusds:nimbus-jose-jwt:$nimbusVersion"
 
     implementation "io.jsonwebtoken:jjwt-api:$jjwtVersion"
     runtimeOnly "io.jsonwebtoken:jjwt-impl:$jjwtVersion"
@@ -45,4 +47,11 @@ dependencies {
 
     compileOnly "org.projectlombok:lombok:$lombokVersion"
     annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+}
+
+test {
+    useJUnitPlatform()
 }
