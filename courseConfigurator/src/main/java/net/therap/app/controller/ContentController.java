@@ -78,6 +78,7 @@ public class ContentController {
     
     @GetMapping("/byModule/{moduleId}")
     public List<ContentCatalogueDTO> getContentByModuleId(@PathVariable long moduleId) {
+        logger.info("[GET] /contents/byModule/{}", moduleId);
         List<Content> contents = contentService.findByModuleId(moduleId);
         
         return contents.stream().map(dtoHelper::toContentCatalogueDTO).toList();
@@ -85,8 +86,9 @@ public class ContentController {
 
     @GetMapping("/detail/{contentReleaseId}")
     public ResponseEntity<ContentCatalogueDTO> getContentReleaseById(@PathVariable long contentReleaseId) {
-
+        logger.info("[GET] /contents/detail/{}", contentReleaseId);
         ContentCatalogueDTO cached = hazelcastCacheService.get(CacheConstants.CONTENT_CATALOG, contentReleaseId);
+        
         if (cached != null) {
             return ResponseEntity.ok(cached);
         }
@@ -108,7 +110,7 @@ public class ContentController {
 
     @GetMapping
     public ResponseEntity<List<ContentReleaseDTO>> getAllContentReleases() {
-        logger.info("Fetching all content releases");
+        logger.info("[GET] /contents");
         List<ContentRelease> contentReleases = contentService.findAllContents();
         
         return new ResponseEntity<>(contentReleases.stream().map(dtoHelper::toContentReleaseDTO).toList(),
@@ -117,7 +119,9 @@ public class ContentController {
 
     @GetMapping("/{contentReleaseId}/releases")
     public ResponseEntity<List<ContentReleaseDTO>> getAllContentReleases(@PathVariable long contentReleaseId) {
+        logger.info("[GET] /contents/{}/releases", contentReleaseId);
         List<ContentReleaseDTO> cached = hazelcastCacheService.get(CacheConstants.CONTENT_RELEASE_LIST, contentReleaseId);
+        
         if (cached != null) {
             return ResponseEntity.ok(cached);
         }
@@ -126,13 +130,14 @@ public class ContentController {
         List<ContentReleaseDTO> dtos = contentReleases.stream()
                 .map(dtoHelper::toContentReleaseDTO)
                 .toList();
-
         hazelcastCacheService.put(CacheConstants.CONTENT_RELEASE_LIST, contentReleaseId, dtos);
+        
         return ResponseEntity.ok(dtos);
     }
     
     @GetMapping("/releases/{contentId}")
     public ResponseEntity<List<ContentReleaseDTO>> getContentReleases(@PathVariable long contentId) {
+        logger.info("[GET] /contents/releases/{}", contentId);
         List<ContentRelease> releases = contentService.findAllReleasesOfContent(contentId);
         
         return ResponseEntity.ok(releases.stream().map(dtoHelper::toContentReleaseDTO).toList());
@@ -141,15 +146,16 @@ public class ContentController {
     @GetMapping("/{contentReleaseId}/releases/{releaseNum}")
     public ResponseEntity<ContentReleaseDTO> getSpecificContentRelease(@PathVariable long contentReleaseId,
                                                                        @PathVariable long releaseNum) {
+        logger.info("[GET] /contents/{}/releases/{}", contentReleaseId, releaseNum);
         String key = contentReleaseId + ":" + releaseNum;
         ContentReleaseDTO cached = hazelcastCacheService.get(CacheConstants.CONTENT_RELEASES, key);
+        
         if (cached != null) {
             return ResponseEntity.ok(cached);
         }
 
         ContentRelease contentRelease = contentService.findSpecificContentRelease(contentReleaseId, releaseNum);
         ContentReleaseDTO dto = dtoHelper.toContentReleaseDTO(contentRelease);
-
         hazelcastCacheService.put(CacheConstants.CONTENT_RELEASES, key, dto);
 
         return ResponseEntity.ok(dto);
@@ -157,6 +163,7 @@ public class ContentController {
     
     @GetMapping("/draft")
     public ResponseEntity<List<ContentReleaseDTO>> getDraftContentReleases() {
+        logger.info("[GET] /contents/draft");
         List<ContentRelease> contentReleases = contentReleaseService.findAllDrafts(1);
         
         return ResponseEntity.ok(contentReleases.stream().map(dtoHelper::toContentReleaseDTO).toList());
@@ -164,6 +171,7 @@ public class ContentController {
     
     @PostMapping("/draft")
     public ResponseEntity<ContentReleaseDTO> createContent(@RequestBody @Validated(OnCreate.class) ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
+        logger.info("[POST] /contents/draft\nRequest Body:\n{}", contentCatalogueDTO);
         Content content = contentHelper.getContent(contentCatalogueDTO);
         ContentRelease contentRelease = contentHelper.getContentRelease(contentCatalogueDTO, content);
         
@@ -196,6 +204,7 @@ public class ContentController {
     public ResponseEntity<ContentReleaseDTO> publishContentRelease(@PathVariable long contentReleaseId,
                                                                    @RequestBody @Validated(OnUpdate.class) ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
         
+        logger.info("[PATCH] /contents/publish/{}\nRequest Body:\n{}", contentReleaseId, contentCatalogueDTO);
         Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
         
         if (contentOptional.isEmpty()) {
@@ -219,19 +228,16 @@ public class ContentController {
                             course.getCurrentRelease());
                 logger.info("Content version: {}", oldContentRelease.getRelease());
                 
-                // Set ID to 0 to ensure Hibernate treats it as a new entity
                 newContentRelease.setId(0L);
                 
                 newContentRelease.setRelease(course.getCurrentRelease() + 1);
                 course.setCurrentRelease(course.getCurrentRelease() + 1);
             }
             
-            // Set the relationships for the new entity
             newContentRelease.setContent(content);
             content.setCurrentContentRelease(newContentRelease);
             content.getContentReleases().add(newContentRelease);
             
-            // Save all changes within a single transaction
             contentService.save(content);
             courseService.save(course);
             
@@ -250,33 +256,35 @@ public class ContentController {
                 throw new BadRequestException();
             }
             newContentRelease = new Lecture();
-            // Copy properties from original object
-            BeanUtils.copyProperties(original, newContentRelease, "id"); // Exclude ID
-            // Update new object with DTO data
+            BeanUtils.copyProperties(original, newContentRelease, "id");
             lectureMapper.updateLectureFromLectureCatalogDto((LectureCatalogDTO) contentCatalogueDTO, (Lecture) newContentRelease);
         } else if (original instanceof Quiz) {
             if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("QUIZ")) {
                 throw new BadRequestException();
             }
+            
             newContentRelease = new Quiz();
             BeanUtils.copyProperties(original, newContentRelease, "id");
-        } else { // Submission
+            
+        } else {
             if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("SUBMISSION")) {
                 throw new BadRequestException();
             }
+            
             newContentRelease = new Submission();
             BeanUtils.copyProperties(original, newContentRelease, "id");
             submissionMapper.updateSubmissionFromSubmissionCatalogDto((SubmissionCatalogueDTO) contentCatalogueDTO, (Submission) newContentRelease);
         }
         
-        // Reset the ID to ensure Hibernate treats it as a new entity
         newContentRelease.setId(0L);
+        
         return newContentRelease;
     }
     
     @PatchMapping("/edit/{contentReleaseId}")
     public ResponseEntity<ContentCatalogueDTO> editContentMetadata(@PathVariable long contentReleaseId,
                                                                    @RequestBody @Validated(OnUpdate.class) ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
+        logger.info("[PATCH] /edit/{}", contentReleaseId);
         Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
         
         if (contentOptional.isEmpty()) {
@@ -297,6 +305,7 @@ public class ContentController {
     
     @PostMapping("/delete/{contentReleaseId}")
     public ResponseEntity<ContentReleaseDTO> deleteContentRelease(@PathVariable long contentReleaseId) {
+        logger.info("[DELETE] /delete/{}", contentReleaseId);
         Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
         
         if (contentOptional.isEmpty()) {
@@ -316,39 +325,4 @@ public class ContentController {
         
         return ResponseEntity.ok(dtoHelper.toContentReleaseDTO(contentRelease));
     }
-    
-//    private ContentRelease cloneContentRelease(ContentRelease contentRelease,
-//                                               ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
-//        ContentRelease contentReleaseCopied;
-//
-//        if (contentRelease instanceof Lecture) {
-//            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("LECTURE")) {
-//                throw new BadRequestException();
-//            }
-//
-//            contentReleaseCopied = new Lecture();
-//            BeanUtils.copyProperties(contentRelease, contentReleaseCopied);
-//            lectureMapper.updateLectureFromLectureCatalogDto((LectureCatalogDTO) contentCatalogueDTO,
-//                                                             (Lecture) contentReleaseCopied);
-//
-//        } else if (contentRelease instanceof Quiz) {
-//            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("QUIZ")) {
-//                throw new BadRequestException();
-//            }
-//
-//            contentReleaseCopied = new Quiz();
-//
-//        } else {
-//            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("SUBMISSION")) {
-//                throw new BadRequestException();
-//            }
-//
-//            contentReleaseCopied = new Submission();
-//            BeanUtils.copyProperties(contentRelease, contentReleaseCopied);
-//            submissionMapper.updateSubmissionFromSubmissionCatalogDto((SubmissionCatalogueDTO) contentCatalogueDTO,
-//                                                                      (Submission) contentReleaseCopied);
-//        }
-//
-//        return contentReleaseCopied;
-//    }
 }
