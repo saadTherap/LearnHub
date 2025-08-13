@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.therap.learningProcessor.constants.CacheConstants;
 import net.therap.learningProcessor.entity.UpdateInfo;
 import net.therap.learningProcessor.util.CacheInvalidationUtil;
+
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -18,7 +19,7 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class UpdateInfoService {
-
+  
     private final CacheInvalidationUtil cacheInvalidationUtil;
     private final HazelcastCacheService hazelcastCacheService;
 

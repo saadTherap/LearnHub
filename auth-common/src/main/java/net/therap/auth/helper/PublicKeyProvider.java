@@ -1,6 +1,7 @@
 package net.therap.auth.helper;
 
 import com.nimbusds.jose.jwk.RSAKey;
+import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -109,17 +110,17 @@ public class PublicKeyProvider {
             return expired;
         });
     }
-
-    public void evictKey(String kid) {
-        if (keyCache.remove(kid) != null) {
-            log.info("Manually evicted key from cache: {}", kid);
+    
+    @Scheduled(fixedRate = 3600000)
+    public void evictKeys(@Nullable String kid) {
+        if (Objects.nonNull(kid) && keyCache.remove(kid) != null) {
+            log.info("Evicted key from cache: {}", kid);
+            
+        } else if (Objects.isNull(kid)) {
+            int size = keyCache.size();
+            keyCache.clear();
+            log.info("Cleared all {} keys from memory cache", size);
         }
-    }
-
-    public void clearAllKeys() {
-        int size = keyCache.size();
-        keyCache.clear();
-        log.info("Cleared all {} keys from memory cache", size);
     }
 
     @Getter

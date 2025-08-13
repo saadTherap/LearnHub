@@ -14,12 +14,14 @@ import net.therap.app.validation.OnUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -38,13 +40,15 @@ public class InstructorController {
     private final DtoHelper dtoHelper;
     private final InstructorMapper instructorMapper;
     private final HazelcastCacheService hazelcastCacheService;
+    private final MessageSource messageSource;
     
     @Autowired
-    public InstructorController(InstructorService instructorService, DtoHelper dtoHelper, ObjectMapper objectMapper, InstructorMapper instructorMapper, HazelcastCacheService hazelcastCacheService) { // Constructor injection
+    public InstructorController(InstructorService instructorService, DtoHelper dtoHelper, ObjectMapper objectMapper, InstructorMapper instructorMapper, HazelcastCacheService hazelcastCacheService, MessageSource messageSource) { // Constructor injection
         this.instructorService = instructorService;
         this.dtoHelper = dtoHelper;
         this.instructorMapper = instructorMapper;
         this.hazelcastCacheService = hazelcastCacheService;
+        this.messageSource = messageSource;
     }
 
     @GetMapping("/{id}")
@@ -65,6 +69,7 @@ public class InstructorController {
     
     @GetMapping
     public ResponseEntity<List<InstructorDTO>> getAllInstructors() {
+        logger.info("[GET] /instructors");
         List<Instructor> instructors = instructorService.getAllInstructors();
         List<InstructorDTO> instructorDTOs = instructors.stream()
                 .map(dtoHelper::toInstructorDTO) 
@@ -73,8 +78,21 @@ public class InstructorController {
         return ResponseEntity.ok(instructorDTOs);
     }
     
+    @GetMapping("/byEmail/{email}")
+    public ResponseEntity<InstructorDtoCatalog> getInstructorByEmail(@PathVariable String email) {
+        logger.info("[GET] /instructors/byEmail/{}", email);
+        Optional<Instructor> instructorOptional = instructorService.getByEmail(email);
+        
+        if (instructorOptional.isPresent()) {
+            return ResponseEntity.ok(instructorMapper.toInstructorDtoCatalog(instructorOptional.get()));
+        }
+        
+        throw new NoSuchElementException(messageSource.getMessage("not.found.instructor", null, Locale.getDefault()));
+    }
+    
     @PostMapping
     public ResponseEntity<InstructorDTO> createInstructor(@RequestBody @Validated(OnCreate.class) InstructorDTO instructorDTO) {
+        logger.info("[POST] /instructors. Req Body: {}", instructorDTO);
         Instructor instructorToCreate = instructorMapper.toInstructor(instructorDTO);
         instructorToCreate.setId(0);
         Instructor createdInstructor = instructorService.createInstructor(instructorToCreate);
@@ -84,6 +102,7 @@ public class InstructorController {
     
     @PatchMapping("/{id}")
     public ResponseEntity<InstructorDTO> updateInstructor(@PathVariable long id, @RequestBody @Validated(OnUpdate.class) InstructorDTO instructorDTO) {
+        logger.info("[PATCH] /instructors/{}. Req Body: {}", id, instructorDTO);
         Optional<Instructor> instructorToUpdate = instructorService.getInstructorById(id);
         
         if (instructorToUpdate.isPresent()) {
@@ -104,9 +123,13 @@ public class InstructorController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> softDeleteInstructor(@PathVariable long id) {
+        logger.info("[DELETE] /instructors/{}", id);
+        
         try {
             instructorService.deleteById(id);
+            
             return ResponseEntity.noContent().build();
+            
         } catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
         }
