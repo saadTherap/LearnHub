@@ -6,7 +6,7 @@ import net.therap.app.helper.AuthorizationService;
 import net.therap.app.model.Content;
 import net.therap.app.model.Module;
 import net.therap.app.repository.ModuleRepository;
-import net.therap.app.util.CacheInvalidationUtil;
+import net.therap.cache.support.CacheInvalidationUtil;
 import org.apache.coyote.BadRequestException;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
@@ -52,6 +52,7 @@ public class ModuleService {
     public List<Module> findByCourseId(long id) {
         return moduleRepository.findByCourseId(id);
     }
+
 
     public boolean isPublishable(Module module) {
         for (Content content : module.getContents()) {
@@ -125,11 +126,11 @@ public class ModuleService {
         
         Module saved = moduleRepository.save(module);
         
-        cacheInvalidationUtil.invalidateCacheAfterCommit(
+        cacheInvalidationUtil.invalidateCachesAfterCommit(
                 String.valueOf(saved.getId()),
                 CacheConstants.MODULES
         );
-        cacheInvalidationUtil.invalidateCacheAfterCommit(
+        cacheInvalidationUtil.invalidateCachesAfterCommit(
                 String.valueOf(saved.getCourse().getId()),
                 CacheConstants.MODULES_BY_COURSE, CacheConstants.COURSES, CacheConstants.COURSE_CATALOG
         );
@@ -150,10 +151,10 @@ public class ModuleService {
         module.setDeleted(true);
         Module saved = moduleRepository.save(module);
         
-        cacheInvalidationUtil.invalidateCacheAfterCommit(
+        cacheInvalidationUtil.invalidateCachesAfterCommit(
                 moduleId, CacheConstants.MODULES
         );
-        cacheInvalidationUtil.invalidateCacheAfterCommit(
+        cacheInvalidationUtil.invalidateCachesAfterCommit(
                 courseId, CacheConstants.MODULES_BY_COURSE, CacheConstants.COURSES, CacheConstants.COURSE_CATALOG
         );
         

@@ -1,9 +1,9 @@
 package net.therap.learningProcessor.controller;
 
 import lombok.RequiredArgsConstructor;
+import net.therap.cache.support.HazelcastCacheService;
 import net.therap.learningProcessor.constants.CacheConstants;
 import net.therap.learningProcessor.dto.StudentDto;
-import net.therap.learningProcessor.service.HazelcastCacheService;
 import net.therap.learningProcessor.service.StudentService;
 import net.therap.learningProcessor.validator.group.OnCreate;
 import net.therap.learningProcessor.validator.group.OnUpdate;

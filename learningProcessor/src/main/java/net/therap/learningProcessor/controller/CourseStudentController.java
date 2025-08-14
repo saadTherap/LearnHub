@@ -1,16 +1,15 @@
 package net.therap.learningProcessor.controller;
 
 import lombok.RequiredArgsConstructor;
+import net.therap.cache.support.HazelcastCacheService;
 import net.therap.learningProcessor.constants.CacheConstants;
 import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
 import net.therap.learningProcessor.dto.StudentContentCompletionDto;
 import net.therap.learningProcessor.dto.StudentCourseProgressDto;
 import net.therap.learningProcessor.dto.StudentDto;
 import net.therap.learningProcessor.entity.EnrollmentNotification;
-import net.therap.learningProcessor.entity.SubmissionNotification;
 import net.therap.learningProcessor.eum.NotificationType;
 import net.therap.learningProcessor.service.CourseStudentService;
-import net.therap.learningProcessor.service.HazelcastCacheService;
 import net.therap.learningProcessor.service.NotificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
