@@ -25,6 +25,7 @@ import java.util.TimeZone;
 @EnableJpaRepositories(basePackages = "net.therap.app.repository")
 @EnableScheduling
 @EntityScan("net.therap.app.model")
+//@EnableFeignClients(basePackages = "net.therap.auth.client")
 @EnableFeignClients(basePackages = {"net.therap.app.client"})
 //@EnableFeignClients(basePackages = "net.therap.auth.client")
 @ComponentScan(basePackages = {"net.therap.auth", "net.therap.app", "net.therap.kafkaregistry.service"})
@@ -37,10 +38,10 @@ public class AppApplication {
 	@Value("${kafka.topics.update-info}")
 	private String updateInfoTopic;
 
-	@Value("${kafka.topics.update-info.partition")
+	@Value("${kafka.topics.update-info.partition}")
 	private String updateInfoPartition;
 
-	@Value("${kafka.topics.update-info.replication")
+	@Value("${kafka.topics.update-info.replication}")
 	private String updateInfoReplication;
 
     @PostConstruct
