@@ -1,7 +1,9 @@
 package net.therap.app.service;
 
 import net.therap.app.model.UpdateInfo;
-import org.springframework.kafka.core.KafkaTemplate;
+import net.therap.kafkaregistry.service.ProducerConsumerTask;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -11,13 +13,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class UpdateInfoService {
 
-    private final KafkaTemplate<String, UpdateInfo> kafkaTemplate;
+    @Autowired
+    private ProducerConsumerTask producerConsumerTask;
 
-    public UpdateInfoService(KafkaTemplate<String, UpdateInfo> kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
-    }
+    @Value("${kafka.topics.update-info}")
+    private String updateInfoTopic;
 
     public void sendUpdateInfo(UpdateInfo updateInfo) {
-        kafkaTemplate.send("update-info-topic", updateInfo);
+        producerConsumerTask.send(updateInfoTopic, updateInfo);
     }
 }
