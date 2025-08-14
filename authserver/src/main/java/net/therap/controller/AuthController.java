@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.therap.dto.JwtResponse;
 import net.therap.dto.LoginRequest;
+import net.therap.dto.RefreshRequest;
 import net.therap.dto.RegisterRequest;
 import net.therap.service.interfaces.AuthService;
 import org.springframework.http.ResponseEntity;
@@ -35,8 +36,8 @@ public class AuthController {
     }
     
     @PostMapping("/refresh")
-    public ResponseEntity<JwtResponse> refreshToken(@RequestParam String refreshToken) {
-        JwtResponse response = authService.refreshToken(refreshToken);
+    public ResponseEntity<JwtResponse> refreshToken(@Valid @RequestBody RefreshRequest refreshRequest) {
+        JwtResponse response = authService.refreshToken(refreshRequest.getRefreshToken());
         
         return ResponseEntity.ok(response);
     }

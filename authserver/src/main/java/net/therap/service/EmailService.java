@@ -32,6 +32,8 @@ public class EmailService {
         String RESET = "\u001B[0m";
         
         System.out.println(RED + "Verify your email using this link: " + PURPLE + link + RESET);
+        
+        log.info("Verification email sent to: console");
     }
 
     
