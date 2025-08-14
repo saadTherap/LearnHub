@@ -187,11 +187,12 @@ public class ContentController {
     @PostMapping("/draft")
     public ResponseEntity<ContentReleaseDTO> createContent(@RequestBody @Validated(OnCreate.class) ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
         log.info("[POST] /contents/draft\nRequest Body:\n{}", contentCatalogueDTO);
+        log.info("Creating draft course...");
         Content content = contentHelper.getContent(contentCatalogueDTO);
         ContentRelease contentRelease = contentHelper.getContentRelease(contentCatalogueDTO, content);
         
         if (isNull(contentRelease)) {
-            throw new BadRequestException();
+            throw new IllegalArgumentException();
         }
         
         Content savedContent = contentService.save(content);
@@ -262,41 +263,28 @@ public class ContentController {
         throw new BadRequestException(messageSource.getMessage("bad.request.publish.content",null, Locale.getDefault()));
     }
     
-    private ContentRelease createNewContentRelease(ContentRelease original,
-                                                   ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
+    @PatchMapping("/draft/{contentReleaseId}")
+    public ResponseEntity<ContentReleaseDTO> editDraftContentRelease(@PathVariable long contentReleaseId,
+                                                                   @RequestBody @Validated(OnUpdate.class) ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
         
-        ContentRelease newContentRelease;
+        log.info("[PATCH] /contents/draft/{}\nRequest Body:\n{}", contentReleaseId, contentCatalogueDTO);
+        log.info("Editing draft contentRelease...");
+        Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
         
-        if (original instanceof Lecture) {
-            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("LECTURE")) {
-                throw new BadRequestException();
-            }
-            
-            newContentRelease = new Lecture();
-            BeanUtils.copyProperties(original, newContentRelease, "id");
-            lectureMapper.updateLectureFromLectureCatalogDto((LectureCatalogDTO) contentCatalogueDTO, (Lecture) newContentRelease);
-            
-        } else if (original instanceof Quiz) {
-            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("QUIZ")) {
-                throw new BadRequestException();
-            }
-            
-            newContentRelease = new Quiz();
-            BeanUtils.copyProperties(original, newContentRelease, "id");
-            
-        } else {
-            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("SUBMISSION")) {
-                throw new BadRequestException();
-            }
-            
-            newContentRelease = new Submission();
-            BeanUtils.copyProperties(original, newContentRelease, "id");
-            submissionMapper.updateSubmissionFromSubmissionCatalogDto((SubmissionCatalogueDTO) contentCatalogueDTO, (Submission) newContentRelease);
+        if (contentOptional.isEmpty()) {
+            throw new NoSuchElementException(messageSource.getMessage("not.found.content", null, Locale.getDefault()));
         }
         
-        newContentRelease.setId(0L);
+        Content content = contentOptional.get();
+        ContentRelease oldContentRelease = content.getCurrentContentRelease();
         
-        return newContentRelease;
+        if (oldContentRelease.getRelease() !=  ReleaseStatus.DRAFT.getReleaseNumber()) {
+            throw new BadRequestException(messageSource.getMessage("bad.request.edit.draft",null, Locale.getDefault()));
+        }
+        ContentRelease newContentRelease = updateContentRelease(oldContentRelease, contentCatalogueDTO);
+        contentReleaseService.save(newContentRelease);
+        
+        return ResponseEntity.ok(dtoHelper.toContentReleaseDTO(newContentRelease));
     }
     
     @PatchMapping("/edit/{contentReleaseId}")
@@ -342,5 +330,66 @@ public class ContentController {
         }
         
         return ResponseEntity.ok(dtoHelper.toContentReleaseDTO(contentRelease));
+    }
+    
+    private ContentRelease createNewContentRelease(ContentRelease original,
+                                                   ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
+        
+        ContentRelease newContentRelease;
+        
+        if (original instanceof Lecture) {
+            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("LECTURE")) {
+                throw new BadRequestException();
+            }
+            
+            newContentRelease = new Lecture();
+            BeanUtils.copyProperties(original, newContentRelease, "id");
+            lectureMapper.updateLectureFromLectureCatalogDto((LectureCatalogDTO) contentCatalogueDTO, (Lecture) newContentRelease);
+            
+        } else if (original instanceof Quiz) {
+            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("QUIZ")) {
+                throw new BadRequestException();
+            }
+            
+            newContentRelease = new Quiz();
+            BeanUtils.copyProperties(original, newContentRelease, "id");
+            
+        } else {
+            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("SUBMISSION")) {
+                throw new BadRequestException();
+            }
+            
+            newContentRelease = new Submission();
+            BeanUtils.copyProperties(original, newContentRelease, "id");
+            submissionMapper.updateSubmissionFromSubmissionCatalogDto((SubmissionCatalogueDTO) contentCatalogueDTO, (Submission) newContentRelease);
+        }
+        
+        newContentRelease.setId(0L);
+        
+        return newContentRelease;
+    }
+    
+    private ContentRelease updateContentRelease(ContentRelease contentRelease,
+                                                ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
+        
+        if (contentRelease instanceof Lecture) {
+            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("LECTURE")) {
+                throw new BadRequestException(messageSource.getMessage("conflict.type", null, Locale.getDefault()));
+            }
+            
+            lectureMapper.updateLectureFromLectureCatalogDto((LectureCatalogDTO) contentCatalogueDTO, (Lecture) contentRelease);
+            
+        } else if (contentRelease instanceof Quiz) {
+            throw new BadRequestException(messageSource.getMessage("conflict.type", null, Locale.getDefault()));
+            
+        } else {
+            if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("SUBMISSION")) {
+                throw new BadRequestException(messageSource.getMessage("conflict.type", null, Locale.getDefault()));
+            }
+            
+            submissionMapper.updateSubmissionFromSubmissionCatalogDto((SubmissionCatalogueDTO) contentCatalogueDTO, (Submission) contentRelease);
+        }
+        
+        return contentRelease;
     }
 }
