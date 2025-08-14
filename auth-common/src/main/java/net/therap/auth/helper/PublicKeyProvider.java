@@ -110,17 +110,12 @@ public class PublicKeyProvider {
             return expired;
         });
     }
-    
-    @Scheduled(fixedRate = 3600000)
-    public void evictKeys(@Nullable String kid) {
-        if (Objects.nonNull(kid) && keyCache.remove(kid) != null) {
-            log.info("Evicted key from cache: {}", kid);
-            
-        } else if (Objects.isNull(kid)) {
-            int size = keyCache.size();
-            keyCache.clear();
-            log.info("Cleared all {} keys from memory cache", size);
-        }
+
+    @Scheduled(fixedRate = 604800000)
+    public void evictKeys() {
+        int size = keyCache.size();
+        keyCache.clear();
+        log.info("Cleared all {} keys from memory cache", size);
     }
 
     @Getter
