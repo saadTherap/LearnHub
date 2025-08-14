@@ -24,6 +24,17 @@ public class EmailService {
     
     private final MessageUtil messageUtil;
     
+    public void sendLinkToConsole(String token) {
+        String link = "https://app-rnd01.therapbd.net/auth/api/verify-email?token=" + token;
+        
+        String RED = "\u001B[31m";
+        String PURPLE = "\u001B[35m";
+        String RESET = "\u001B[0m";
+        
+        System.out.println(RED + "Verify your email using this link: " + PURPLE + link + RESET);
+    }
+
+    
     public void sendVerificationEmail(String to, String token) {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
