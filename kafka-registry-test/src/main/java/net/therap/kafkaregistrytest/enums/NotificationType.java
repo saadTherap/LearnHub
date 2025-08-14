@@ -1,10 +1,10 @@
-package net.therap.kafkaregistry.enums;
+package net.therap.kafkaregistrytest.enums;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * @author tanvirhassan
- * @since 13/8/25
+ * @since 4/8/25
  */
 @JsonFormat(shape = JsonFormat.Shape.STRING)
 public enum NotificationType {

@@ -1,12 +1,14 @@
-package net.therap.kafkaregistry.model;
+package net.therap.kafkaregistrytest.model;
 
+import jakarta.persistence.DiscriminatorValue;
 import lombok.Getter;
 import lombok.Setter;
 
 /**
  * @author tanvirhassan
- * @since 13/8/25
+ * @since 4/8/25
  */
+@DiscriminatorValue("ENROLLMENT")
 @Getter
 @Setter
 public class EnrollmentNotification extends Notification {

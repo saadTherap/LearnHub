@@ -1,19 +1,21 @@
-package net.therap.kafkaregistry.model;
+package net.therap.kafkaregistrytest.model;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
-import net.therap.kafkaregistry.enums.NotificationType;
+import net.therap.learningProcessor.entity.EnrollmentNotification;
+import net.therap.learningProcessor.eum.NotificationType;
 
 import java.util.Objects;
 
 /**
  * @author tanvirhassan
- * @since 13/8/25
+ * @since 4/8/25
  */
 @Setter
 @Getter
+@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.EXISTING_PROPERTY,

@@ -1,11 +1,9 @@
 package net.therap.kafkaregistry.config;
 
-import net.therap.kafkaregistry.deserializer.NotificationDeserializer;
-import net.therap.kafkaregistry.model.Notification;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -19,35 +17,36 @@ import java.util.Map;
  * @author tanvirhassan
  * @since 13/8/25
  */
-public class NotificationConsumerConfig {
+@Configuration
+public class ConsumerConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     public Map<String, Object> consumerConfigs() {
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, NotificationDeserializer.class);
+        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
 
         return props;
     }
 
     @Bean
-    public ConsumerFactory<String, Notification> notificationConsumerFactory() {
+    public ConsumerFactory<String, String> consumerFactory() {
         return new DefaultKafkaConsumerFactory<>(consumerConfigs());
     }
 
     @Bean
     public KafkaListenerContainerFactory<
-            ConcurrentMessageListenerContainer<String, Notification>> notificationKafkaListenerContainerFactory(
-            ConsumerFactory<String, Notification> notificationConsumerFactory
+            ConcurrentMessageListenerContainer<String, String>> kafkaListenerContainerFactory(
+            ConsumerFactory<String, String> consumerFactory
     ) {
 
-        ConcurrentKafkaListenerContainerFactory<String, Notification> containerFactory =
+        ConcurrentKafkaListenerContainerFactory<String, String> containerFactory =
                 new ConcurrentKafkaListenerContainerFactory<>();
 
-        containerFactory.setConsumerFactory(notificationConsumerFactory);
+        containerFactory.setConsumerFactory(consumerFactory);
 
         return containerFactory;
     }
