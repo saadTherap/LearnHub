@@ -1,0 +1,61 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+ext {
+    springBootVersion = '3.3.1'
+    springCloudVersion = '2025.0.0'
+    springDependencyManagementVersion = '1.1.7'
+}
+
+group = 'net.therap'
+version = '0.1-SNAPSHOT'
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:$springBootVersion"
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    implementation "com.hazelcast:hazelcast:5.3.6"
+    implementation "com.hazelcast:hazelcast-spring:5.3.6"
+
+    implementation 'org.springframework:spring-tx:6.2.8'
+
+    // Spring Boot dependencies for library usage
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'  // For autoconfiguration
+    implementation 'org.springframework.boot:spring-boot-starter-web'   // Web starter for HTTP communication
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'  // Feign for HTTP clients
+
+    // Test dependencies
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'  // Spring Boot test support
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'           // JUnit 5 API
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.1'         // JUnit 5 Engine
+    testImplementation 'org.mockito:mockito-core:4.0.0'                       // Mockito for mocking
+}
+
+tasks.named('test') {
+    useJUnitPlatform()  // Use JUnit platform for running tests
+}
+
+task cleanBuild(type: Delete) {
+    delete rootProject.buildDir
+}
+
+group = 'net.therap'
+version = '0.1-SNAPSHOT'

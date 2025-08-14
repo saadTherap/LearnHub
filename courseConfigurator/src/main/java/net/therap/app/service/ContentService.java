@@ -8,7 +8,7 @@ import net.therap.app.model.ContentRelease;
 import net.therap.app.model.Quiz;
 import net.therap.app.model.enums.ReleaseStatus;
 import net.therap.app.repository.ContentRepository;
-import net.therap.app.util.CacheInvalidationUtil;
+import net.therap.cache.support.CacheInvalidationUtil;
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,11 +126,11 @@ public class ContentService {
         String moduleId = String.valueOf(saved.getModule().getId());
         String courseId = String.valueOf(saved.getModule().getCourse().getId());
 
-        cacheInvalidationUtil.invalidateCacheAfterCommit(
+        cacheInvalidationUtil.invalidateCachesAfterCommit(
                 moduleId,
                 CacheConstants.MODULES
         );
-        cacheInvalidationUtil.invalidateCacheAfterCommit(
+        cacheInvalidationUtil.invalidateCachesAfterCommit(
                 courseId,
                 CacheConstants.MODULES_BY_COURSE,
                 CacheConstants.COURSES,
@@ -138,7 +138,7 @@ public class ContentService {
         );
 
         if (saved.getId() > 0) {
-            cacheInvalidationUtil.invalidateCacheAfterCommit(
+            cacheInvalidationUtil.invalidateCachesAfterCommit(
                     String.valueOf(saved.getId()),
                     CacheConstants.CONTENT_CATALOG,
                     CacheConstants.CONTENT_RELEASE_LIST
@@ -146,7 +146,7 @@ public class ContentService {
 
             if (saved.getCurrentContentRelease() != null) {
                 String key = saved.getId() + ":" + saved.getCurrentContentRelease().getRelease();
-                cacheInvalidationUtil.invalidateCacheAfterCommit(
+                cacheInvalidationUtil.invalidateCachesAfterCommit(
                         key,
                         CacheConstants.CONTENT_RELEASES
                 );
@@ -179,7 +179,7 @@ public class ContentService {
         Content saved = contentRepository.save(content);
 
         if (contentId > 0) {
-            cacheInvalidationUtil.invalidateCacheAfterCommit(
+            cacheInvalidationUtil.invalidateCachesAfterCommit(
                     String.valueOf(contentId),
                     CacheConstants.CONTENT_CATALOG,
                     CacheConstants.CONTENT_RELEASE_LIST
@@ -187,17 +187,17 @@ public class ContentService {
         }
         if (releaseNum != null && releaseNum > 0) {
             String releaseKey = contentId + ":" + releaseNum;
-            cacheInvalidationUtil.invalidateCacheAfterCommit(
+            cacheInvalidationUtil.invalidateCachesAfterCommit(
                     releaseKey,
                     CacheConstants.CONTENT_RELEASES
             );
         }
 
-        cacheInvalidationUtil.invalidateCacheAfterCommit(
+        cacheInvalidationUtil.invalidateCachesAfterCommit(
                 moduleId,
                 CacheConstants.MODULES
         );
-        cacheInvalidationUtil.invalidateCacheAfterCommit(
+        cacheInvalidationUtil.invalidateCachesAfterCommit(
                 courseId,
                 CacheConstants.MODULES_BY_COURSE,
                 CacheConstants.COURSES,

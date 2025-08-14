@@ -1,6 +1,7 @@
 package net.therap.learningProcessor.service;
 
 import lombok.RequiredArgsConstructor;
+import net.therap.cache.support.CacheInvalidationUtil;
 import net.therap.learningProcessor.client.CourseClient;
 import net.therap.learningProcessor.constants.CacheConstants;
 import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
@@ -10,7 +11,6 @@ import net.therap.learningProcessor.dto.StudentDto;
 import net.therap.learningProcessor.entity.CourseEnrollment;
 import net.therap.learningProcessor.entity.Student;
 import net.therap.learningProcessor.entity.StudentContentCompletion;
-import net.therap.learningProcessor.entity.StudentSubmission;
 import net.therap.learningProcessor.exception.ResourceAlreadyExistsException;
 import net.therap.learningProcessor.exception.ResourceNotFoundException;
 import net.therap.learningProcessor.mapper.StudentCourseProgressMapper;
@@ -18,15 +18,12 @@ import net.therap.learningProcessor.mapper.StudentMapper;
 import net.therap.learningProcessor.repository.CourseEnrollmentRepository;
 import net.therap.learningProcessor.repository.StudentContentCompletionRepository;
 import net.therap.learningProcessor.repository.StudentRepository;
-import net.therap.learningProcessor.repository.StudentSubmissionRepository;
-import net.therap.learningProcessor.util.CacheInvalidationUtil;
 import net.therap.learningProcessor.util.CourseProgressUtil;
 import net.therap.learningProcessor.validator.CourseValidator;
 import net.therap.learningProcessor.validator.StudentValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**

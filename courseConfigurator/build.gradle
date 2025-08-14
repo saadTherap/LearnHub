@@ -33,6 +33,7 @@ dependencyManagement {
 dependencies {
     implementation project(':auth-common')
     implementation project(':kafka-registry')
+    implementation project(':infra:cache-support')
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 //  implementation 'org.springframework.boot:spring-boot-starter-security'

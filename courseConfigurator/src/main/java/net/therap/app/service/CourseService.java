@@ -10,15 +10,14 @@ import net.therap.app.helper.AuthorizationService;
 import net.therap.app.model.*;
 import net.therap.app.model.Module;
 import net.therap.app.repository.CourseRepository;
-import net.therap.app.util.CacheInvalidationUtil;
+import net.therap.cache.support.CacheInvalidationUtil;
+import net.therap.cache.support.HazelcastCacheService;
 import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.nio.file.AccessDeniedException;
 import java.util.*;
@@ -60,17 +59,6 @@ public class CourseService {
     
     public Optional<Course> findById(Long id) {
         return courseRepository.findById(id);
-    }
-    
-    private void invalidateCachesAfterCommit(Long id, String... mapNames) {
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                for (String mapName : mapNames) {
-                    hazelcastCacheService.remove(mapName, id);
-                }
-            }
-        });
     }
 
     public boolean isPublishable(Course course) {
@@ -207,7 +195,7 @@ public class CourseService {
     public Course save(Course course) {
         Course savedCourse = courseRepository.save(course);
         
-        cacheInvalidationUtil.invalidateCacheAfterCommit(String.valueOf(savedCourse.getId()), CacheConstants.COURSES, CacheConstants.COURSE_CATALOG);
+        cacheInvalidationUtil.invalidateCachesAfterCommit(String.valueOf(savedCourse.getId()), CacheConstants.COURSES, CacheConstants.COURSE_CATALOG);
         
         return savedCourse;
     }
@@ -219,11 +207,10 @@ public class CourseService {
         if (courseOptional.isPresent()) {
             courseOptional.get().setDeleted(true);
             Course deletedCourse = courseRepository.save(courseOptional.get());
-            invalidateCachesAfterCommit(id, CacheConstants.COURSES, CacheConstants.COURSE_CATALOG);
+            cacheInvalidationUtil.invalidateCachesAfterCommit(String.valueOf(id), CacheConstants.COURSES, CacheConstants.COURSE_CATALOG);
             return deletedCourse;
         }
-        
-        cacheInvalidationUtil.invalidateCacheAfterCommit(String.valueOf(id), CacheConstants.COURSES, CacheConstants.COURSE_CATALOG);
+
         throw new NoSuchElementException(messageSource.getMessage("not.found.course", null, Locale.getDefault()));
     }
 }

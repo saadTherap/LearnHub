@@ -1,13 +1,13 @@
 package net.therap.learningProcessor.service;
 
 import lombok.RequiredArgsConstructor;
+import net.therap.cache.support.CacheInvalidationUtil;
 import net.therap.learningProcessor.constants.CacheConstants;
 import net.therap.learningProcessor.dto.StudentDto;
 import net.therap.learningProcessor.entity.Student;
 import net.therap.learningProcessor.exception.ResourceNotFoundException;
 import net.therap.learningProcessor.mapper.StudentMapper;
 import net.therap.learningProcessor.repository.StudentRepository;
-import net.therap.learningProcessor.util.CacheInvalidationUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
