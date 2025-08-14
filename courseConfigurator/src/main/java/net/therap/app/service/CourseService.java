@@ -6,9 +6,8 @@ import net.therap.app.dto.CourseCatalogDTO;
 import net.therap.app.dto.ModuleCatalogDTO;
 import net.therap.app.dto.ReorderDTO;
 import net.therap.app.helper.DtoHelper;
-import net.therap.app.model.Content;
-import net.therap.app.model.ContentRelease;
-import net.therap.app.model.Course;
+import net.therap.app.helper.AuthorizationService;
+import net.therap.app.model.*;
 import net.therap.app.model.Module;
 import net.therap.app.repository.CourseRepository;
 import net.therap.app.util.CacheInvalidationUtil;
@@ -21,9 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.nio.file.AccessDeniedException;
 import java.util.*;
-import java.util.function.ToIntFunction;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 
@@ -43,8 +41,9 @@ public class CourseService {
     private final MessageSource messageSource;
     private final DtoHelper dtoHelper;
     private final ContentService contentService;
+    private final AuthorizationService authorizationService;
     
-    public CourseService(CacheInvalidationUtil cacheInvalidationUtil, CourseRepository courseRepository, ModuleService moduleService, HazelcastCacheService hazelcastCacheService, MessageSource messageSource, DtoHelper dtoHelper, ContentService contentService) {
+    public CourseService(CacheInvalidationUtil cacheInvalidationUtil, CourseRepository courseRepository, ModuleService moduleService, HazelcastCacheService hazelcastCacheService, MessageSource messageSource, DtoHelper dtoHelper, ContentService contentService, AuthorizationService authorizationService) {
         this.cacheInvalidationUtil = cacheInvalidationUtil;
         this.courseRepository = courseRepository;
         this.moduleService = moduleService;
@@ -52,6 +51,7 @@ public class CourseService {
         this.messageSource = messageSource;
         this.dtoHelper = dtoHelper;
         this.contentService = contentService;
+        this.authorizationService = authorizationService;
     }
     
     public List<Course> findAll() {
@@ -60,30 +60,6 @@ public class CourseService {
     
     public Optional<Course> findById(Long id) {
         return courseRepository.findById(id);
-    }
-
-    @Transactional
-    public Course save(Course course) {
-        Course savedCourse = courseRepository.save(course);
-
-        cacheInvalidationUtil.invalidateCacheAfterCommit(String.valueOf(savedCourse.getId()), CacheConstants.COURSES, CacheConstants.COURSE_CATALOG);
-
-        return savedCourse;
-    }
-
-    @Transactional
-    public Course deleteById(Long id) {
-        Optional<Course> courseOptional = courseRepository.findById(id);
-        
-        if (courseOptional.isPresent()) {
-            courseOptional.get().setDeleted(true);
-            Course deletedCourse = courseRepository.save(courseOptional.get());
-            invalidateCachesAfterCommit(id, CacheConstants.COURSES, CacheConstants.COURSE_CATALOG);
-            return deletedCourse;
-        }
-
-        cacheInvalidationUtil.invalidateCacheAfterCommit(String.valueOf(id), CacheConstants.COURSES, CacheConstants.COURSE_CATALOG);
-        throw new NoSuchElementException(messageSource.getMessage("not.found.course", null, Locale.getDefault()));
     }
     
     private void invalidateCachesAfterCommit(Long id, String... mapNames) {
@@ -118,6 +94,39 @@ public class CourseService {
     // find specific draft by id
     public Optional<Course> findDraftById(long id) {
         return courseRepository.findDraftById(id);
+    }
+    
+    public CourseCatalogDTO findSpecificVersion(long id, int releaseNum) {
+        Optional<Course> courseOptional = courseRepository.findById(id);
+        
+        if (courseOptional.isEmpty()) {
+            throw new NoSuchElementException(messageSource.getMessage("not.found.course", null, Locale.getDefault()));
+        }
+        
+        Course course = courseOptional.get();
+        CourseCatalogDTO courseCatalogDTO = dtoHelper.toCourseCatalogDTO(course);
+        courseCatalogDTO.setModules(new ArrayList<>());
+        for (Module module : course.getModules()) {
+            ModuleCatalogDTO moduleCatalogDTO = dtoHelper.toModuleCatalogueDTO(module);
+            moduleCatalogDTO.setContents(new ArrayList<>());
+            for (Content c :  module.getContents()) {
+                if (c.getCurrentContentRelease() == null || c.getCurrentContentRelease().getRelease() == 0) {
+                    continue;
+                }
+                
+                ContentRelease contentRelease = getSpecificContentRelease(c, releaseNum);
+                if (isNull(contentRelease)) {
+                    continue;
+                }
+                ContentCatalogueDTO contentCatalogueDTO = contentService.toDetailedContentCatalogueDTO(contentRelease);
+                logger.info("found content catalogue: {}", contentCatalogueDTO);
+                moduleCatalogDTO.getContents().add(contentCatalogueDTO);
+            }
+            
+            courseCatalogDTO.getModules().add(moduleCatalogDTO);
+        }
+        
+        return courseCatalogDTO;
     }
     
     @Transactional
@@ -168,39 +177,6 @@ public class CourseService {
         }
     }
     
-    public CourseCatalogDTO findSpecificVersion(long id, int releaseNum) {
-        Optional<Course> courseOptional = courseRepository.findById(id);
-        
-        if (courseOptional.isEmpty()) {
-            throw new NoSuchElementException(messageSource.getMessage("not.found.course", null, Locale.getDefault()));
-        }
-        
-        Course course = courseOptional.get();
-        CourseCatalogDTO courseCatalogDTO = dtoHelper.toCourseCatalogDTO(course);
-        courseCatalogDTO.setModules(new ArrayList<>());
-        for (Module module : course.getModules()) {
-            ModuleCatalogDTO moduleCatalogDTO = dtoHelper.toModuleCatalogueDTO(module);
-            moduleCatalogDTO.setContents(new ArrayList<>());
-            for (Content c :  module.getContents()) {
-                if (c.getCurrentContentRelease() == null || c.getCurrentContentRelease().getRelease() == 0) {
-                    continue;
-                }
-                
-                ContentRelease contentRelease = getSpecificContentRelease(c, releaseNum);
-                if (isNull(contentRelease)) {
-                    continue;
-                }
-                ContentCatalogueDTO contentCatalogueDTO = contentService.toDetailedContentCatalogueDTO(contentRelease);
-                logger.info("found content catalogue: {}", contentCatalogueDTO);
-                moduleCatalogDTO.getContents().add(contentCatalogueDTO);
-            }
-            
-            courseCatalogDTO.getModules().add(moduleCatalogDTO);
-        }
-        
-        return courseCatalogDTO;
-    }
-    
     private ContentRelease getSpecificContentRelease(Content content, int releaseNum) {
         // Sort releases by their number and filter to find those less than the target
         List<ContentRelease> toSort = new ArrayList<>();
@@ -225,5 +201,29 @@ public class CourseService {
         
         logger.info("contentRelease of course release {} is: {}",releaseNum,contentRelease);
         return contentRelease;
+    }
+    
+    @Transactional
+    public Course save(Course course) {
+        Course savedCourse = courseRepository.save(course);
+        
+        cacheInvalidationUtil.invalidateCacheAfterCommit(String.valueOf(savedCourse.getId()), CacheConstants.COURSES, CacheConstants.COURSE_CATALOG);
+        
+        return savedCourse;
+    }
+    
+    @Transactional
+    public Course deleteById(Long id) {
+        Optional<Course> courseOptional = courseRepository.findById(id);
+        
+        if (courseOptional.isPresent()) {
+            courseOptional.get().setDeleted(true);
+            Course deletedCourse = courseRepository.save(courseOptional.get());
+            invalidateCachesAfterCommit(id, CacheConstants.COURSES, CacheConstants.COURSE_CATALOG);
+            return deletedCourse;
+        }
+        
+        cacheInvalidationUtil.invalidateCacheAfterCommit(String.valueOf(id), CacheConstants.COURSES, CacheConstants.COURSE_CATALOG);
+        throw new NoSuchElementException(messageSource.getMessage("not.found.course", null, Locale.getDefault()));
     }
 }

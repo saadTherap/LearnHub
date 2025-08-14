@@ -1,5 +1,6 @@
 package net.therap.app.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.ContentCatalogueDTO;
 import net.therap.app.dto.ContentReleaseDTO;
@@ -15,8 +16,6 @@ import net.therap.app.service.*;
 import net.therap.app.validation.OnCreate;
 import net.therap.app.validation.OnUpdate;
 import org.apache.coyote.BadRequestException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -39,9 +38,9 @@ import static net.therap.app.util.StringUtil.isEmpty;
  */
 @RestController
 @RequestMapping("/contents")
+@Slf4j
 public class ContentController {
     
-    private final Logger logger = LoggerFactory.getLogger(ContentController.class);
     private final ContentService contentService;
     private final DtoHelper dtoHelper;
     private final ContentHelper contentHelper;
@@ -78,7 +77,7 @@ public class ContentController {
     
     @GetMapping("/byModule/{moduleId}")
     public List<ContentCatalogueDTO> getContentByModuleId(@PathVariable long moduleId) {
-        logger.info("[GET] /contents/byModule/{}", moduleId);
+        log.info("[GET] /contents/byModule/{}", moduleId);
         List<Content> contents = contentService.findByModuleId(moduleId);
         
         return contents.stream().map(dtoHelper::toContentCatalogueDTO).toList();
@@ -86,7 +85,7 @@ public class ContentController {
 
     @GetMapping("/detail/{contentReleaseId}")
     public ResponseEntity<ContentCatalogueDTO> getContentReleaseById(@PathVariable long contentReleaseId) {
-        logger.info("[GET] /contents/detail/{}", contentReleaseId);
+        log.info("[GET] /contents/detail/{}", contentReleaseId);
         ContentCatalogueDTO cached = hazelcastCacheService.get(CacheConstants.CONTENT_CATALOG, contentReleaseId);
         
         if (cached != null) {
@@ -106,11 +105,27 @@ public class ContentController {
                 })
                 .orElseThrow(() -> new NoSuchElementException(messageSource.getMessage("content.not.found", null, Locale.getDefault())));
     }
+    
+    @GetMapping("/detail/insights/{contentReleaseId}")
+    public ResponseEntity<ContentReleaseDTO> getContentReleaseDetailedInstructorView(@PathVariable long contentReleaseId) {
+        log.info("[GET] /contents/detail/insights/{}", contentReleaseId);
+        
+        Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
+        
+        return contentOptional
+                .map(content -> {
+                    ContentRelease contentRelease = content.getCurrentContentRelease();
+                    ContentReleaseDTO dto = dtoHelper.toContentReleaseDTO(contentRelease);
+                    
+                    return new ResponseEntity<>(dto, HttpStatus.OK);
+                })
+                .orElseThrow(() -> new NoSuchElementException(messageSource.getMessage("content.not.found", null, Locale.getDefault())));
+    }
 
 
     @GetMapping
     public ResponseEntity<List<ContentReleaseDTO>> getAllContentReleases() {
-        logger.info("[GET] /contents");
+        log.info("[GET] /contents");
         List<ContentRelease> contentReleases = contentService.findAllContents();
         
         return new ResponseEntity<>(contentReleases.stream().map(dtoHelper::toContentReleaseDTO).toList(),
@@ -119,7 +134,7 @@ public class ContentController {
 
     @GetMapping("/{contentReleaseId}/releases")
     public ResponseEntity<List<ContentReleaseDTO>> getAllContentReleases(@PathVariable long contentReleaseId) {
-        logger.info("[GET] /contents/{}/releases", contentReleaseId);
+        log.info("[GET] /contents/{}/releases", contentReleaseId);
         List<ContentReleaseDTO> cached = hazelcastCacheService.get(CacheConstants.CONTENT_RELEASE_LIST, contentReleaseId);
         
         if (cached != null) {
@@ -137,7 +152,7 @@ public class ContentController {
     
     @GetMapping("/releases/{contentId}")
     public ResponseEntity<List<ContentReleaseDTO>> getContentReleases(@PathVariable long contentId) {
-        logger.info("[GET] /contents/releases/{}", contentId);
+        log.info("[GET] /contents/releases/{}", contentId);
         List<ContentRelease> releases = contentService.findAllReleasesOfContent(contentId);
         
         return ResponseEntity.ok(releases.stream().map(dtoHelper::toContentReleaseDTO).toList());
@@ -146,7 +161,7 @@ public class ContentController {
     @GetMapping("/{contentReleaseId}/releases/{releaseNum}")
     public ResponseEntity<ContentReleaseDTO> getSpecificContentRelease(@PathVariable long contentReleaseId,
                                                                        @PathVariable long releaseNum) {
-        logger.info("[GET] /contents/{}/releases/{}", contentReleaseId, releaseNum);
+        log.info("[GET] /contents/{}/releases/{}", contentReleaseId, releaseNum);
         String key = contentReleaseId + ":" + releaseNum;
         ContentReleaseDTO cached = hazelcastCacheService.get(CacheConstants.CONTENT_RELEASES, key);
         
@@ -163,7 +178,7 @@ public class ContentController {
     
     @GetMapping("/draft")
     public ResponseEntity<List<ContentReleaseDTO>> getDraftContentReleases() {
-        logger.info("[GET] /contents/draft");
+        log.info("[GET] /contents/draft");
         List<ContentRelease> contentReleases = contentReleaseService.findAllDrafts(1);
         
         return ResponseEntity.ok(contentReleases.stream().map(dtoHelper::toContentReleaseDTO).toList());
@@ -171,7 +186,7 @@ public class ContentController {
     
     @PostMapping("/draft")
     public ResponseEntity<ContentReleaseDTO> createContent(@RequestBody @Validated(OnCreate.class) ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
-        logger.info("[POST] /contents/draft\nRequest Body:\n{}", contentCatalogueDTO);
+        log.info("[POST] /contents/draft\nRequest Body:\n{}", contentCatalogueDTO);
         Content content = contentHelper.getContent(contentCatalogueDTO);
         ContentRelease contentRelease = contentHelper.getContentRelease(contentCatalogueDTO, content);
         
@@ -204,7 +219,7 @@ public class ContentController {
     public ResponseEntity<ContentReleaseDTO> publishContentRelease(@PathVariable long contentReleaseId,
                                                                    @RequestBody @Validated(OnUpdate.class) ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
         
-        logger.info("[PATCH] /contents/publish/{}\nRequest Body:\n{}", contentReleaseId, contentCatalogueDTO);
+        log.info("[PATCH] /contents/publish/{}\nRequest Body:\n{}", contentReleaseId, contentCatalogueDTO);
         Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
         
         if (contentOptional.isEmpty()) {
@@ -219,14 +234,14 @@ public class ContentController {
         
         if (contentHelper.isValidForPublication(oldContentRelease, newContentRelease)) {
             if (course.getCurrentRelease() == ReleaseStatus.DRAFT.getReleaseNumber()) {
-                logger.info("Publishing a COURSE from draft version: courseId => {}", course.getId());
+                log.info("Publishing a COURSE from draft version: courseId => {}", course.getId());
                 newContentRelease.setRelease(ReleaseStatus.INITIAL_PUBLISHED.getReleaseNumber());
                 course.setCurrentRelease(ReleaseStatus.INITIAL_PUBLISHED.getReleaseNumber());
                 
             } else {
-                logger.info("Publishing a new version of COURSE id:{} from prev version: {}", course.getId(),
+                log.info("Publishing a new version of COURSE id:{} from prev version: {}", course.getId(),
                             course.getCurrentRelease());
-                logger.info("Content version: {}", oldContentRelease.getRelease());
+                log.info("Content version: {}", oldContentRelease.getRelease());
                 
                 newContentRelease.setId(0L);
                 
@@ -249,15 +264,18 @@ public class ContentController {
     
     private ContentRelease createNewContentRelease(ContentRelease original,
                                                    ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
+        
         ContentRelease newContentRelease;
         
         if (original instanceof Lecture) {
             if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("LECTURE")) {
                 throw new BadRequestException();
             }
+            
             newContentRelease = new Lecture();
             BeanUtils.copyProperties(original, newContentRelease, "id");
             lectureMapper.updateLectureFromLectureCatalogDto((LectureCatalogDTO) contentCatalogueDTO, (Lecture) newContentRelease);
+            
         } else if (original instanceof Quiz) {
             if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("QUIZ")) {
                 throw new BadRequestException();
@@ -284,7 +302,7 @@ public class ContentController {
     @PatchMapping("/edit/{contentReleaseId}")
     public ResponseEntity<ContentCatalogueDTO> editContentMetadata(@PathVariable long contentReleaseId,
                                                                    @RequestBody @Validated(OnUpdate.class) ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
-        logger.info("[PATCH] /edit/{}", contentReleaseId);
+        log.info("[PATCH] /edit/{}", contentReleaseId);
         Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
         
         if (contentOptional.isEmpty()) {
@@ -305,7 +323,7 @@ public class ContentController {
     
     @PostMapping("/delete/{contentReleaseId}")
     public ResponseEntity<ContentReleaseDTO> deleteContentRelease(@PathVariable long contentReleaseId) {
-        logger.info("[DELETE] /delete/{}", contentReleaseId);
+        log.info("[DELETE] /delete/{}", contentReleaseId);
         Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
         
         if (contentOptional.isEmpty()) {
