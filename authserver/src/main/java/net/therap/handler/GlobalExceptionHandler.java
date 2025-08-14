@@ -1,6 +1,7 @@
 package net.therap.handler;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.therap.dto.ErrorResponse;
 import net.therap.exception.InvalidRoleSpecifiedException;
 import net.therap.exception.AuthenticationException;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import static net.therap.util.HandlerUtil.buildErrorResponse;
@@ -24,7 +26,7 @@ import static net.therap.util.HandlerUtil.buildErrorResponse;
  * @author apurboturjo
  * @since 7/28/25
  */
-@Order(1)
+@Slf4j
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
@@ -89,5 +91,15 @@ public class GlobalExceptionHandler {
         );
         
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+    
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleAllExceptions(Exception ex) {
+        
+        log.error("An unexpected error occurred: {}", ex.getMessage(), ex);
+        
+        String errorMessage = messageUtil.getMessage("app.global.error");
+        
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
     }
 }

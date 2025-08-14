@@ -1,7 +1,9 @@
-package net.therap.auth.client;
+package net.therap.auth.discovery;
 
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -14,12 +16,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since 6/8/25
  */
 @Component
-public class ServiceDiscoveryCacheForAuthCommon {
+@RequiredArgsConstructor
+public class ServiceDiscoveryCacheAuth {
 
-    private final RestTemplate restTemplate = new RestTemplate();
-
-    @Value("${registry.url}")
-    private String registryUrl;
+    private final RestTemplate restTemplate;
+    private final MessageSource messageSource;
+    
+    private String registryUrl; // todo (take value from messages.properties) registry.url
 
     private final Map<String, List<Map<String, Object>>> cache = new ConcurrentHashMap<>();
     private final Map<String, AtomicInteger> rrIndex = new ConcurrentHashMap<>();

@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import net.therap.entity.User;
 import net.therap.entity.VerificationToken;
 import net.therap.respository.VerificationTokenRepository;
-import net.therap.service.interfaces.EmailService;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -30,6 +29,7 @@ public class VerificationTokenService {
         VerificationToken verificationToken = new VerificationToken(token, user);
         verificationTokenRepository.save(verificationToken);
         
-        emailService.sendVerificationEmail(user.getEmail(), token);
+//        emailService.sendVerificationEmail(user.getEmail(), token);
+        emailService.sendLinkToConsole(token);
     }
 }
