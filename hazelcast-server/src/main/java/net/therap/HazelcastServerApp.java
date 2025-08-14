@@ -13,19 +13,17 @@ import java.io.InputStream;
  */
 public class HazelcastServerApp {
 
-    public static void main(String[] args) throws Exception {
+    public static HazelcastInstance startServer(String portStr) throws Exception {
         InputStream xmlStream = HazelcastServerApp.class.getClassLoader().getResourceAsStream("hazelcast-server.xml");
         XmlConfigBuilder configBuilder = new XmlConfigBuilder(xmlStream);
         Config config = configBuilder.build();
 
-        // Read port from env variable, fallback to 5701 if not set
-        String portStr = System.getenv("HZ_PORT");
         int port = 5701;
         if (portStr != null) {
             try {
                 port = Integer.parseInt(portStr);
             } catch (NumberFormatException e) {
-                System.err.println("Invalid port in HZ_PORT env var, defaulting to 5701");
+                System.err.println("Invalid port, using default 5701");
             }
         }
 
@@ -33,13 +31,12 @@ public class HazelcastServerApp {
         config.getNetworkConfig().setPortAutoIncrement(true);
 
         HazelcastInstance hz = Hazelcast.newHazelcastInstance(config);
-
-        System.out.println("Hazelcast server started on port: " + port + ", cluster size: " + hz.getCluster().getMembers().size());
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            hz.shutdown();
-            System.out.println("Hazelcast server stopped.");
-        }));
+        System.out.println("Hazelcast started on port: " + port);
+        return hz;
     }
 
+    public static void main(String[] args) throws Exception {
+        startServer(System.getenv("HZ_PORT"));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> System.out.println("Hazelcast stopped")));
+    }
 }
