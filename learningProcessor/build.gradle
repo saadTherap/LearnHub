@@ -31,6 +31,7 @@ dependencyManagement {
 
 dependencies {
     implementation project(':auth-common')
+    implementation project(':kafka-registry')
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -57,8 +58,6 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-    implementation 'org.springframework.kafka:spring-kafka:3.3.0'
 }
 
 tasks.named('test') {

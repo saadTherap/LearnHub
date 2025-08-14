@@ -32,6 +32,7 @@ dependencyManagement {
 
 dependencies {
     implementation project(':auth-common')
+    implementation project(':kafka-registry')
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 //  implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -58,9 +59,6 @@ dependencies {
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 
     implementation  'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
-
-    // kafka dependencies
-    implementation 'org.springframework.kafka:spring-kafka:3.3.0'
 
     // sanitization
     implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20240325.1'

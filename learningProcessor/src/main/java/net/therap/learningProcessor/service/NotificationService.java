@@ -1,8 +1,9 @@
 package net.therap.learningProcessor.service;
 
+import net.therap.kafkaregistry.service.ProducerConsumerTask;
 import net.therap.learningProcessor.entity.Notification;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -12,16 +13,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class NotificationService {
 
-    private final KafkaTemplate<String , Notification> kafkaTemplate;
-
     @Value("${kafka.topics.notification}")
     private String notificationTopic;
 
-    public NotificationService(KafkaTemplate<String , Notification> kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
-    }
+    @Autowired
+    private ProducerConsumerTask producerConsumerTask;
+
 
     public void sendNotification(Notification notification) {
-        this.kafkaTemplate.send(notificationTopic, notification);
+        producerConsumerTask.send(notificationTopic, notification);
+        System.out.println("Here at send notification");
     }
 }

@@ -3,7 +3,18 @@
 gradle clean jar publishToMavenLocal
 ```
 
-### Add This To application.properties
+### Add Dependencies
+```gradle
+implementation 'net.therap:kafka-registry:0.0.1-SNAPSHOT'
+```
+
+or 
+
+```gradle
+implementation project(':kafka-registry')
+```
+
+### Add This To application.propertiesq
 ```java
 spring.kafka.client-id=topic-registrar-test
 spring.kafka.bootstrap-servers=broker-1:9092,broker-2:9094,broker-3:9096
