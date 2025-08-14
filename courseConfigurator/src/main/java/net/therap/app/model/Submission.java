@@ -10,7 +10,8 @@ import lombok.Setter;
  * @author gazizafor
  * @since 21/7/25
  */
-@Entity(name = "final_learnhub_submission")
+@Entity
+@Table(name = "final_learnhub_submission")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

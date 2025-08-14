@@ -3,6 +3,7 @@ package net.therap.app.controller;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.app.client.FileClient;
 import net.therap.app.dto.StoredFileDTO;
+import net.therap.app.repository.ModuleRepository;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +22,11 @@ import java.util.List;
 public class MainController {
     
     private final FileClient fileClient;
+    private final ModuleRepository moduleRepository;
     
-    public MainController(FileClient fileClient) {
+    public MainController(FileClient fileClient, ModuleRepository moduleRepository) {
         this.fileClient = fileClient;
+        this.moduleRepository = moduleRepository;
     }
     
     @GetMapping("/")
@@ -48,5 +51,10 @@ public class MainController {
     @GetMapping("/files")
     public ResponseEntity<List<StoredFileDTO>> getFiles() {
         return ResponseEntity.ok(fileClient.getAllFiles());
+    }
+    
+    @GetMapping("/test")
+    public ResponseEntity<Long> test() {
+        return ResponseEntity.ok(moduleRepository.findMaxOrderIndexOfModules(3));
     }
 }

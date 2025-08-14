@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author gazizafor
@@ -17,6 +16,13 @@ import java.util.Optional;
 @Repository
 public interface ModuleRepository extends JpaRepository<Module, Long> {
     
-    @Query("FROM final_learnhub_module m WHERE  m.course.id = :courseId")
+    @Query("FROM Module m WHERE  m.course.id = :courseId")
     List<Module> findByCourseId(@Param("courseId") long courseId);
+    
+    @Query("SELECT MAX(m.orderIndex) FROM Course c JOIN c.modules m WHERE c.id = :courseId")
+    long findMaxOrderIndexOfModules(@Param("courseId") long courseId);
+    
+    boolean existsByIdAndCourseInstructorId(long moduleId, long instructorId);
+    
+    boolean existsByIdAndCourseInstructorEmail(long id, String courseInstructorEmail);
 }

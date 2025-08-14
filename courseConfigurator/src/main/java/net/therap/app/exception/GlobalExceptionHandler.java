@@ -16,10 +16,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -50,38 +50,34 @@ public class GlobalExceptionHandler {
             errors.put(error.getField(), resolvedMessage);
         });
         
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, messageSource.getMessage("error.validation.failed", null, currentLocale),
-                                                        request.getRequestURI(), errors);
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, messageSource.getMessage("error.validation.failed", null, currentLocale), request.getRequestURI(), errors);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
     
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorResponse> handleConstraintViolationExceptions(ConstraintViolationException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleConstraintViolationExceptions(ConstraintViolationException ex,
+                                                                             HttpServletRequest request) {
         logger.error("ConstraintViolationException: {}", ex.getMessage());
         Map<String, String> errors = new HashMap<>();
         Locale currentLocale = LocaleContextHolder.getLocale();
         
         ex.getConstraintViolations().forEach(violation -> {
             String fieldName = violation.getPropertyPath().toString();
-
+            
             int lastDotIndex = fieldName.lastIndexOf('.');
             
             if (lastDotIndex != -1) {
                 fieldName = fieldName.substring(lastDotIndex + 1);
             }
             
-            String errorMessage = messageSource.getMessage(violation.getMessageTemplate(), null, violation.getMessage(), currentLocale);
+            String errorMessage = messageSource.getMessage(violation.getMessageTemplate(), null,
+                                                           violation.getMessage(), currentLocale);
             errors.put(fieldName, errorMessage);
         });
         
-        ErrorResponse errorResponse = new ErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.BAD_REQUEST.value(),
-                "Validation Error",
-                "One or more validation errors occurred.",
-                request.getRequestURI(),
-                errors
-        );
+        ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(),
+                                                        "Validation Error", "One or more validation errors occurred."
+                , request.getRequestURI(), errors);
         
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -96,7 +92,8 @@ public class GlobalExceptionHandler {
         }
         
         String messageFromAnnotation = error.getDefaultMessage();
-        if (messageFromAnnotation != null && messageFromAnnotation.startsWith("{") && messageFromAnnotation.endsWith("}")) {
+        if (messageFromAnnotation != null && messageFromAnnotation.startsWith("{") && messageFromAnnotation.endsWith(
+                "}")) {
             String messageKey = messageFromAnnotation.substring(1, messageFromAnnotation.length() - 1);
             try {
                 return messageSource.getMessage(messageKey, error.getArguments(), locale);
@@ -119,9 +116,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
     
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex,
+                                                                     HttpServletRequest request) {
+        
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.FORBIDDEN, ex.getMessage(), request.getRequestURI());
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
+    
     @ExceptionHandler({DataIntegrityViolationException.class, IllegalArgumentException.class})
-    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(Exception ex,
-                                                                      HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(Exception ex, HttpServletRequest request) {
         Locale currentLocale = LocaleContextHolder.getLocale();
         
         String errorMessageKey = "error.database.conflict";
@@ -132,11 +137,9 @@ public class GlobalExceptionHandler {
             httpStatus = HttpStatus.BAD_REQUEST;
         }
         
-        ErrorResponse errorResponse = new ErrorResponse(
-                httpStatus,
-                messageSource.getMessage(errorMessageKey, null, currentLocale),
-                request.getRequestURI()
-        );
+        ErrorResponse errorResponse = new ErrorResponse(httpStatus, messageSource.getMessage(errorMessageKey, null,
+                                                                                             currentLocale),
+                                                        request.getRequestURI());
         
         logger.error("Data integrity or illegal argument error: {}", ex.getMessage(), ex);
         
@@ -145,13 +148,16 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException ex, HttpServletRequest request) {
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(),
+                                                        request.getRequestURI());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
     
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest request) {
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex,
+                                                                               HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(),
+                                                        request.getRequestURI());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
     
@@ -159,8 +165,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex, HttpServletRequest request) {
         Locale currentLocale = LocaleContextHolder.getLocale();
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, messageSource.getMessage(
-                "error.unexpected", null, currentLocale),
-                                                        request.getRequestURI());
+                "error.unexpected", null, currentLocale), request.getRequestURI());
         logger.error("Unexpected runtime error: {}", ex.getMessage(), ex);
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }

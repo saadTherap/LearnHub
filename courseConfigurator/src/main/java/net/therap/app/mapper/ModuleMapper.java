@@ -22,6 +22,7 @@ public interface ModuleMapper {
     @Mapping(target = "id",  ignore = true)
     @Mapping(target = "contents", ignore = true)
     @Mapping(target = "course", source = "courseId")
+    @Mapping(target = "orderIndex", ignore = true)
     Module toModule(ModuleDTO moduleDTO);
     
     @Mapping(target = "contents", ignore = true)

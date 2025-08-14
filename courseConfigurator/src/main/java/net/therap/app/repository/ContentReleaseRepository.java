@@ -19,4 +19,6 @@ public interface ContentReleaseRepository extends JpaRepository<ContentRelease, 
     
     @Query("SELECT cr FROM Content c JOIN c.currentContentRelease cr WHERE c.module.course.instructor.id = :instructorId")
     List<ContentRelease> findByInstructorId(@Param("instructorId") long instructorId);
+    
+    boolean existsByIdAndContentModuleCourseInstructorEmail(long id, String contentModuleCourseInstructorEmail);
 }

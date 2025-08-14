@@ -13,7 +13,8 @@ import java.util.Objects;
  * @author gazizafor
  * @since 21/7/25
  */
-@Entity(name = "final_learnhub_content_release")
+@Entity
+@Table(name = "final_learnhub_content_release")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "content_type", discriminatorType = DiscriminatorType.STRING)
 @Getter

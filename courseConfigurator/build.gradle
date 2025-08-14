@@ -31,7 +31,7 @@ dependencyManagement {
 
 
 dependencies {
-    implementation project(':auth-common')
+//    implementation project(':auth-common')
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 //  implementation 'org.springframework.boot:spring-boot-starter-security'

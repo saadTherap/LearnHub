@@ -3,10 +3,9 @@ package net.therap.app.validation.htmlSanitization;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import lombok.extern.slf4j.Slf4j;
 import org.owasp.html.PolicyFactory;
 import org.owasp.html.Sanitizers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -14,16 +13,11 @@ import java.io.IOException;
  * @author gazizafor
  * @since 3/8/25
  */
+@Slf4j
 public class HtmlSanitizerDeserializer extends JsonDeserializer<String> {
     
-    private static final Logger logger = LoggerFactory.getLogger(HtmlSanitizerDeserializer.class);
-    
-    private static final PolicyFactory HTML_POLICY = Sanitizers.FORMATTING
-            .and(Sanitizers.LINKS)
-            .and(Sanitizers.BLOCKS)
-            .and(Sanitizers.IMAGES)
-            .and(Sanitizers.STYLES)
-            .and(Sanitizers.TABLES);
+    private static final PolicyFactory HTML_POLICY =
+            Sanitizers.FORMATTING.and(Sanitizers.LINKS).and(Sanitizers.BLOCKS).and(Sanitizers.STYLES).and(Sanitizers.TABLES);
     
     @Override
     public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
@@ -34,7 +28,7 @@ public class HtmlSanitizerDeserializer extends JsonDeserializer<String> {
         }
         
         String s = HTML_POLICY.sanitize(value);
-        logger.info("[inside HtmlSanitizerDeserializer] {}", s);
+        log.info("[inside HtmlSanitizerDeserializer] {}", s);
         return s;
     }
 }
