@@ -7,9 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import net.therap.learningProcessor.dto.ErrorResponse;
-import net.therap.learningProcessor.exception.RemoteFileServiceException;
-import net.therap.learningProcessor.exception.ResourceAlreadyExistsException;
-import net.therap.learningProcessor.exception.ResourceNotFoundException;
+import net.therap.learningProcessor.exception.*;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -84,6 +82,46 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorized(UnauthorizedException ex,
+                                                            HttpServletRequest request) {
+
+        String errorMessage = messageSource.getMessage(
+                ex.getMessageKey(),
+                ex.getArgs(),
+                "Authentication required",
+                request.getLocale()
+        );
+
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.UNAUTHORIZED,
+                errorMessage,
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleForbidden(ForbiddenException ex,
+                                                         HttpServletRequest request) {
+
+        String errorMessage = messageSource.getMessage(
+                ex.getMessageKey(),
+                ex.getArgs(),
+                "Access denied",
+                request.getLocale()
+        );
+
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.FORBIDDEN,
+                errorMessage,
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
     @ExceptionHandler(FeignException.class)
