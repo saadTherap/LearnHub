@@ -123,6 +123,7 @@ public class ModuleController {
         }
         
         Module module = moduleMapper.toModule(moduleDTO);
+        module.setOrderIndex(moduleService.getMaxOrderIndexOfModules(module.getCourse().getId()));
         
         logger.info("Module from DTO: {}", module);
         Module savedModule = moduleService.save(module);
@@ -132,6 +133,7 @@ public class ModuleController {
     
     @PostMapping("/contents/reorder")
     public ResponseEntity<List<ContentCatalogueDTO>> reorderModules(@RequestBody @Validated(OnUpdate.class) List<ReorderDTO> contents) throws BadRequestException {
+        
         if (!isValidOrderedList(contents)) {
             throw new BadRequestException(messageSource.getMessage("invalid.reorder", null, Locale.getDefault()));
         }
@@ -141,6 +143,7 @@ public class ModuleController {
                 .toList();
         
         long newOrderIndex = 1;
+        
         for (ReorderDTO module : sortedContents) {
             module.setOrderIndex(newOrderIndex++);
         }
@@ -148,7 +151,6 @@ public class ModuleController {
         List<Content> updatedContents = moduleService.reorderContents(sortedContents);
         
         return ResponseEntity.ok(updatedContents.stream().map(dtoHelper::toContentCatalogueDTO).toList());
-//        return ResponseEntity.ok(null);
     }
     
     

@@ -25,8 +25,10 @@ import java.util.TimeZone;
 @EnableJpaRepositories(basePackages = "net.therap.app.repository")
 @EnableScheduling
 @EntityScan("net.therap.app.model")
-@EnableFeignClients(basePackages = "net.therap.auth.client")
+@EnableFeignClients(basePackages = {"net.therap.app.client"})
+//@EnableFeignClients(basePackages = "net.therap.auth.client")
 @ComponentScan(basePackages = {"net.therap.auth", "net.therap.app", "net.therap.kafkaregistry.service"})
+
 public class AppApplication {
 
 	@Autowired

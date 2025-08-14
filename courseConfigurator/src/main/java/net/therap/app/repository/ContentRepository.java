@@ -1,7 +1,6 @@
 package net.therap.app.repository;
 
 import net.therap.app.model.Content;
-import net.therap.app.model.ContentRelease;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,4 +22,8 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
     
     @Query("SELECT c FROM Content c LEFT JOIN FETCH c.contentReleases r WHERE r.id = :contentReleaseId")
     Optional<Content> findByContentReleaseIdWithReleases(@Param("contentReleaseId") long contentReleaseId);
+    
+    boolean existsByIdAndModuleCourseInstructorId(long contentId, long instructorId);
+    
+    boolean existsByIdAndModuleCourseInstructorEmail(long id, String moduleCourseInstructorEmail);
 }

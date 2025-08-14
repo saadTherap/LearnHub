@@ -15,7 +15,7 @@ import java.util.List;
  * @since 21/7/25
  */
 @Table(name = "final_learnhub_course")
-@Entity(name = "Course")
+@Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

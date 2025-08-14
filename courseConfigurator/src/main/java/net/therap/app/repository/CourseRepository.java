@@ -23,4 +23,8 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     
     @Query("FROM Course c WHERE c.currentRelease = 0 AND c.id = :id")
     Optional<Course> findDraftById(@Param("id") long id);
+    
+    boolean existsByIdAndInstructorId(long courseId, long instructorId);
+    
+    boolean existsByIdAndInstructorEmail(@Param("id") long courseId, @Param("email") String email);
 }
