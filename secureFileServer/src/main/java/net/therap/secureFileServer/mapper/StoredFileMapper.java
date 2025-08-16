@@ -1,7 +1,7 @@
 package net.therap.secureFileServer.mapper;
 
 import net.therap.secureFileServer.dto.StoredFileDto;
-import net.therap.secureFileServer.entity.StoredFile;
+import net.therap.secureFileServer.entity.primary.StoredFile;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;

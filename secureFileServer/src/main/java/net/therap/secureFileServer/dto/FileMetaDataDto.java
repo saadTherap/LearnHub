@@ -12,6 +12,8 @@ import lombok.Data;
 public class FileMetaDataDto {
 
     private Long userId;
+
     private String userRole;
+
     private Long contextId;
 }

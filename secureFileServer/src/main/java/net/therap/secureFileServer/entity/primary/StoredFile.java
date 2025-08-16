@@ -1,4 +1,4 @@
-package net.therap.secureFileServer.entity;
+package net.therap.secureFileServer.entity.primary;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,6 +1,6 @@
 package net.therap.secureFileServer.service;
 
-import net.therap.secureFileServer.entity.StoredFile;
+import net.therap.secureFileServer.entity.primary.StoredFile;
 import net.therap.secureFileServer.util.HmacUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

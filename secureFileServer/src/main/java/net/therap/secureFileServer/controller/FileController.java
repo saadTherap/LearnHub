@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.secureFileServer.dto.FileMetaDataDto;
 import net.therap.secureFileServer.dto.StoredFileDto;
-import net.therap.secureFileServer.entity.StoredFile;
+import net.therap.secureFileServer.entity.primary.StoredFile;
 import net.therap.secureFileServer.entity.course.Course;
 import net.therap.secureFileServer.exception.FileAccessDeniedException;
 import net.therap.secureFileServer.exception.InvalidFileSignatureException;
