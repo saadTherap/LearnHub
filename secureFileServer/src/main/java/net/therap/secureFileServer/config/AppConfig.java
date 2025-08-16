@@ -51,16 +51,16 @@ public class AppConfig implements WebMvcConfigurer {
         return interceptor;
     }
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(localeChangeInterceptor());
-
-        registry.addInterceptor(hmacAuthInterceptor)
-                .addPathPatterns("/files/**")
-                .excludePathPatterns(
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html"
-                );
-    }
+//    @Override
+//    public void addInterceptors(InterceptorRegistry registry) {
+//        registry.addInterceptor(localeChangeInterceptor());
+//
+//        registry.addInterceptor(hmacAuthInterceptor)
+//                .addPathPatterns("/files/**")
+//                .excludePathPatterns(
+//                        "/v3/api-docs/**",
+//                        "/swagger-ui/**",
+//                        "/swagger-ui.html"
+//                );
+//    }
 }

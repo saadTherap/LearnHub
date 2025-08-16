@@ -71,11 +71,26 @@ public class GlobalExceptionHandler {
                 messageUtil.getMessage("error.service-unavailable.message"));
     }
 
+    @ExceptionHandler(FileAccessDeniedException.class)
+    public ResponseEntity<?> handleAccessDenied(FileAccessDeniedException ex) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN,
+                messageUtil.getMessage("error.access-denied.title"),
+                ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidFileSignatureException.class)
+    public ResponseEntity<?> handleInvalidSignature(InvalidFileSignatureException ex) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN,
+                messageUtil.getMessage("error.invalid-signature.title"),
+                ex.getMessage());
+    }
+
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGenericException(Exception ex) {
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR,
                 messageUtil.getMessage("error.internal-server-error.title"),
-                messageUtil.getMessage("error.internal-server-error.message"));
+                ex.getMessage());
     }
 
     private ResponseEntity<Map<String, Object>> buildErrorResponse(HttpStatus status, String error, String message) {

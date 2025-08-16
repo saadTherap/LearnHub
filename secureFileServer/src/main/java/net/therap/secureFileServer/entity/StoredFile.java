@@ -40,4 +40,13 @@ public class StoredFile {
 
     @Column(name = "upload_time")
     private LocalDateTime uploadTime;
+
+    @Column(name = "uploader_id")
+    private Long uploaderId;
+
+    @Column(name = "uploader_role")
+    private String uploaderRole;
+
+    @Column(name = "context_id")
+    private Long contextId;
 }

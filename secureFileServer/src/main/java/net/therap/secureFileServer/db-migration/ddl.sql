@@ -9,5 +9,8 @@ CREATE TABLE avi_stored_file (
                                  original_file_name VARCHAR2(255),
                                  stored_file_name   VARCHAR2(255),
                                  content_type      VARCHAR2(255),
-                                 upload_time       TIMESTAMP
+                                 upload_time       TIMESTAMP,
+                                 uploader_id        NUMBER(19) NOT NULL,
+                                 uploader_role      VARCHAR2(100) NOT NULL,
+                                 context_id         NUMBER(19)
 );

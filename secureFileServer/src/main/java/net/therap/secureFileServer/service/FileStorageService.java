@@ -1,6 +1,8 @@
 package net.therap.secureFileServer.service;
 
+import lombok.extern.slf4j.Slf4j;
 import net.therap.secureFileServer.config.StorageProperties;
+import net.therap.secureFileServer.dto.FileMetaDataDto;
 import net.therap.secureFileServer.entity.StoredFile;
 import net.therap.secureFileServer.exception.FileNotFoundException;
 import net.therap.secureFileServer.repository.FileRepository;
@@ -25,6 +27,7 @@ import java.util.UUID;
  * @since 7/22/25
  */
 @Service
+@Slf4j
 public class FileStorageService {
 
     private final Path storagePath;
@@ -42,25 +45,44 @@ public class FileStorageService {
         Files.createDirectories(storagePath);
     }
 
-    public StoredFile saveFile(MultipartFile multipartFile) {
+    public StoredFile saveFile(MultipartFile multipartFile,
+                               FileMetaDataDto uploaderDto) {
+
         String extension = getFileExtension(multipartFile.getOriginalFilename());
         String storedFilename = UUID.randomUUID() + extension;
 
         Path targetPath = storagePath.resolve(storedFilename);
 
+        log.info("Attempting to store file: original='{}', size={} bytes, userId={}, role={}, context={}",
+                multipartFile.getOriginalFilename(),
+                multipartFile.getSize(),
+                uploaderDto.getUserId(),
+                uploaderDto.getUserRole(),
+                uploaderDto.getContextId());
+
         try {
             Files.copy(multipartFile.getInputStream(), targetPath);
+            log.debug("File successfully written to {}", targetPath);
 
         } catch (IOException e) {
             throw new RuntimeException(messageUtil.getMessage("error.file.store-failed", multipartFile.getOriginalFilename()), e);
         }
 
-        StoredFile storedFile = mapToStoredFile(multipartFile, storedFilename);
+        StoredFile storedFile = mapToStoredFile(multipartFile, storedFilename, uploaderDto);
+
+        log.info("File successfully stored: id={}, storedName='{}', uploaderId={}, role={}, context={}",
+                storedFile.getId(),
+                storedFile.getStoredFilename(),
+                storedFile.getUploaderId(),
+                storedFile.getUploaderRole(),
+                storedFile.getContextId());
 
         return fileRepository.save(storedFile);
     }
 
     public Resource loadFileAsResource(Long id) {
+        log.info("Loading file resource with id={}", id);
+
         StoredFile file = getMetadata(id);
         Path path = storagePath.resolve(file.getStoredFilename());
         Resource resource;
@@ -69,12 +91,19 @@ public class FileStorageService {
             resource = new UrlResource(path.toUri());
 
             if (!resource.exists() || !resource.isReadable()) {
+                log.warn("File not readable or missing: id={}, storedName={}", id, file.getStoredFilename());
+
                 throw new FileNotFoundException(messageUtil.getMessage("error.file.not-readable", file.getStoredFilename()));
             }
 
         } catch (IOException e) {
+            log.error("Error reading file: id={}, storedName={}", id, file.getStoredFilename(), e);
+
             throw new RuntimeException(messageUtil.getMessage("error.file.read-failed", file.getStoredFilename()), e);
         }
+
+        log.info("File successfully loaded: id={}, storedName={}, uploaderId={}, role={}",
+                id, file.getStoredFilename(), file.getUploaderId(), file.getUploaderRole());
 
         return resource;
     }
@@ -102,13 +131,20 @@ public class FileStorageService {
         fileRepository.deleteById(id);
     }
 
-    private StoredFile mapToStoredFile(MultipartFile multipartFile, String storedFilename) {
+    private StoredFile mapToStoredFile(MultipartFile multipartFile,
+                                       String storedFilename,
+                                       FileMetaDataDto uploaderDto) {
+
         StoredFile storedFile = new StoredFile();
 
         storedFile.setOriginalFilename(multipartFile.getOriginalFilename());
         storedFile.setStoredFilename(storedFilename);
         storedFile.setContentType(multipartFile.getContentType());
         storedFile.setUploadTime(LocalDateTime.now());
+
+        storedFile.setUploaderId(uploaderDto.getUserId());
+        storedFile.setUploaderRole(uploaderDto.getUserRole());
+        storedFile.setContextId(uploaderDto.getContextId());
 
         return storedFile;
     }

@@ -22,4 +22,12 @@ public class StoredFileDto {
     private String downloadUrl;
 
     private LocalDateTime uploadTime;
+
+    private Long uploaderId;
+
+    private String uploaderRole;
+
+    private Long contextId;
+
+    private String signature;
 }
