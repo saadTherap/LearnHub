@@ -9,11 +9,11 @@ import java.util.List;
 public class Constants {
 
     public static final List<String> WHITELIST = List.of(
-            "/auth/api/",
-            "/auth/pk",
-            "/auth/swagger-ui/",
-            "/auth/v3/api-docs",
-            "/auth/swagger-resources/",
+            "/api/",
+            "/pk",
+            "/swagger-ui/",
+            "/v3/api-docs",
+            "/swagger-resources/",
             "/error",
             "/public/"
     );

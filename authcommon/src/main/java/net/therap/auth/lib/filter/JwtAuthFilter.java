@@ -6,11 +6,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import net.therap.auth.lib.context.RequestTokenContext;
 import net.therap.auth.lib.context.UserRequestCache;
 import net.therap.auth.lib.exception.AuthenticationException;
 import net.therap.auth.lib.validator.TokenValidator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -31,14 +29,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final List<String> excludedPaths;
     private final TokenValidator tokenValidator;
-
-    @Autowired
-    private final RequestTokenContext context;
-
-    public JwtAuthFilter(TokenValidator tokenValidator, List<String> excludedPaths, RequestTokenContext context) {
+    
+    public JwtAuthFilter(TokenValidator tokenValidator, List<String> excludedPaths) {
         this.tokenValidator = tokenValidator;
         this.excludedPaths = excludedPaths;
-        this.context = context;
     }
 
     @Override
@@ -48,20 +42,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String path = contextPath.isEmpty() ? requestURI : requestURI.substring(contextPath.length());
 
-        System.out.println("=== SHOULD NOT FILTER DEBUG ===");
-        System.out.println("Request URI: " + requestURI);
-        System.out.println("Context Path: '" + contextPath + "'");
-        System.out.println("Extracted Path: '" + path + "'");
-        System.out.println("Excluded Paths: " + excludedPaths);
+        log.debug("=== SHOULD NOT FILTER DEBUG ===");
+        log.debug("Request URI: " + requestURI);
+        log.debug("Context Path: '" + contextPath + "'");
+        log.debug("Extracted Path: '" + path + "'");
+        log.debug("Excluded Paths: " + excludedPaths);
 
         boolean shouldExclude = excludedPaths.stream().anyMatch(excludedPath -> {
             boolean matches = path.startsWith(excludedPath);
-            System.out.println("Checking '" + path + "' starts with '" + excludedPath + "': " + matches);
+            log.debug("Checking '" + path + "' starts with '" + excludedPath + "': " + matches);
             return matches;
         });
 
-        System.out.println("Should exclude (shouldNotFilter): " + shouldExclude);
-        System.out.println("===============================");
+        log.debug("Should exclude (shouldNotFilter): " + shouldExclude);
+        log.debug("===============================");
 
         return shouldExclude;
     }
@@ -70,13 +64,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        System.out.println("=== JWT FILTER CALLED ===");
-        System.out.println("Request URI: " + request.getRequestURI());
-        System.out.println("Context Path: " + request.getContextPath());
-        System.out.println("========================");
+        log.debug("=== JWT FILTER CALLED ===");
+        log.debug("Request URI: " + request.getRequestURI());
+        log.debug("Context Path: " + request.getContextPath());
+        log.debug("========================");
 
         String token = extractTokenFromRequest(request);
-        System.out.println("token ===> " + token);
+        log.debug("token ===> " + token);
 
         if (!StringUtils.hasText(token)) {
             log.debug("No JWT token found in request");
@@ -87,7 +81,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             JWTClaimsSet claims = tokenValidator.validate(token);
-            System.out.println("Token validated successfully for user: {} ===> " + claims);
             
             Long userId = (Long) claims.getClaim(CLAIM_USER_ID);
             String email = (String) claims.getSubject();
@@ -95,17 +88,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             UserRequestCache.put(userId, email, role);
             request.setAttribute(CLAIM_USER_ID, userId);
             
-            context.setToken(token);
+            log.debug("Token validated successfully for user: {} ===> " + email);
 
-            System.out.println("Response: " + response);
+            log.debug("Response: " + response);
             filterChain.doFilter(request, response);
 
         } catch (AuthenticationException e) {
             log.warn("Token validation failed: {}", e.getMessage());
             sendUnauthorizedError(response, "Invalid or expired token");
 
-        } finally {
-            context.clear();
         }
     }
 

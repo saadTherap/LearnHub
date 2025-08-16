@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.server.app.dto.ErrorResponse;
 import net.therap.server.app.exception.AuthServerException;
-import net.therap.server.app.exception.UserExistenceException;
-import net.therap.server.app.exception.UserPersistenceException;
 import net.therap.server.app.util.MessageUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,8 +28,6 @@ public class GlobalExceptionHandler {
     
     private static final String ERROR = "error";
     
-    private final MessageUtil messageUtil;
-    
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> fieldErrors = new HashMap<>();
@@ -43,51 +39,22 @@ public class GlobalExceptionHandler {
         });
         
         ErrorResponse response = buildErrorResponse(
-                messageUtil.getMessage("msg.validation.failed"),
+                MessageUtil.getMessage("msg.validation.failed"),
                 fieldErrors
         );
         
         return ResponseEntity.badRequest().body(response);
     }
     
-    @ExceptionHandler(UserExistenceException.class)
-    public ResponseEntity<ErrorResponse> handleUserExistence(UserExistenceException ex) {
-        ErrorResponse response = buildErrorResponse(
-                messageUtil.getMessage("msg.user.exists"),
-                Map.of(ERROR, ex.getMessage())
-        );
-        
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
-    }
-    
-    @ExceptionHandler(UserPersistenceException.class)
-    public ResponseEntity<ErrorResponse> handleUserPersistence(UserPersistenceException ex) {
-        ErrorResponse response = buildErrorResponse(
-                messageUtil.getMessage("msg.user.persist.failed"),
-                Map.of(ERROR, ex.getMessage())
-        );
-        
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-    }
     
     @ExceptionHandler(AuthServerException.class)
-    public ResponseEntity<ErrorResponse> handleRegistrationTokenVerification(AuthServerException ex) {
+    public ResponseEntity<ErrorResponse> handleAuthServerException(AuthServerException ex) {
         ErrorResponse response = buildErrorResponse(
-                messageUtil.getMessage("err.verify.token.failed"),
+                MessageUtil.getMessage("err.verify.token.failed"),
                 Map.of(ERROR, ex.getMessage())
         );
         
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-    }
-    
-    @ExceptionHandler(InvalidRoleSpecifiedException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidRoleSpecification(InvalidRoleSpecifiedException ex) {
-        ErrorResponse response = buildErrorResponse(
-                messageUtil.getMessage("err.user.role.invalid"),
-                Map.of(ERROR, ex.getMessage())
-        );
-        
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
     
     @ExceptionHandler(Exception.class)
@@ -95,7 +62,7 @@ public class GlobalExceptionHandler {
         
         log.error("An unexpected error occurred: {}", ex.getMessage(), ex);
         
-        String errorMessage = messageUtil.getMessage("app.global.error");
+        String errorMessage = MessageUtil.getMessage("app.global.error");
         
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
     }

@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Locale;
 
-import static net.therap.server.app.enums.ExceptionTypes.MAIL_VERIFICATION_ERROR_EXCEPTION;
-
 /**
  * @author apurboturjo
  * @since 7/29/25
@@ -24,8 +22,6 @@ import static net.therap.server.app.enums.ExceptionTypes.MAIL_VERIFICATION_ERROR
 public class EmailService {
     
     private final JavaMailSender mailSender;
-    
-    private final MessageUtil messageUtil;
     
     public void sendLinkToConsole(String token) {
         String link = "https://app-rnd01.therapbd.net/auth/api/verify-email?token=" + token;
@@ -38,16 +34,16 @@ public class EmailService {
         
         log.info("Verification email sent to: console");
     }
-
+    
     
     public void sendVerificationEmail(String to, String token) throws AuthServerException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
         
         try {
-            String subject = messageUtil.getMessage("email.verification.subject", null, Locale.getDefault());
-            String body = messageUtil.getMessage("email.verification.body",
-                    new Object[]{messageUtil.getMessage("frontend.verification.url") + "?token=" + token},
+            String subject = MessageUtil.getMessage("email.verification.subject", null, Locale.getDefault());
+            String body = MessageUtil.getMessage("email.verification.body",
+                    new Object[]{MessageUtil.getMessage("email.verification.frontend.url") + "?token=" + token},
                     Locale.getDefault());
             
             helper.setFrom("apurbo.turjo@therapservices.net");
@@ -60,8 +56,7 @@ public class EmailService {
             
         } catch (MessagingException e) {
             log.error("Failed to send verification email to {}: {}", to, e.getMessage());
-            
-            throw new AuthServerException("Failed to send verification email.", MAIL_VERIFICATION_ERROR_EXCEPTION);
+            throw new AuthServerException("Failed to send verification email.");
         }
     }
 }

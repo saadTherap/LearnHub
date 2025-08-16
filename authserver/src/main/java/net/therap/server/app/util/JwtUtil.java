@@ -10,15 +10,10 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static net.therap.server.app.enums.ExceptionTypes.REGISTRATION_ERROR_EXCEPTION;
-
 
 /**
  * @author apurboturjo
@@ -26,15 +21,13 @@ import static net.therap.server.app.enums.ExceptionTypes.REGISTRATION_ERROR_EXCE
  */
 @Slf4j
 public class JwtUtil {
-
-    public static final String USER_ROLE_ERROR = "No such user role exists";
-
+    
     public static UserRole toSystemFormatUserRole(String role) {
         try {
             return UserRole.valueOf(role.toUpperCase());
             
         } catch (IllegalArgumentException e) {
-            throw new AuthServerException(USER_ROLE_ERROR + ": " + role, REGISTRATION_ERROR_EXCEPTION);
+            throw new AuthServerException(MessageUtil.getMessage("err.role.invalid"));
         }
     }
 
@@ -45,15 +38,6 @@ public class JwtUtil {
         KeyFactory kf = KeyFactory.getInstance("RSA");
 
         return (RSAPrivateKey) kf.generatePrivate(spec);
-    }
-
-    public static RSAPublicKey getPublicKey(String classpathPath) throws Exception {
-        String key = readKeyFromClasspath(classpathPath, "PUBLIC KEY");
-        byte[] keyBytes = Base64.getDecoder().decode(key);
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-
-        return (RSAPublicKey) kf.generatePublic(spec);
     }
 
     private static String readKeyFromClasspath(String path, String keyType) throws Exception {

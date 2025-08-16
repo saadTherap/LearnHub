@@ -7,7 +7,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.auth.lib.exception.AuthenticationException;
-import net.therap.auth.lib.helper.PublicKeyProvider;
+import net.therap.auth.lib.provider.PublicKeyProvider;
 import org.springframework.stereotype.Service;
 
 import java.security.interfaces.RSAPublicKey;
@@ -40,7 +40,7 @@ public class TokenValidator {
             }
             
             RSAPublicKey publicKey = keyProvider.getPublicKey(kid);
-//            System.out.println(publicKey);
+
             JWSVerifier verifier = new RSASSAVerifier(publicKey);
             
             if (!signedJWT.verify(verifier)) {
@@ -70,8 +70,6 @@ public class TokenValidator {
         Date now = Date.from(Instant.now());
         
         Date expirationTime = claims.getExpirationTime();
-        System.out.println("Expiration time: " + expirationTime);
-        System.out.println("Now: " + now);
         if (Objects.nonNull(expirationTime) && expirationTime.before(now)) {
             throw new AuthenticationException("Token has expired");
         }
@@ -80,7 +78,6 @@ public class TokenValidator {
         if (Objects.nonNull(notBeforeTime) && notBeforeTime.after(now)) {
             throw new AuthenticationException("Token not yet valid");
         }
-        System.out.println("IssueTime: "  + claims.getIssueTime());
         
         Date issuedAtTime = claims.getIssueTime();
         if (Objects.nonNull(issuedAtTime) && issuedAtTime.after(now)) {

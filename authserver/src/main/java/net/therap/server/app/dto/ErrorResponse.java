@@ -2,6 +2,7 @@ package net.therap.server.app.dto;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -10,7 +11,7 @@ import java.util.Map;
  * @since 7/28/25
  */
 @Data
-public class ErrorResponse {
+public class ErrorResponse implements Serializable {
     
     private LocalDateTime timestamp;
     

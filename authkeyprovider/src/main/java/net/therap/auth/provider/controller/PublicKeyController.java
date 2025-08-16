@@ -1,6 +1,6 @@
-package net.therap.server.app.controller;
+package net.therap.auth.provider.controller;
 
-import net.therap.server.app.service.JwtService;
+import net.therap.auth.provider.service.PublicKeyProviderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,23 +12,19 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 8/3/25
  */
 @RestController
-@RequestMapping("/pk")
+@RequestMapping("/keys")
 public class PublicKeyController {
     
-    private final JwtService jwtService;
+    private final PublicKeyProviderService publicKeyProviderService;
     
-    public PublicKeyController(JwtService jwtService) {
-        this.jwtService = jwtService;
+    public PublicKeyController(PublicKeyProviderService publicKeyProviderService) {
+        this.publicKeyProviderService = publicKeyProviderService;
     }
     
-    @GetMapping()
+    @GetMapping("/pk")
     public ResponseEntity<String> getPublicKey(@RequestParam("kid") String keyId) {
-        System.out.println("In the method getPublicKey");
-
-        if (!keyId.equals(jwtService.getKeyId())) {
-            return ResponseEntity.notFound().build();
-        }
+        String jwk = publicKeyProviderService.getPublicKeyAsJWK(keyId);
         
-        return ResponseEntity.ok(jwtService.getPublicKeyAsJWK());
+        return ResponseEntity.ok(jwk);
     }
 }

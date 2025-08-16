@@ -2,10 +2,7 @@ package net.therap.server.app.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import net.therap.server.app.dto.JwtResponse;
-import net.therap.server.app.dto.LoginRequest;
-import net.therap.server.app.dto.RefreshRequest;
-import net.therap.server.app.dto.RegisterRequest;
+import net.therap.server.app.dto.*;
 import net.therap.server.app.service.interfaces.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +32,13 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
     
+    @DeleteMapping("/delete")
+    public ResponseEntity<JwtResponse> delete(@Valid @RequestBody DeleteRequest request) {
+        JwtResponse response = authService.delete(request);
+        
+        return ResponseEntity.ok(response);
+    }
+    
     @PostMapping("/refresh")
     public ResponseEntity<JwtResponse> refreshToken(@Valid @RequestBody RefreshRequest refreshRequest) {
         JwtResponse response = authService.refreshToken(refreshRequest.getRefreshToken());
@@ -43,9 +47,9 @@ public class AuthController {
     }
     
     @GetMapping("/verify-email")
-    public ResponseEntity<String> verifyEmail(@RequestParam String token) {
-        authService.verifyEmail(token);
+    public ResponseEntity<JwtResponse> verifyEmail(@RequestParam String token) {
+        JwtResponse response = authService.verifyEmail(token);
         
-        return ResponseEntity.ok( "Email verified successfully!");
+        return ResponseEntity.ok( response);
     }
 }

@@ -1,11 +1,11 @@
 package net.therap.server.app.service;
 
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.therap.server.app.entity.User;
 import net.therap.server.app.entity.VerificationToken;
 import net.therap.server.app.respository.VerificationTokenRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 

@@ -1,5 +1,6 @@
 package net.therap.server.app.service.interfaces;
 
+import net.therap.server.app.dto.DeleteRequest;
 import net.therap.server.app.dto.JwtResponse;
 import net.therap.server.app.dto.LoginRequest;
 import net.therap.server.app.dto.RegisterRequest;
@@ -16,5 +17,7 @@ public interface AuthService {
     
     JwtResponse refreshToken(String refreshToken);
     
-    void verifyEmail(String token);
+    JwtResponse verifyEmail(String token);
+    
+    JwtResponse delete(DeleteRequest request);
 }
