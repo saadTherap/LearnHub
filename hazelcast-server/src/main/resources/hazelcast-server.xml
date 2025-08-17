@@ -72,6 +72,126 @@
         <split-brain-protection-ref>mapProtection</split-brain-protection-ref>
     </map>
 
+    <map name="modulesByCourse">
+        <backup-count>1</backup-count>
+        <time-to-live-seconds>900</time-to-live-seconds>
+        <eviction eviction-policy="LRU" max-size-policy="PER_NODE" size="5000"/>
+        <merge-policy batch-size="100">DiscardMergePolicy</merge-policy>
+        <split-brain-protection-ref>mapProtection</split-brain-protection-ref>
+    </map>
+
+    <map name="contentReleases">
+        <backup-count>1</backup-count>
+        <time-to-live-seconds>900</time-to-live-seconds>
+        <eviction eviction-policy="LRU" max-size-policy="PER_NODE" size="5000"/>
+        <merge-policy batch-size="100">DiscardMergePolicy</merge-policy>
+        <split-brain-protection-ref>mapProtection</split-brain-protection-ref>
+    </map>
+
+    <map name="contentReleaseList">
+        <backup-count>1</backup-count>
+        <time-to-live-seconds>900</time-to-live-seconds>
+        <eviction eviction-policy="LRU" max-size-policy="PER_NODE" size="5000"/>
+        <merge-policy batch-size="100">DiscardMergePolicy</merge-policy>
+        <split-brain-protection-ref>mapProtection</split-brain-protection-ref>
+    </map>
+
+    <map name="contentCatalog">
+        <backup-count>1</backup-count>
+        <time-to-live-seconds>900</time-to-live-seconds>
+        <eviction eviction-policy="LRU" max-size-policy="PER_NODE" size="5000"/>
+        <merge-policy batch-size="100">DiscardMergePolicy</merge-policy>
+        <split-brain-protection-ref>mapProtection</split-brain-protection-ref>
+    </map>
+
+    <map name="submissions">
+        <backup-count>1</backup-count>
+        <time-to-live-seconds>900</time-to-live-seconds>
+        <eviction eviction-policy="LRU" max-size-policy="PER_NODE" size="5000"/>
+        <merge-policy batch-size="100">DiscardMergePolicy</merge-policy>
+        <split-brain-protection-ref>mapProtection</split-brain-protection-ref>
+    </map>
+
+    <map name="submissionByInstructor">
+        <backup-count>1</backup-count>
+        <time-to-live-seconds>900</time-to-live-seconds>
+        <eviction eviction-policy="LRU" max-size-policy="PER_NODE" size="5000"/>
+        <merge-policy batch-size="100">DiscardMergePolicy</merge-policy>
+        <split-brain-protection-ref>mapProtection</split-brain-protection-ref>
+    </map>
+
+    <map name="contentCatalog">
+        <backup-count>1</backup-count>
+        <time-to-live-seconds>900</time-to-live-seconds>
+        <eviction eviction-policy="LRU" max-size-policy="PER_NODE" size="5000"/>
+        <merge-policy batch-size="100">DiscardMergePolicy</merge-policy>
+        <split-brain-protection-ref>mapProtection</split-brain-protection-ref>
+    </map>
+
+    <map name="students">
+        <backup-count>1</backup-count>
+        <time-to-live-seconds>1800</time-to-live-seconds>
+        <eviction eviction-policy="LRU" max-size-policy="PER_NODE" size="5000"/>
+        <merge-policy batch-size="100">DiscardMergePolicy</merge-policy>
+        <split-brain-protection-ref>mapProtection</split-brain-protection-ref>
+    </map>
+
+    <map name="studentsByCourse">
+        <backup-count>1</backup-count>
+        <time-to-live-seconds>1800</time-to-live-seconds>
+        <eviction eviction-policy="LRU" max-size-policy="PER_NODE" size="5000"/>
+        <merge-policy batch-size="100">DiscardMergePolicy</merge-policy>
+        <split-brain-protection-ref>mapProtection</split-brain-protection-ref>
+    </map>
+
+    <map name="courseProgressDetail">
+        <backup-count>1</backup-count>
+        <time-to-live-seconds>1800</time-to-live-seconds>
+        <eviction eviction-policy="LRU" max-size-policy="PER_NODE" size="5000"/>
+        <merge-policy batch-size="100">DiscardMergePolicy</merge-policy>
+        <split-brain-protection-ref>mapProtection</split-brain-protection-ref>
+    </map>
+
+    <map name="studentCourseProgress">
+        <backup-count>1</backup-count>
+        <time-to-live-seconds>1800</time-to-live-seconds>
+        <eviction eviction-policy="LRU" max-size-policy="PER_NODE" size="5000"/>
+        <merge-policy batch-size="100">DiscardMergePolicy</merge-policy>
+        <split-brain-protection-ref>mapProtection</split-brain-protection-ref>
+    </map>
+
+    <map name="allStudentProgressByCourse">
+        <backup-count>1</backup-count>
+        <time-to-live-seconds>1800</time-to-live-seconds>
+        <eviction eviction-policy="LRU" max-size-policy="PER_NODE" size="5000"/>
+        <merge-policy batch-size="100">DiscardMergePolicy</merge-policy>
+        <split-brain-protection-ref>mapProtection</split-brain-protection-ref>
+    </map>
+
+    <map name="moduleContents">
+        <backup-count>1</backup-count>
+        <time-to-live-seconds>1800</time-to-live-seconds>
+        <eviction eviction-policy="LRU" max-size-policy="PER_NODE" size="5000"/>
+        <merge-policy batch-size="100">DiscardMergePolicy</merge-policy>
+        <split-brain-protection-ref>mapProtection</split-brain-protection-ref>
+    </map>
+
+    <map name="contentDetail">
+        <backup-count>1</backup-count>
+        <time-to-live-seconds>1800</time-to-live-seconds>
+        <eviction eviction-policy="LRU" max-size-policy="PER_NODE" size="5000"/>
+        <merge-policy batch-size="100">DiscardMergePolicy</merge-policy>
+        <split-brain-protection-ref>mapProtection</split-brain-protection-ref>
+    </map>
+
+    <map name="courseCatalogLP">
+        <backup-count>1</backup-count>
+        <time-to-live-seconds>1800</time-to-live-seconds>
+        <eviction eviction-policy="LRU" max-size-policy="PER_NODE" size="5000"/>
+        <merge-policy batch-size="100">DiscardMergePolicy</merge-policy>
+        <split-brain-protection-ref>mapProtection</split-brain-protection-ref>
+    </map>
+
     <management-center console-enabled="true" scripting-enabled="true"/>
 
 </hazelcast>
