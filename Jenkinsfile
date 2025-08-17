@@ -3,10 +3,12 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            script {
-                withCredentials([string(credentialsId: 'github-pat', variable: 'PAT')]) {
-                    sh "git config --global url.'https://oauth2:${PAT}@github.com/'.insteadOf 'https://github.com/'"
-                    sh "git checkout ${env.BRANCH_NAME}"
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'github-pat', variable: 'PAT')]) {
+                        sh "git config --global url.'https://oauth2:${PAT}@github.com/'.insteadOf 'https://github.com/'"
+                        sh "git checkout ${env.BRANCH_NAME}"
+                    }
                 }
             }
         }
