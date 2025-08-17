@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        gradle 'My-Gradle-Installation'
+    }
+
     stages {
         stage('Checkout') {
             steps {
