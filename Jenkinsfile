@@ -5,7 +5,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo "Checking out code from ${env.BRANCH_NAME} branch..."
-                git branch: env.BRANCH_NAME, url: 'https://github.com/saadTherap/LearnHub.git', credentialsId: 'github-pat'
+                git branch: 'dev', url: 'https://github.com/saadTherap/LearnHub.git', credentialsId: 'github-pat'
             }
         }
 
