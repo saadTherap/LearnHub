@@ -14,28 +14,28 @@ pipeline {
                 stage('Learning Processor') {
                     steps {
                         dir('learningProcessor') {
-                            sh './gradlew clean build'
+                            sh 'gradle clean build'
                         }
                     }
                 }
                 stage('Course Configurator') {
                     steps {
                         dir('courseConfigurator') {
-                            sh './gradlew clean build'
+                            sh 'gradle clean build'
                         }
                     }
                 }
                 stage('Auth Server') {
                     steps {
                         dir('authserver') {
-                            sh './gradlew clean build'
+                            sh 'gradle clean build'
                         }
                     }
                 }
                 stage('Hazelcast Server') {
                     steps {
                         dir('hazelcast-server') {
-                            sh './gradlew clean build'
+                            sh 'gradle clean build'
                         }
                     }
                 }
