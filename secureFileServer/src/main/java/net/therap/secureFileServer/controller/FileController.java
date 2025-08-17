@@ -5,15 +5,12 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.therap.secureFileServer.dto.FileMetaDataDto;
 import net.therap.secureFileServer.dto.StoredFileDto;
 import net.therap.secureFileServer.entity.primary.StoredFile;
 import net.therap.secureFileServer.entity.course.Course;
-import net.therap.secureFileServer.exception.FileAccessDeniedException;
 import net.therap.secureFileServer.exception.InvalidFileSignatureException;
 import net.therap.secureFileServer.mapper.StoredFileMapper;
 import net.therap.secureFileServer.repository.course.CourseRepository;
-import net.therap.secureFileServer.service.FileAuthorizationService;
 import net.therap.secureFileServer.service.FileSignatureService;
 import net.therap.secureFileServer.service.FileStorageService;
 import net.therap.secureFileServer.util.MessageUtil;
@@ -30,6 +27,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author avidewan
@@ -47,8 +45,6 @@ public class FileController {
     private final StoredFileMapper fileMapper;
     private final FileValidator fileValidator;
     
-    private final FileAuthorizationService fileAuthorizationService;
-
     private final CourseRepository courseRepository;
 
     private final MessageUtil messageUtil;
@@ -57,87 +53,51 @@ public class FileController {
     @Operation(summary = "Upload a file")
     public ResponseEntity<StoredFileDto> uploadFile(
             @RequestPart("file") MultipartFile file,
-            @RequestParam("userId") Long userId,
-            @RequestParam("userRole") String userRole,
-            @RequestParam("contextId") Long contextId) throws IOException {
+            @RequestParam Map<String, String> contextMap
+    ) throws IOException {
 
-        log.info("File upload requested: original='{}', size={} bytes, userId={}, role={}, context={}",
-                file.getOriginalFilename(),
-                file.getSize(),
-                userId,
-                userRole,
-                contextId);
+        String uploaderEmail = contextMap.get("uploaderEmail");
+
+        if (uploaderEmail == null || uploaderEmail.isBlank()) {
+            throw new IllegalArgumentException("uploaderEmail is required in contextMap");
+        }
+
+        log.info("File upload requested: original='{}', size={} bytes, uploaderEmail={}",
+                file.getOriginalFilename(), file.getSize(), uploaderEmail);
 
         fileValidator.validate(file);
 
-        FileMetaDataDto uploaderDto = new FileMetaDataDto(userId, userRole, contextId);
+        StoredFile storedFile = fileStorageService.saveFile(file, uploaderEmail);
 
-        StoredFile storedFile = fileStorageService.saveFile(file, uploaderDto);
         StoredFileDto dto = fileMapper.toDto(storedFile);
 
-        String signature = fileSignatureService.generateSignature(storedFile);
-        dto.setSignature(signature);
-
-        log.info("File upload successful: id={}, storedName='{}', userId={}, role={}, context={}",
-                storedFile.getId(),
-                storedFile.getStoredFilename(),
-                storedFile.getUploaderId(),
-                storedFile.getUploaderRole(),
-                storedFile.getContextId());
+        log.info("File upload successful: id={}, storedName='{}', uploaderEmail={}",
+                storedFile.getId(), storedFile.getStoredFilename(), uploaderEmail);
 
         return ResponseEntity.created(URI.create(dto.getDownloadUrl())).body(dto);
     }
 
-    @PostMapping("/{id}/signature")
-    @Operation(summary = "Get HMAC signature to download a file")
-    public ResponseEntity<String> getDownloadSignature(
-            @PathVariable Long id,
-            @RequestBody FileMetaDataDto requestData) {
-
-        log.info("Signature request: fileId={}, userId={}, role={}",
-                id, requestData.getUserId(), requestData.getUserRole());
-
-        StoredFile storedFile = fileStorageService.getMetadata(id);
-
-        if(!fileAuthorizationService.canAccessFile(storedFile,
-                requestData.getUserId(),
-                requestData.getUserRole())) {
-
-            log.warn("Access denied for signature: fileId={}, userId={}, role={}",
-                    id, requestData.getUserId(), requestData.getUserRole());
-
-            throw new FileAccessDeniedException(messageUtil.getMessage("error.access-denied.message"));
-        }
-
-        String signature = fileSignatureService.generateSignature(storedFile);
-
-        log.info("Signature generated successfully: fileId={}, userId={}, role={}",
-                id, requestData.getUserId(), requestData.getUserRole());
-
-        return ResponseEntity.ok(signature);
-    }
-
-    @GetMapping("/{id}/download")
-    @Operation(summary = "Download a file by ID with optional signature")
+    @GetMapping("/download")
+    @Operation(summary = "Download a file by formId with optional signature")
     public ResponseEntity<Resource> downloadFile(
-            @PathVariable Long id,
+            @RequestParam("formId") String formId,
             @RequestParam(value = "signature") String signature) {
 
-        log.info("Download request: fileId={}, signatureProvided={}", id, (signature != null));
+        log.info("Download request: formId={}, signatureProvided={}", formId, (signature != null));
 
-        StoredFile storedFile = fileStorageService.getMetadata(id);
+        StoredFile storedFile = fileStorageService.getByFormId(formId);
 
         if (signature == null || !fileSignatureService.verifySignature(storedFile, signature)) {
-            log.warn("Download denied due to invalid/missing signature: fileId={}", id);
+            log.warn("Download denied due to invalid/missing signature: formId={}", formId);
 
             throw new InvalidFileSignatureException(messageUtil.getMessage("error.invalid-signature.message"));
         }
 
-        Resource resource = fileStorageService.loadFileAsResource(id);
+        Resource resource = fileStorageService.loadFileAsResource(storedFile.getId());
         String encodedFilename = URLEncoder.encode(storedFile.getOriginalFilename(), StandardCharsets.UTF_8);
 
-        log.info("File download approved: id={}, original='{}', stored='{}'",
-                storedFile.getId(),
+        log.info("File download approved: formId={}, original='{}', stored='{}'",
+                storedFile.getFormId(),
                 storedFile.getOriginalFilename(),
                 storedFile.getStoredFilename());
 
@@ -161,17 +121,17 @@ public class FileController {
         return ResponseEntity.ok(storedFileDtos);
     }
 
-    @DeleteMapping("/hard/{id}")
-    @Operation(summary = "Delete a file by ID")
+    @DeleteMapping("/hard/{formId}")
+    @Operation(summary = "Delete a file by formId")
     public ResponseEntity<Void> deleteFile(
-            @Parameter(description = "ID of the file to delete", required = true)
-            @PathVariable Long id) {
+            @Parameter(description = "formId of the file to delete", required = true)
+            @PathVariable String formId) {
 
-        log.info("File delete requested: id={}", id);
+        log.info("File delete requested: formId={}", formId);
 
-        fileStorageService.deleteFile(id);
+        fileStorageService.deleteByFormId(formId);
 
-        log.info("File delete successful: id={}", id);
+        log.info("File delete successful: formId={}", formId);
 
         return ResponseEntity.noContent().build();
     }

@@ -31,13 +31,15 @@ public class FileStorageService {
 
     private final Path storagePath;
     private final FileRepository fileRepository;
+    private final FileSignatureService fileSignatureService;
     private final MessageUtil messageUtil;
 
     public FileStorageService(FileRepository fileRepository,
-                              StorageProperties storageProperties,
+                              StorageProperties storageProperties, FileSignatureService fileSignatureService,
                               MessageUtil messageUtil) throws IOException {
 
         this.fileRepository = fileRepository;
+        this.fileSignatureService = fileSignatureService;
         this.messageUtil = messageUtil;
         this.storagePath = Paths.get(storageProperties.getUploadDir());
 
@@ -45,19 +47,17 @@ public class FileStorageService {
     }
 
     public StoredFile saveFile(MultipartFile multipartFile,
-                               FileMetaDataDto uploaderDto) {
+                               String uploaderEmail) {
 
         String extension = getFileExtension(multipartFile.getOriginalFilename());
         String storedFilename = UUID.randomUUID() + extension;
 
         Path targetPath = storagePath.resolve(storedFilename);
 
-        log.info("Attempting to store file: original='{}', size={} bytes, userId={}, role={}, context={}",
+        log.info("Attempting to store file: original='{}', size={} bytes, uploader Mail={}",
                 multipartFile.getOriginalFilename(),
                 multipartFile.getSize(),
-                uploaderDto.getUserId(),
-                uploaderDto.getUserRole(),
-                uploaderDto.getContextId());
+                uploaderEmail);
 
         try {
             Files.copy(multipartFile.getInputStream(), targetPath);
@@ -67,14 +67,15 @@ public class FileStorageService {
             throw new RuntimeException(messageUtil.getMessage("error.file.store-failed", multipartFile.getOriginalFilename()), e);
         }
 
-        StoredFile storedFile = mapToStoredFile(multipartFile, storedFilename, uploaderDto);
+        StoredFile storedFile = mapToStoredFile(multipartFile, storedFilename, uploaderEmail);
 
-        log.info("File successfully stored: id={}, storedName='{}', uploaderId={}, role={}, context={}",
+        String secret = fileSignatureService.generateSignature(storedFile);
+        storedFile.setFileSecret(secret);
+
+        log.info("File successfully stored: id={}, storedName='{}', uploader mail={}",
                 storedFile.getId(),
                 storedFile.getStoredFilename(),
-                storedFile.getUploaderId(),
-                storedFile.getUploaderRole(),
-                storedFile.getContextId());
+                storedFile.getUploaderEmail());
 
         return fileRepository.save(storedFile);
     }
@@ -101,15 +102,26 @@ public class FileStorageService {
             throw new RuntimeException(messageUtil.getMessage("error.file.read-failed", file.getStoredFilename()), e);
         }
 
-        log.info("File successfully loaded: id={}, storedName={}, uploaderId={}, role={}",
-                id, file.getStoredFilename(), file.getUploaderId(), file.getUploaderRole());
+        log.info("File successfully loaded: id={}, storedName={}, uploader mail={}",
+                id, file.getStoredFilename(), file.getUploaderEmail());
 
         return resource;
     }
 
-    public StoredFile getMetadata(Long id) {
+    private StoredFile getMetadata(Long id) {
         return fileRepository.findById(id)
                 .orElseThrow(() -> new FileNotFoundException(messageUtil.getMessage("error.file.not-found", id)));
+    }
+
+    public StoredFile getByFormId(String formId) {
+        return fileRepository.findByFormId(formId)
+                .orElseThrow(() -> new FileNotFoundException("File not found for formId: " + formId));
+    }
+
+    public void deleteByFormId(String formId) {
+        StoredFile file = getByFormId(formId);
+
+        deleteFile(file.getId());
     }
 
     public List<StoredFile> getAllFiles() {
@@ -132,7 +144,7 @@ public class FileStorageService {
 
     private StoredFile mapToStoredFile(MultipartFile multipartFile,
                                        String storedFilename,
-                                       FileMetaDataDto uploaderDto) {
+                                       String uploaderEmail) {
 
         StoredFile storedFile = new StoredFile();
 
@@ -140,10 +152,9 @@ public class FileStorageService {
         storedFile.setStoredFilename(storedFilename);
         storedFile.setContentType(multipartFile.getContentType());
         storedFile.setUploadTime(LocalDateTime.now());
+        storedFile.setFormId(UUID.randomUUID().toString().replace("-", ""));
 
-        storedFile.setUploaderId(uploaderDto.getUserId());
-        storedFile.setUploaderRole(uploaderDto.getUserRole());
-        storedFile.setContextId(uploaderDto.getContextId());
+        storedFile.setUploaderEmail(uploaderEmail);
 
         return storedFile;
     }

@@ -11,6 +11,8 @@ public class FileSignatureService {
     @Value("${file.hmac.secret}")
     private String hmacSecret;
 
+    private static final String DOWNLOAD_PATH_PREFIX = "/api/secure-file-server/files/download";
+
     public String generateSignature(StoredFile file) {
         String payload = buildPayload(file);
 
@@ -18,17 +20,17 @@ public class FileSignatureService {
     }
 
     public boolean verifySignature(StoredFile file, String signature) {
-        String expected = buildPayload(file);
-        String generated = HmacUtils.hmacSHA256(hmacSecret, expected);
 
-        return generated.equals(signature);
+        return file.getFileSecret().equals(signature);
     }
 
     private String buildPayload(StoredFile file) {
 
-        return file.getId() + "|" +
-                file.getUploaderId() + "|" +
-                file.getUploaderRole() + "|" +
-                file.getContextId();
+        String downloadUrl = DOWNLOAD_PATH_PREFIX +"?formId="+ file.getFormId();
+
+        return file.getUploaderEmail() + "|" +
+                file.getContentType() + "|" +
+                file.getOriginalFilename() + "|" +
+                downloadUrl;
     }
 }

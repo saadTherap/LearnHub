@@ -41,12 +41,12 @@ public class StoredFile {
     @Column(name = "upload_time")
     private LocalDateTime uploadTime;
 
-    @Column(name = "uploader_id")
-    private Long uploaderId;
+    @Column(name = "uploader_email")
+    private String uploaderEmail;
 
-    @Column(name = "uploader_role")
-    private String uploaderRole;
+    @Column(name = "file_secret")
+    private String fileSecret;
 
-    @Column(name = "context_id")
-    private Long contextId;
+    @Column(name = "form_id", nullable = false, unique = true, length = 32)
+    private String formId;
 }
