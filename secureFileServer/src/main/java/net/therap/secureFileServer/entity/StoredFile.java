@@ -40,4 +40,13 @@ public class StoredFile {
 
     @Column(name = "upload_time")
     private LocalDateTime uploadTime;
+
+    @Column(name = "uploader_email")
+    private String uploaderEmail;
+
+    @Column(name = "file_secret")
+    private String fileSecret;
+
+    @Column(name = "form_id", nullable = false, unique = true, length = 32)
+    private String formId;
 }
