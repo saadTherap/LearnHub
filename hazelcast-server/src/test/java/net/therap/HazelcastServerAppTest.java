@@ -1,5 +1,6 @@
+package net.therap;
+
 import com.hazelcast.core.HazelcastInstance;
-import net.therap.HazelcastServerApp;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
