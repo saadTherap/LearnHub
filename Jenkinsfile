@@ -4,12 +4,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                script {
-                    withCredentials([string(credentialsId: 'github-pat', variable: 'PAT')]) {
-                        sh "git config --global url.'https://oauth2:${PAT}@github.com/'.insteadOf 'https://github.com/'"
-                        sh "git checkout ${env.BRANCH_NAME}"
-                    }
-                }
+                echo "Checking out code from ${env.BRANCH_NAME} branch..."
+                git branch: env.BRANCH_NAME, url: 'https://github.com/saadTherap/LearnHub.git', credentialsId: 'github-pat'
             }
         }
 
