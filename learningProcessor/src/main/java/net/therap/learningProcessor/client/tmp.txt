@@ -15,13 +15,13 @@ import java.util.List;
  * @author avidewan
  * @since 7/27/25
  */
-@FeignClient(name = "course-configurator", url = "${course-configurator.url}", path = "/course-configurator/api")
+@FeignClient(name = "course-configurator", url = "${course-configurator.url}", path = "api/course-configurator")
 public interface CourseClient {
 
-    @GetMapping("/courses/public")
+    @GetMapping("/public/courses")
     List<CourseCatalogDto> getAllCourseCatalogs();
 
-    @GetMapping("/courses/public/{courseId}")
+    @GetMapping("/public/courses/{courseId}")
     CourseCatalogDto getCourseCatalog(@PathVariable("courseId") Long courseId);
 
     @GetMapping("/courses/{courseId}")
