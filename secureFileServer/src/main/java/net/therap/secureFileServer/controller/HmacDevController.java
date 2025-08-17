@@ -2,9 +2,8 @@ package net.therap.secureFileServer.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import net.therap.secureFileServer.entity.primary.StoredFile;
+import net.therap.secureFileServer.entity.StoredFile;
 import net.therap.secureFileServer.service.FileSignatureService;
 import net.therap.secureFileServer.service.FileStorageService;
 import org.springframework.http.ResponseEntity;

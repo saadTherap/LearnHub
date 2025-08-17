@@ -6,11 +6,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.secureFileServer.dto.StoredFileDto;
-import net.therap.secureFileServer.entity.primary.StoredFile;
-import net.therap.secureFileServer.entity.course.Course;
+import net.therap.secureFileServer.entity.StoredFile;
 import net.therap.secureFileServer.exception.InvalidFileSignatureException;
 import net.therap.secureFileServer.mapper.StoredFileMapper;
-import net.therap.secureFileServer.repository.course.CourseRepository;
 import net.therap.secureFileServer.service.FileSignatureService;
 import net.therap.secureFileServer.service.FileStorageService;
 import net.therap.secureFileServer.util.MessageUtil;
@@ -44,9 +42,6 @@ public class FileController {
     private final FileSignatureService fileSignatureService;
     private final StoredFileMapper fileMapper;
     private final FileValidator fileValidator;
-    
-    private final CourseRepository courseRepository;
-
     private final MessageUtil messageUtil;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -134,12 +129,5 @@ public class FileController {
         log.info("File delete successful: formId={}", formId);
 
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/test/courses")
-    public ResponseEntity<List<Course>> getAllCourses() {
-        List<Course> courses = courseRepository.findAll();
-
-        return ResponseEntity.ok(courses);
     }
 }

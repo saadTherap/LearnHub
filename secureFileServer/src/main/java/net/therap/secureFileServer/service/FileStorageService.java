@@ -2,10 +2,9 @@ package net.therap.secureFileServer.service;
 
 import lombok.extern.slf4j.Slf4j;
 import net.therap.secureFileServer.config.StorageProperties;
-import net.therap.secureFileServer.dto.FileMetaDataDto;
-import net.therap.secureFileServer.entity.primary.StoredFile;
+import net.therap.secureFileServer.entity.StoredFile;
 import net.therap.secureFileServer.exception.FileNotFoundException;
-import net.therap.secureFileServer.repository.primary.FileRepository;
+import net.therap.secureFileServer.repository.FileRepository;
 import net.therap.secureFileServer.util.MessageUtil;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
