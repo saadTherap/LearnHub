@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import net.therap.app.validation.OnCreate;
 import net.therap.app.validation.OnUpdate;
 
+import java.io.Serializable;
+
 /**
  * @author gazizafor
  * @since 27/7/25
@@ -29,7 +31,7 @@ import net.therap.app.validation.OnUpdate;
         @JsonSubTypes.Type(value = QuizCatalogDTO.class, name = "QUIZ"),
         @JsonSubTypes.Type(value = SubmissionCatalogueDTO.class, name = "SUBMISSION")
 })
-public class ContentCatalogueDTO {
+public class ContentCatalogueDTO implements Serializable {
     
     private long id;
     
