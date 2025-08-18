@@ -1,6 +1,7 @@
 package net.therap.app.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.*;
 import net.therap.app.helper.DtoHelper;
@@ -30,11 +31,11 @@ import static net.therap.app.util.CollectionUtil.isValidOrderedList;
  * @author gazizafor
  * @since 22/7/25
  */
+@Slf4j
 @RestController
 @RequestMapping("/courses")
 public class CourseController {
     
-    private final Logger logger = LoggerFactory.getLogger(CourseController.class);
     private final CourseMapper courseMapper;
     private final CourseService courseService;
     private final DtoHelper dtoHelper;
@@ -60,9 +61,10 @@ public class CourseController {
     
     @GetMapping("/{id}")
     public ResponseEntity<CourseCatalogDTO> getCourseById(@PathVariable long id) {
-        
+        log.info("[GET] /courses/{} ", id);
         CourseCatalogDTO cached = hazelcastCacheService.get(CacheConstants.COURSE_CATALOG, id);
         if (cached != null) {
+//            log.info("cached modules size: {}", cached.getModules().size());
             return ResponseEntity.ok(cached);
         }
         
@@ -70,6 +72,7 @@ public class CourseController {
         
         if (courseOptional.isPresent()) {
             Course course = courseOptional.get();
+            log.info("course modules size: {}", course.getModules().size());
             CourseCatalogDTO dto = dtoHelper.toDetailedCourseCatalogDTO(course);
             hazelcastCacheService.put(CacheConstants.COURSE_CATALOG, course.getId(), dto);
             
@@ -153,7 +156,7 @@ public class CourseController {
     
     @PostMapping("/draft")
     public ResponseEntity<CourseDTO> createCourse(@RequestBody @Validated(OnCreate.class) CourseDTO courseDTO) {
-        logger.debug("Creating course {}", courseDTO);
+        log.debug("Creating course {}", courseDTO);
         Course course = courseMapper.toCourse(courseDTO);
         
         course.setCurrentRelease(0L);

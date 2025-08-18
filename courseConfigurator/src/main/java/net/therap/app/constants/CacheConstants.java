@@ -9,8 +9,10 @@ public final class CacheConstants {
 
     public static final String COURSES = "courses";
     public static final String COURSE_CATALOG = "courseCatalog";
+    public static final String COURSE_CATALOG_PUBLIC = "courseCatalogPublic";
     public static final String INSTRUCTORS = "instructors";
     public static final String INSTRUCTOR_CATALOG = "instructorCatalog";
+    public static final String INSTRUCTOR_CATALOG_PUBLIC = "instructorCatalogPublic";
     public static final String MODULES = "modules";
     public static final String MODULES_CATALOG = "moduleCatalog";
     public static final String MODULES_BY_COURSE = "moduleByCourse";

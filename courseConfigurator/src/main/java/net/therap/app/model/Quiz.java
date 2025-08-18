@@ -22,6 +22,6 @@ import java.util.List;
 @DiscriminatorValue("QUIZ")
 public class Quiz extends ContentRelease {
     
-    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "quiz", cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<QuizQuestion> questions;
 }

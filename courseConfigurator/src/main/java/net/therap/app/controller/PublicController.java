@@ -56,7 +56,7 @@ public class PublicController {
     @GetMapping("/courses/{id}")
     public ResponseEntity<CourseCatalogDTO> getCourseByIdPublic(@PathVariable Long id) {
         
-        CourseCatalogDTO cached = hazelcastCacheService.get(CacheConstants.COURSE_CATALOG, id);
+        CourseCatalogDTO cached = hazelcastCacheService.get(CacheConstants.COURSE_CATALOG_PUBLIC, id);
         if (cached != null) {
             return ResponseEntity.ok(cached);
         }
@@ -65,7 +65,7 @@ public class PublicController {
         
         if (courseOptional.isPresent() && courseOptional.get().getCurrentRelease() > ReleaseStatus.DRAFT.getReleaseNumber()) {
             CourseCatalogDTO dto = dtoHelper.toCourseCatalogDTO(courseOptional.get());
-            hazelcastCacheService.put(CacheConstants.COURSE_CATALOG, id, dto);
+            hazelcastCacheService.put(CacheConstants.COURSE_CATALOG_PUBLIC, id, dto);
             return ResponseEntity.ok(dto);
         }
         
@@ -83,7 +83,7 @@ public class PublicController {
     
     @GetMapping("/instructors/{id}")
     public ResponseEntity<InstructorDtoCatalog> getInstructorByIdPublic(@PathVariable long id) {
-        InstructorDtoCatalog cached = hazelcastCacheService.get(CacheConstants.INSTRUCTOR_CATALOG, id);
+        InstructorDtoCatalog cached = hazelcastCacheService.get(CacheConstants.INSTRUCTOR_CATALOG_PUBLIC, id);
         
         if (cached != null) {
             return ResponseEntity.ok(cached);
@@ -91,7 +91,7 @@ public class PublicController {
         
         return instructorService.getInstructorById(id).map(instructor -> {
             InstructorDtoCatalog dto = instructorMapper.toInstructorDtoCatalog(instructor);
-            hazelcastCacheService.put(CacheConstants.INSTRUCTOR_CATALOG, id, dto);
+            hazelcastCacheService.put(CacheConstants.INSTRUCTOR_CATALOG_PUBLIC, id, dto);
             
             return ResponseEntity.ok(dto);
         }).orElseGet(() -> ResponseEntity.notFound().build());

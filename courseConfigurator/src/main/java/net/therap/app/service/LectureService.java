@@ -1,6 +1,5 @@
 package net.therap.app.service;
 
-import net.therap.app.model.Content;
 import net.therap.app.model.Lecture;
 import net.therap.app.repository.ContentRepository;
 import net.therap.app.repository.LectureRepository;

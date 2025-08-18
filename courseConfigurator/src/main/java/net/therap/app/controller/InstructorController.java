@@ -1,16 +1,20 @@
 package net.therap.app.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.InstructorDTO;
 import net.therap.app.dto.InstructorDtoCatalog;
+import net.therap.app.helper.AuthorizationService;
 import net.therap.app.mapper.InstructorMapper;
 import net.therap.app.model.Instructor;
+import net.therap.app.model.enums.AuthorizationLevel;
 import net.therap.app.service.InstructorService;
 import net.therap.app.helper.DtoHelper;
 import net.therap.app.validation.OnCreate;
 import net.therap.app.validation.OnUpdate;
 import net.therap.cache.support.HazelcastCacheService;
+import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,14 +44,16 @@ public class InstructorController {
     private final DtoHelper dtoHelper;
     private final InstructorMapper instructorMapper;
     private final HazelcastCacheService hazelcastCacheService;
+    private final AuthorizationService authorizationService;
     private final MessageSource messageSource;
     
     @Autowired
-    public InstructorController(InstructorService instructorService, DtoHelper dtoHelper, ObjectMapper objectMapper, InstructorMapper instructorMapper, HazelcastCacheService hazelcastCacheService, MessageSource messageSource) { // Constructor injection
+    public InstructorController(InstructorService instructorService, DtoHelper dtoHelper, ObjectMapper objectMapper, InstructorMapper instructorMapper, HazelcastCacheService hazelcastCacheService, AuthorizationService authorizationService, MessageSource messageSource) { // Constructor injection
         this.instructorService = instructorService;
         this.dtoHelper = dtoHelper;
         this.instructorMapper = instructorMapper;
         this.hazelcastCacheService = hazelcastCacheService;
+        this.authorizationService = authorizationService;
         this.messageSource = messageSource;
     }
 
@@ -91,8 +97,9 @@ public class InstructorController {
     }
     
     @PostMapping
-    public ResponseEntity<InstructorDTO> createInstructor(@RequestBody @Validated(OnCreate.class) InstructorDTO instructorDTO) {
+    public ResponseEntity<InstructorDTO> createInstructor(@RequestBody @Validated(OnCreate.class) InstructorDTO instructorDTO, HttpServletRequest request) throws BadRequestException {
         logger.info("[POST] /instructors. Req Body: {}", instructorDTO);
+        authorizationService.authorize(AuthorizationLevel.ADMIN, new Instructor(), request);
         Instructor instructorToCreate = instructorMapper.toInstructor(instructorDTO);
         instructorToCreate.setId(0);
         Instructor createdInstructor = instructorService.createInstructor(instructorToCreate);
@@ -101,11 +108,13 @@ public class InstructorController {
     }
     
     @PatchMapping("/{id}")
-    public ResponseEntity<InstructorDTO> updateInstructor(@PathVariable long id, @RequestBody @Validated(OnUpdate.class) InstructorDTO instructorDTO) {
+    public ResponseEntity<InstructorDTO> updateInstructor(@PathVariable long id, @RequestBody @Validated(OnUpdate.class) InstructorDTO instructorDTO, HttpServletRequest request) throws BadRequestException {
         logger.info("[PATCH] /instructors/{}. Req Body: {}", id, instructorDTO);
         Optional<Instructor> instructorToUpdate = instructorService.getInstructorById(id);
         
         if (instructorToUpdate.isPresent()) {
+            authorizationService.authorize(AuthorizationLevel.OWNER, instructorToUpdate.get(), request);
+            
             if (instructorDTO.getId() != id && instructorDTO.getId() != 0) {
                 return ResponseEntity.badRequest().build();
             }

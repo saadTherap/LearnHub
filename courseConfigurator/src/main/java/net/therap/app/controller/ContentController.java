@@ -2,10 +2,7 @@ package net.therap.app.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import net.therap.app.constants.CacheConstants;
-import net.therap.app.dto.ContentCatalogueDTO;
-import net.therap.app.dto.ContentReleaseDTO;
-import net.therap.app.dto.LectureCatalogDTO;
-import net.therap.app.dto.SubmissionCatalogueDTO;
+import net.therap.app.dto.*;
 import net.therap.app.helper.ContentHelper;
 import net.therap.app.helper.DtoHelper;
 import net.therap.app.mapper.LectureMapper;
@@ -17,6 +14,7 @@ import net.therap.app.validation.OnCreate;
 import net.therap.app.validation.OnUpdate;
 import net.therap.cache.support.HazelcastCacheService;
 import org.apache.coyote.BadRequestException;
+import org.hibernate.Hibernate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -25,10 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 import static java.util.Objects.isNull;
 import static net.therap.app.util.StringUtil.isEmpty;
@@ -98,6 +93,11 @@ public class ContentController {
         return contentOptional
                 .map(content -> {
                     ContentRelease contentRelease = content.getCurrentContentRelease();
+                    
+                    if (contentRelease instanceof Quiz quiz) {
+                        Hibernate.initialize(quiz.getQuestions());
+                    }
+                    
                     ContentCatalogueDTO dto = contentService.toDetailedContentCatalogueDTO(contentRelease);
 
                     hazelcastCacheService.put(CacheConstants.CONTENT_CATALOG, contentReleaseId, dto);
@@ -107,15 +107,14 @@ public class ContentController {
                 .orElseThrow(() -> new NoSuchElementException(messageSource.getMessage("content.not.found", null, Locale.getDefault())));
     }
     
-    @GetMapping("/detail/insights/{contentReleaseId}")
+    @GetMapping("/detail/exact/{contentReleaseId}")
     public ResponseEntity<ContentReleaseDTO> getContentReleaseDetailedInstructorView(@PathVariable long contentReleaseId) {
-        log.info("[GET] /contents/detail/insights/{}", contentReleaseId);
+        log.info("[GET] /contents/detail/exact/{}", contentReleaseId);
         
-        Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
+        Optional<ContentRelease> contentReleaseOptional = contentReleaseService.findById(contentReleaseId);
         
-        return contentOptional
-                .map(content -> {
-                    ContentRelease contentRelease = content.getCurrentContentRelease();
+        return contentReleaseOptional
+                .map(contentRelease -> {
                     ContentReleaseDTO dto = dtoHelper.toContentReleaseDTO(contentRelease);
                     
                     return new ResponseEntity<>(dto, HttpStatus.OK);
@@ -343,6 +342,7 @@ public class ContentController {
                 throw new BadRequestException();
             }
             
+            
             newContentRelease = new Lecture();
             BeanUtils.copyProperties(original, newContentRelease, "id");
             lectureMapper.updateLectureFromLectureCatalogDto((LectureCatalogDTO) contentCatalogueDTO, (Lecture) newContentRelease);
@@ -352,8 +352,44 @@ public class ContentController {
                 throw new BadRequestException();
             }
             
-            newContentRelease = new Quiz();
-            BeanUtils.copyProperties(original, newContentRelease, "id");
+            Quiz originalQuiz = (Quiz) original;
+            Quiz newQuiz = new Quiz();
+            BeanUtils.copyProperties(originalQuiz, newQuiz, "id", "questions");
+
+// Cast the DTO to access quiz-specific properties
+            QuizCatalogDTO quizCatalogDTO = (QuizCatalogDTO) contentCatalogueDTO;
+
+// Create a new list for the new quiz's questions
+            List<QuizQuestion> newQuestions = new ArrayList<>();
+
+// Add new questions from the DTO first
+            for (QuizQuestionDTO originalQuestionDTO : quizCatalogDTO.getQuestions()) {
+                QuizQuestion newQuestion = new QuizQuestion();
+                newQuestion.setQuestionText(originalQuestionDTO.getQuestionText());
+                newQuestion.setId(0L); // Ensure new ID
+                newQuestion.setQuiz(newQuiz);
+                
+                // Now, copy the options for the new question from the DTO
+                List<QuizOption> newOptions = new ArrayList<>();
+                for (QuizOptionDTO originalOptionDTO : originalQuestionDTO.getOptions()) {
+                    QuizOption newOption = new QuizOption();
+                    newOption.setOptionText(originalOptionDTO.getOptionText());
+                    newOption.setCorrect(originalOptionDTO.isCorrect());
+                    newOption.setId(0L); // Ensure new ID
+                    newOption.setQuizQuestion(newQuestion);
+                    newOptions.add(newOption);
+                }
+                newQuestion.setOptions(newOptions);
+                newQuestions.add(newQuestion);
+            }
+            
+            log.info("{} quiz questions created", newQuestions.size());
+
+// Set the complete list of questions on the new quiz
+            newQuiz.setQuestions(newQuestions);
+            
+            newContentRelease = newQuiz;
+            newContentRelease.setId(0L);
             
         } else {
             if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("SUBMISSION")) {
