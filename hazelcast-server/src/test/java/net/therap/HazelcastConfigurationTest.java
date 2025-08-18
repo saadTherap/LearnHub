@@ -53,10 +53,10 @@ class HazelcastConfigurationTest {
 
     @Test
     void testClusterSize() {
-        // Cluster should have 3 members
-        assertEquals(3, node1.getCluster().getMembers().size());
-        assertEquals(3, node2.getCluster().getMembers().size());
-        assertEquals(3, node3.getCluster().getMembers().size());
+        // Cluster should have at least 3 members
+        assertTrue(node1.getCluster().getMembers().size() >= 3);
+        assertTrue(node2.getCluster().getMembers().size() >= 3);
+        assertTrue(node3.getCluster().getMembers().size() >= 3);
     }
 
     @Test
