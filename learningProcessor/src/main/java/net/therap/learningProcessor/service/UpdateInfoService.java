@@ -34,14 +34,14 @@ public class UpdateInfoService {
         final Long contentId = updateInfo.getContentId();
 
         cacheInvalidationUtil.invalidateCachesAfterCommit(
-                String.valueOf(courseId),
+                courseId,
                 CacheConstants.ALL_STUDENT_PROGRESS_BY_COURSE,
                 CacheConstants.STUDENTS_BY_COURSE,
                 CacheConstants.COURSE_CATALOG_LP
         );
 
-        cacheInvalidationUtil.invalidateCachesAfterCommit(String.valueOf(moduleId), CacheConstants.MODULE_CONTENTS);
-        cacheInvalidationUtil.invalidateCachesAfterCommit(String.valueOf(contentId), CacheConstants.CONTENT_DETAIL);
+        cacheInvalidationUtil.invalidateCachesAfterCommit(moduleId, CacheConstants.MODULE_CONTENTS);
+        cacheInvalidationUtil.invalidateCachesAfterCommit(contentId, CacheConstants.CONTENT_DETAIL);
 
         String suffix = ":" + courseId;
         hazelcastCacheService.removeKeysEndingWith(CacheConstants.COURSE_PROGRESS_DETAIL, suffix);

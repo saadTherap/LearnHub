@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:authserver/src/main/java/net/therap/auth/server/service/JwtService.java
 package net.therap.auth.server.service;
+========
+package net.therap.server.app.service;
+>>>>>>>> 54db752 (Updated the auth):authserver/src/main/java/net/therap/server/app/service/JwtService.java
 
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -13,9 +17,15 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.auth.lib.provider.PublicKeyProvider;
+<<<<<<<< HEAD:authserver/src/main/java/net/therap/auth/server/service/JwtService.java
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.util.JwtUtil;
+========
+import net.therap.server.app.entity.User;
+import net.therap.server.app.exception.AuthServerException;
+import net.therap.server.app.util.JwtUtil;
+>>>>>>>> 54db752 (Updated the auth):authserver/src/main/java/net/therap/server/app/service/JwtService.java
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 

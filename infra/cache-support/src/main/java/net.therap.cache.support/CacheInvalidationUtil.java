@@ -19,7 +19,7 @@ public class CacheInvalidationUtil {
      * Registers cache invalidation after commit. If no tx is active,
      * invalidates immediately (useful in async/listener contexts).
      */
-    public void invalidateCachesAfterCommit(String id, String... mapNames) {
+    public <K> void invalidateCachesAfterCommit(K id, String... mapNames) {
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override

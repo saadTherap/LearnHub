@@ -2,6 +2,7 @@ package net.therap.app.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.InstructorDTO;
 import net.therap.app.dto.InstructorDtoCatalog;
@@ -34,11 +35,10 @@ import java.util.stream.Collectors;
  * @author gazizafor
  * @since 21/7/25
  */
+@Slf4j
 @RestController
 @RequestMapping("/instructors")
 public class InstructorController {
-    
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     
     private final InstructorService instructorService;
     private final DtoHelper dtoHelper;
@@ -56,26 +56,38 @@ public class InstructorController {
         this.authorizationService = authorizationService;
         this.messageSource = messageSource;
     }
-
+    
     @GetMapping("/{id}")
-    public ResponseEntity<InstructorDTO> getInstructorById(@PathVariable long id) {
+    public ResponseEntity<InstructorDTO> getInstructorById(@PathVariable long id, HttpServletRequest request) throws BadRequestException {
+        log.debug("GET /instructors/{}", id);
         InstructorDTO cached = hazelcastCacheService.get(CacheConstants.INSTRUCTORS, id);
+        
         if (cached != null) {
-            return ResponseEntity.ok(cached);
-        }
+            authorizationService.authorize(AuthorizationLevel.OWNER, cached, request);
 
-        return instructorService.getInstructorById(id)
-                .map(instructor -> {
-                    InstructorDTO dto = dtoHelper.toInstructorDTO(instructor);
-                    hazelcastCacheService.put(CacheConstants.INSTRUCTORS, id, dto);
-                    return ResponseEntity.ok(dto);
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+            return ResponseEntity.ok(cached);
+
+        } else {
+            Optional<Instructor> instructorOptional = instructorService.getInstructorById(id);
+            
+            if (instructorOptional.isPresent()) {
+                Instructor instructor = instructorOptional.get();
+                
+                authorizationService.authorize(AuthorizationLevel.OWNER, instructor, request);
+                InstructorDTO dto = dtoHelper.toInstructorDTO(instructor);
+                hazelcastCacheService.put(CacheConstants.INSTRUCTORS, id, dto);
+                
+                return ResponseEntity.ok(dto);
+                
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        }
     }
     
     @GetMapping
     public ResponseEntity<List<InstructorDTO>> getAllInstructors() {
-        logger.info("[GET] /instructors");
+        log.info("[GET] /instructors");
         List<Instructor> instructors = instructorService.getAllInstructors();
         List<InstructorDTO> instructorDTOs = instructors.stream()
                 .map(dtoHelper::toInstructorDTO) 
@@ -86,7 +98,7 @@ public class InstructorController {
     
     @GetMapping("/byEmail/{email}")
     public ResponseEntity<InstructorDtoCatalog> getInstructorByEmail(@PathVariable String email) {
-        logger.info("[GET] /instructors/byEmail/{}", email);
+        log.info("[GET] /instructors/byEmail/{}", email);
         Optional<Instructor> instructorOptional = instructorService.getByEmail(email);
         
         if (instructorOptional.isPresent()) {
@@ -98,7 +110,7 @@ public class InstructorController {
     
     @PostMapping
     public ResponseEntity<InstructorDTO> createInstructor(@RequestBody @Validated(OnCreate.class) InstructorDTO instructorDTO, HttpServletRequest request) throws BadRequestException {
-        logger.info("[POST] /instructors. Req Body: {}", instructorDTO);
+        log.info("[POST] /instructors. Req Body: {}", instructorDTO);
         authorizationService.authorize(AuthorizationLevel.ADMIN, new Instructor(), request);
         Instructor instructorToCreate = instructorMapper.toInstructor(instructorDTO);
         instructorToCreate.setId(0);
@@ -109,7 +121,7 @@ public class InstructorController {
     
     @PatchMapping("/{id}")
     public ResponseEntity<InstructorDTO> updateInstructor(@PathVariable long id, @RequestBody @Validated(OnUpdate.class) InstructorDTO instructorDTO, HttpServletRequest request) throws BadRequestException {
-        logger.info("[PATCH] /instructors/{}. Req Body: {}", id, instructorDTO);
+        log.info("[PATCH] /instructors/{}. Req Body: {}", id, instructorDTO);
         Optional<Instructor> instructorToUpdate = instructorService.getInstructorById(id);
         
         if (instructorToUpdate.isPresent()) {
@@ -132,7 +144,7 @@ public class InstructorController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> softDeleteInstructor(@PathVariable long id) {
-        logger.info("[DELETE] /instructors/{}", id);
+        log.info("[DELETE] /instructors/{}", id);
         
         try {
             instructorService.deleteById(id);

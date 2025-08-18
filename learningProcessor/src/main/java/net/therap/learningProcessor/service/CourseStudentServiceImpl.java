@@ -73,7 +73,7 @@ public class CourseStudentServiceImpl implements CourseStudentService {
         );
 
         cacheInvalidationUtil.invalidateCachesAfterCommit(
-                String.valueOf(courseId),
+                courseId,
                 CacheConstants.ALL_STUDENT_PROGRESS_BY_COURSE,
                 CacheConstants.STUDENTS_BY_COURSE
         );

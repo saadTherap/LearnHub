@@ -35,17 +35,15 @@ public class CourseService {
     private final CacheInvalidationUtil cacheInvalidationUtil;
     private final CourseRepository courseRepository;
     private final ModuleService moduleService;
-    private final HazelcastCacheService hazelcastCacheService;
     private final MessageSource messageSource;
     private final DtoHelper dtoHelper;
     private final ContentService contentService;
     private final AuthorizationService authorizationService;
     
-    public CourseService(CacheInvalidationUtil cacheInvalidationUtil, CourseRepository courseRepository, ModuleService moduleService, HazelcastCacheService hazelcastCacheService, MessageSource messageSource, DtoHelper dtoHelper, ContentService contentService, AuthorizationService authorizationService) {
+    public CourseService(CacheInvalidationUtil cacheInvalidationUtil, CourseRepository courseRepository, ModuleService moduleService, MessageSource messageSource, DtoHelper dtoHelper, ContentService contentService, AuthorizationService authorizationService) {
         this.cacheInvalidationUtil = cacheInvalidationUtil;
         this.courseRepository = courseRepository;
         this.moduleService = moduleService;
-        this.hazelcastCacheService = hazelcastCacheService;
         this.messageSource = messageSource;
         this.dtoHelper = dtoHelper;
         this.contentService = contentService;
@@ -194,7 +192,7 @@ public class CourseService {
     public Course save(Course course) {
         Course savedCourse = courseRepository.save(course);
         
-        cacheInvalidationUtil.invalidateCachesAfterCommit(String.valueOf(savedCourse.getId()), CacheConstants.COURSES, CacheConstants.COURSE_CATALOG);
+        cacheInvalidationUtil.invalidateCachesAfterCommit(savedCourse.getId(), CacheConstants.COURSES, CacheConstants.COURSE_CATALOG, CacheConstants.COURSE_CATALOG_PUBLIC);
         
         return savedCourse;
     }
@@ -206,7 +204,8 @@ public class CourseService {
         if (courseOptional.isPresent()) {
             courseOptional.get().setDeleted(true);
             Course deletedCourse = courseRepository.save(courseOptional.get());
-            cacheInvalidationUtil.invalidateCachesAfterCommit(String.valueOf(id), CacheConstants.COURSES, CacheConstants.COURSE_CATALOG);
+            cacheInvalidationUtil.invalidateCachesAfterCommit(id, CacheConstants.COURSES, CacheConstants.COURSE_CATALOG, CacheConstants.COURSE_CATALOG_PUBLIC);
+
             return deletedCourse;
         }
 

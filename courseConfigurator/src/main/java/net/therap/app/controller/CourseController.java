@@ -128,16 +128,10 @@ public class CourseController {
         return new ResponseEntity<>(courseList.stream().map(dtoHelper::toCourseDTO).toList(), HttpStatus.OK);
     }
     
-    @GetMapping("/byInstructor/{instructorId}/public")
-    public ResponseEntity<List<CourseCatalogDTO>> getCourseByInstructorIdPublic(@PathVariable long instructorId) {
-        List<Course> courseList = courseService.findByInstructor(instructorId);
-        
-        return new ResponseEntity<>(courseList.stream().map(dtoHelper::toCourseCatalogDTO).toList(), HttpStatus.OK);
-    }
-    
     // filter by instructor id after auth is done
     @GetMapping("/draft")
     public ResponseEntity<List<CourseDTO>> getAllDraftCourses() {
+        log.info("[GET] /courses/draft");
         List<Course> courses = courseService.findAllDrafts();
         
         return ResponseEntity.ok(courses.stream().map(dtoHelper::toCourseDTO).collect(Collectors.toList()));

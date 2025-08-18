@@ -126,12 +126,12 @@ public class ModuleService {
         Module saved = moduleRepository.save(module);
         
         cacheInvalidationUtil.invalidateCachesAfterCommit(
-                String.valueOf(saved.getId()),
+                saved.getId(),
                 CacheConstants.MODULES
         );
         cacheInvalidationUtil.invalidateCachesAfterCommit(
-                String.valueOf(saved.getCourse().getId()),
-                CacheConstants.MODULES_BY_COURSE, CacheConstants.COURSES, CacheConstants.COURSE_CATALOG
+                saved.getCourse().getId(),
+                CacheConstants.MODULES_BY_COURSE, CacheConstants.COURSES, CacheConstants.COURSE_CATALOG, CacheConstants.COURSE_CATALOG_PUBLIC
         );
         
         return saved;
@@ -143,18 +143,17 @@ public class ModuleService {
                 .orElseThrow(() -> new NoSuchElementException(
                         messageSource.getMessage("not.found.module", null, Locale.getDefault())
                 ));
-        
-        String moduleId = String.valueOf(id);
-        String courseId = String.valueOf(module.getCourse().getId());
+
+        Long courseId = module.getCourse().getId();
         
         module.setDeleted(true);
         Module saved = moduleRepository.save(module);
         
         cacheInvalidationUtil.invalidateCachesAfterCommit(
-                moduleId, CacheConstants.MODULES
+                id, CacheConstants.MODULES
         );
         cacheInvalidationUtil.invalidateCachesAfterCommit(
-                courseId, CacheConstants.MODULES_BY_COURSE, CacheConstants.COURSES, CacheConstants.COURSE_CATALOG
+                courseId, CacheConstants.MODULES_BY_COURSE, CacheConstants.COURSES, CacheConstants.COURSE_CATALOG, CacheConstants.COURSE_CATALOG_PUBLIC
         );
         
         return saved;

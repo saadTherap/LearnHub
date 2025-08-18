@@ -356,26 +356,20 @@ public class ContentController {
             Quiz newQuiz = new Quiz();
             BeanUtils.copyProperties(originalQuiz, newQuiz, "id", "questions");
 
-// Cast the DTO to access quiz-specific properties
             QuizCatalogDTO quizCatalogDTO = (QuizCatalogDTO) contentCatalogueDTO;
 
-// Create a new list for the new quiz's questions
             List<QuizQuestion> newQuestions = new ArrayList<>();
 
-// Add new questions from the DTO first
             for (QuizQuestionDTO originalQuestionDTO : quizCatalogDTO.getQuestions()) {
                 QuizQuestion newQuestion = new QuizQuestion();
                 newQuestion.setQuestionText(originalQuestionDTO.getQuestionText());
-                newQuestion.setId(0L); // Ensure new ID
                 newQuestion.setQuiz(newQuiz);
                 
-                // Now, copy the options for the new question from the DTO
                 List<QuizOption> newOptions = new ArrayList<>();
                 for (QuizOptionDTO originalOptionDTO : originalQuestionDTO.getOptions()) {
                     QuizOption newOption = new QuizOption();
                     newOption.setOptionText(originalOptionDTO.getOptionText());
                     newOption.setCorrect(originalOptionDTO.isCorrect());
-                    newOption.setId(0L); // Ensure new ID
                     newOption.setQuizQuestion(newQuestion);
                     newOptions.add(newOption);
                 }
@@ -385,11 +379,9 @@ public class ContentController {
             
             log.info("{} quiz questions created", newQuestions.size());
 
-// Set the complete list of questions on the new quiz
             newQuiz.setQuestions(newQuestions);
             
             newContentRelease = newQuiz;
-            newContentRelease.setId(0L);
             
         } else {
             if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("SUBMISSION")) {
@@ -400,8 +392,6 @@ public class ContentController {
             BeanUtils.copyProperties(original, newContentRelease, "id");
             submissionMapper.updateSubmissionFromSubmissionCatalogDto((SubmissionCatalogueDTO) contentCatalogueDTO, (Submission) newContentRelease);
         }
-        
-        newContentRelease.setId(0L);
         
         return newContentRelease;
     }

@@ -123,8 +123,8 @@ public class ContentService {
     public Content save(Content content) {
         Content saved = contentRepository.save(content);
 
-        String moduleId = String.valueOf(saved.getModule().getId());
-        String courseId = String.valueOf(saved.getModule().getCourse().getId());
+        Long moduleId = saved.getModule().getId();
+        Long courseId = saved.getModule().getCourse().getId();
 
         cacheInvalidationUtil.invalidateCachesAfterCommit(
                 moduleId,
@@ -134,12 +134,13 @@ public class ContentService {
                 courseId,
                 CacheConstants.MODULES_BY_COURSE,
                 CacheConstants.COURSES,
-                CacheConstants.COURSE_CATALOG
+                CacheConstants.COURSE_CATALOG,
+                CacheConstants.COURSE_CATALOG_PUBLIC
         );
 
         if (saved.getId() > 0) {
             cacheInvalidationUtil.invalidateCachesAfterCommit(
-                    String.valueOf(saved.getId()),
+                    saved.getId(),
                     CacheConstants.CONTENT_CATALOG,
                     CacheConstants.CONTENT_RELEASE_LIST
             );
@@ -166,8 +167,8 @@ public class ContentService {
                 ));
 
         long contentId = content.getId();
-        String moduleId = String.valueOf(content.getModule().getId());
-        String courseId = String.valueOf(content.getModule().getCourse().getId());
+        Long moduleId = content.getModule().getId();
+        Long courseId = content.getModule().getCourse().getId();
 
         Long releaseNum = null;
         if (content.getCurrentContentRelease() != null) {
@@ -180,7 +181,7 @@ public class ContentService {
 
         if (contentId > 0) {
             cacheInvalidationUtil.invalidateCachesAfterCommit(
-                    String.valueOf(contentId),
+                    contentId,
                     CacheConstants.CONTENT_CATALOG,
                     CacheConstants.CONTENT_RELEASE_LIST
             );
@@ -201,7 +202,8 @@ public class ContentService {
                 courseId,
                 CacheConstants.MODULES_BY_COURSE,
                 CacheConstants.COURSES,
-                CacheConstants.COURSE_CATALOG
+                CacheConstants.COURSE_CATALOG,
+                CacheConstants.COURSE_CATALOG_PUBLIC
         );
 
         return saved;

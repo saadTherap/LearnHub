@@ -1,11 +1,20 @@
+<<<<<<<< HEAD:authserver/src/main/java/net/therap/auth/server/service/EmailService.java
 package net.therap.auth.server.service;
+========
+package net.therap.server.app.service;
+>>>>>>>> 54db752 (Updated the auth):authserver/src/main/java/net/therap/server/app/service/EmailService.java
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+<<<<<<<< HEAD:authserver/src/main/java/net/therap/auth/server/service/EmailService.java
 import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.util.MessageUtil;
+========
+import net.therap.server.app.exception.AuthServerException;
+import net.therap.server.app.util.MessageUtil;
+>>>>>>>> 54db752 (Updated the auth):authserver/src/main/java/net/therap/server/app/service/EmailService.java
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;

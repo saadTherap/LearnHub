@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:authserver/src/main/java/net/therap/auth/server/entity/VerificationToken.java
 package net.therap.auth.server.entity;
+========
+package net.therap.server.app.entity;
+>>>>>>>> 54db752 (Updated the auth):authserver/src/main/java/net/therap/server/app/entity/VerificationToken.java
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

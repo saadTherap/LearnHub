@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:authserver/src/main/java/net/therap/auth/server/config/MessageConfig.java
 package net.therap.auth.server.config;
+========
+package net.therap.server.app.config;
+>>>>>>>> 54db752 (Updated the auth):authserver/src/main/java/net/therap/server/app/config/MessageConfig.java
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;

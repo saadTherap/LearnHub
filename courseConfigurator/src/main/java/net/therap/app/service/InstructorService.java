@@ -46,7 +46,7 @@ public class InstructorService {
     @Transactional
     public Instructor createInstructor(Instructor instructor) {
         Instructor savedInstructor = instructorRepository.save(instructor);
-        cacheInvalidationUtil.invalidateCachesAfterCommit(String.valueOf(savedInstructor.getId()), CacheConstants.INSTRUCTORS, CacheConstants.INSTRUCTOR_CATALOG);
+        cacheInvalidationUtil.invalidateCachesAfterCommit(savedInstructor.getId(), CacheConstants.INSTRUCTORS, CacheConstants.INSTRUCTOR_CATALOG, CacheConstants.INSTRUCTOR_CATALOG_PUBLIC);
 
         return savedInstructor;
     }
@@ -54,7 +54,7 @@ public class InstructorService {
     @Transactional
     public Instructor updateInstructor(Instructor updatedInstructor) {
         Instructor savedInstructor = instructorRepository.save(updatedInstructor);
-        cacheInvalidationUtil.invalidateCachesAfterCommit(String.valueOf(savedInstructor.getId()), CacheConstants.INSTRUCTORS,  CacheConstants.INSTRUCTOR_CATALOG);
+        cacheInvalidationUtil.invalidateCachesAfterCommit(savedInstructor.getId(), CacheConstants.INSTRUCTORS,  CacheConstants.INSTRUCTOR_CATALOG, CacheConstants.INSTRUCTOR_CATALOG_PUBLIC);
 
         return savedInstructor;
     }
@@ -65,7 +65,7 @@ public class InstructorService {
                 .orElseThrow(() -> new NoSuchElementException(messageSource.getMessage("not.found.instructor", null, Locale.getDefault())));
         instructor.setDeleted(true);
         Instructor deletedInstructor = instructorRepository.save(instructor);
-        cacheInvalidationUtil.invalidateCachesAfterCommit(String.valueOf(deletedInstructor.getId()), CacheConstants.INSTRUCTORS,  CacheConstants.INSTRUCTOR_CATALOG);
+        cacheInvalidationUtil.invalidateCachesAfterCommit(deletedInstructor.getId(), CacheConstants.INSTRUCTORS,  CacheConstants.INSTRUCTOR_CATALOG, CacheConstants.INSTRUCTOR_CATALOG_PUBLIC);
 
         return deletedInstructor;
     }
