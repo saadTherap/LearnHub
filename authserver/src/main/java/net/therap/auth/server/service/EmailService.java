@@ -24,7 +24,7 @@ public class EmailService {
     private final JavaMailSender mailSender;
     
     public void sendLinkToConsole(String token) {
-        String link = "https://app-rnd01.therapbd.net/auth/api/verify-email?token=" + token;
+        String link = "https://localhost:8090/auth/api/verify-email?token=" + token;
         
         String RED = "\u001B[31m";
         String PURPLE = "\u001B[35m";
