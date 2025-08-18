@@ -39,10 +39,10 @@ public class LearningProcessorApplication {
     @Value("${kafka.topics.notification}")
     private String notificationTopic;
 
-    @Value("${kafka.topics.notification.partition")
+    @Value("${kafka.topics.notification.partition}")
     private String notificationPartition;
 
-    @Value("${kafka.topics.notification.replication")
+    @Value("${kafka.topics.notification.replication}")
     private String notificationReplication;
 
     @PostConstruct
