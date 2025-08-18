@@ -1,2 +1,0 @@
-org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration
-net.therap.cache.support.HazelcastCacheAutoConfiguration
