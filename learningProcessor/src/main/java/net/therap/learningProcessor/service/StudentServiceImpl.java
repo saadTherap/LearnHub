@@ -47,7 +47,7 @@ public class StudentServiceImpl implements StudentService {
     public StudentDto createStudent(StudentDto dto) {
         Student entity = studentMapper.toEntity(dto);
         Student savedEntity = studentRepository.save(entity);
-        cacheInvalidationUtil.invalidateCachesAfterCommit(String.valueOf(savedEntity.getId()), CacheConstants.STUDENTS);
+        cacheInvalidationUtil.invalidateCachesAfterCommit(savedEntity.getId(), CacheConstants.STUDENTS);
 
         return studentMapper.toDto(savedEntity);
     }
@@ -60,7 +60,7 @@ public class StudentServiceImpl implements StudentService {
 
         studentMapper.updateStudentFromDto(studentDto, existingStudent);
         Student updatedStudent= studentRepository.save(existingStudent);
-        cacheInvalidationUtil.invalidateCachesAfterCommit(String.valueOf(updatedStudent.getId()), CacheConstants.STUDENTS);
+        cacheInvalidationUtil.invalidateCachesAfterCommit(updatedStudent.getId(), CacheConstants.STUDENTS);
 
         return studentMapper.toDto(updatedStudent);
     }
@@ -73,7 +73,7 @@ public class StudentServiceImpl implements StudentService {
 
         student.setDeleted(true);
         studentRepository.save(student);
-        cacheInvalidationUtil.invalidateCachesAfterCommit(String.valueOf(student.getId()), CacheConstants.STUDENTS);
+        cacheInvalidationUtil.invalidateCachesAfterCommit(student.getId(), CacheConstants.STUDENTS);
 
         return true;
     }
