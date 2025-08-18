@@ -27,7 +27,7 @@ public interface CourseStudentService {
 
     public CourseDetailWithProgressDto getCourseDetailWithProgress(Long studentId, CourseDetailWithProgressDto courseDetailWithProgressDto);
 
-    public StudentCourseProgressDto getStudentCourseProgress(Long studentId, Long courseId);
+    public StudentCourseProgressDto getStudentCourseProgress(Long studentId, CourseDetailWithProgressDto courseDetailWithProgressDto);
 
-    public List<StudentCourseProgressDto> getAllStudentProgressForCourse(Long courseId);
+    public List<StudentCourseProgressDto> getAllStudentProgressForCourse(CourseDetailWithProgressDto courseDetailWithProgressDto);
 }

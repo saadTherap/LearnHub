@@ -19,5 +19,7 @@ public class BaseContentDto {
 
     private long orderIndex;
 
+    private boolean completed = false;
+
     private String type;
 }
