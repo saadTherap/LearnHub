@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -17,55 +18,73 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class ServiceRegistryClient {
     private static final Logger logger = LoggerFactory.getLogger(ServiceRegistryClient.class);
-
+    
     @Value("${registry.url}")
     private String registryUrl;
-
+    
     @Value("${service.name}")
     private String serviceName;
-
+    
     @Value("${server.port}")
     private int servicePort;
-
+    
     @Value("${service.host}")
     private String serviceHost;
-
-    private final RestTemplate restTemplate = new RestTemplate();
-
+    
+    private final RestTemplate restTemplate;
+    
+    public ServiceRegistryClient() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        
+        factory.setConnectTimeout(2000);
+        factory.setReadTimeout(2000);
+        
+        this.restTemplate = new RestTemplate(factory);
+    }
+    
     private ServiceRegistrationRequest getPayload() {
         return new ServiceRegistrationRequest(serviceName, serviceHost, servicePort);
     }
-
+    
     @PostConstruct
     public void register() {
         String url = registryUrl + "/register";
+        
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(url, getPayload(), String.class);
             logger.info("Registered with registry: {}", response.getBody());
+            
         } catch (Exception e) {
-            logger.error("Failed to register with registry!", e);
+            logger.error("Failed to register with registry: {}", e.getMessage());
+            logger.debug("Full exception during register", e);
         }
     }
-
+    
     @Scheduled(fixedRate = 10000)
     public void sendHeartbeat() {
         String url = registryUrl + "/heartbeat";
+        
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(url, getPayload(), String.class);
             logger.info("Sent heartbeat: {}", response.getBody());
+            
         } catch (Exception e) {
-            logger.warn("Failed to send heartbeat", e);
+            logger.warn("Failed to send heartbeat: {}", e.getMessage());
+            logger.debug("Full exception during heartbeat", e);
         }
     }
-
+    
     @PreDestroy
     public void deregister() {
         String url = registryUrl + "/deregister";
+        
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(url, getPayload(), String.class);
             logger.info("Deregistered from registry: {}", response.getBody());
+            
         } catch (Exception e) {
-            logger.warn("Failed to deregister from registry", e);
+            logger.warn("Failed to deregister from registry: {}", e.getMessage());
+            logger.debug("Full exception during deregister", e);
         }
     }
 }
