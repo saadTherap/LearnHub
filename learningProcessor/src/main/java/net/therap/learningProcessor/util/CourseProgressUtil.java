@@ -49,6 +49,12 @@ public class CourseProgressUtil {
 
     public static void addProgressDetailsToCourse(CourseDetailWithProgressDto courseDetail, List<StudentContentCompletionDto> completedContentDtos) {
 
+        if(Objects.isNull(courseDetail.getModules())) {
+            courseDetail.setProgress(0);
+
+            return;
+        }
+
         Set<Long> completedContentIds = completedContentDtos.stream()
                 .map(StudentContentCompletionDto::getContentId)
                 .collect(Collectors.toSet());
