@@ -31,7 +31,7 @@ dependencyManagement {
 
 
 dependencies {
-    implementation project(':auth-common')
+    implementation project(':authcommon')
     implementation project(':kafka-registry')
     implementation project(':infra:cache-support')
 
