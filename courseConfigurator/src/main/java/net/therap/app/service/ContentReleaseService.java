@@ -1,7 +1,6 @@
 package net.therap.app.service;
 
 import net.therap.app.model.ContentRelease;
-import net.therap.app.model.Course;
 import net.therap.app.model.Instructor;
 import net.therap.app.model.Submission;
 import net.therap.app.repository.ContentReleaseRepository;
@@ -28,6 +27,10 @@ public class ContentReleaseService {
         this.contentReleaseRepository = contentReleaseRepository;
         this.messageSource = messageSource;
         this.instructorRepository = instructorRepository;
+    }
+    
+    public Optional<ContentRelease> findById(long id) {
+        return contentReleaseRepository.findById(id);
     }
     
     @Transactional

@@ -37,7 +37,7 @@ public class Instructor extends Persistent {
     @Column(nullable = false)
     private String name;
     
-    @UniqueEmail
+//    @UniqueEmail
     @Column(nullable = false)
     private String email;
 
@@ -55,5 +55,18 @@ public class Instructor extends Persistent {
     @Override
     public String toString() {
         return "Instructor{" + "id=" + id + ", name='" + name + '\'' + ", email='" + email + '\'' + ", dateOfBirth=" + dateOfBirth + ", imageUrl='" + imageUrl + '\'' + '}';
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        
+        if (!(o instanceof Instructor instructor)) {
+            return false;
+        }
+        
+        return id == instructor.id;
     }
 }

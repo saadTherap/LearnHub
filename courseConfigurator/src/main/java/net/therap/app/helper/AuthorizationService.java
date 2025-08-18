@@ -1,19 +1,19 @@
 package net.therap.app.helper;
 
-import net.therap.app.model.Content;
-import net.therap.app.model.ContentRelease;
-import net.therap.app.model.Course;
+import jakarta.servlet.http.HttpServletRequest;
+import net.therap.app.model.*;
 import net.therap.app.model.Module;
 import net.therap.app.model.enums.AuthorizationLevel;
-import net.therap.app.repository.ContentReleaseRepository;
-import net.therap.app.repository.ContentRepository;
-import net.therap.app.repository.CourseRepository;
-import net.therap.app.repository.ModuleRepository;
 import net.therap.app.exception.AccessDeniedException;
+import net.therap.app.repository.*;
+import net.therap.auth.context.UserRequestCache;
+import net.therap.auth.util.AuthDataUtil;
+import org.apache.coyote.BadRequestException;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
 import java.util.Locale;
+import java.util.Optional;
 
 import static java.util.Objects.isNull;
 
@@ -28,42 +28,41 @@ public class AuthorizationService {
     private final ModuleRepository moduleRepository;
     private final ContentRepository contentRepository;
     private final ContentReleaseRepository contentReleaseRepository;
+    private final InstructorRepository instructorRepository;
     private final MessageSource messageSource;
     
     // Assuming a service for student enrollment checks
     // private final EnrollmentService enrollmentService;
     
     public AuthorizationService(CourseRepository courseRepository, ModuleRepository moduleRepository,
-                                ContentRepository contentRepository, ContentReleaseRepository contentReleaseRepository, MessageSource messageSource) {
+                                ContentRepository contentRepository, ContentReleaseRepository contentReleaseRepository, InstructorRepository instructorRepository, MessageSource messageSource) {
         this.courseRepository = courseRepository;
         this.moduleRepository = moduleRepository;
         this.contentRepository = contentRepository;
         this.contentReleaseRepository = contentReleaseRepository;
+        this.instructorRepository = instructorRepository;
         this.messageSource = messageSource;
     }
     
-    // Existing owner check methods
-    private boolean isCourseOwner(long courseId, String instructorEmail) {
-        return courseRepository.existsByIdAndInstructorEmail(courseId, instructorEmail);
+    private UserRequestCache.UserInfo parseUserInfoFromRequest(HttpServletRequest request) throws BadRequestException {
+        long userId = Long.parseLong(request.getParameter("userId"));
+        UserRequestCache.UserInfo userInfo = AuthDataUtil.getUserInfo(userId);
+
+        if(userInfo == null) {
+            throw new BadRequestException(messageSource.getMessage("invalid.user.id", null, Locale.getDefault()));
+        }
+
+        return userInfo;
     }
     
-    private boolean isModuleOwner(long moduleId, String instructorEmail) {
-        return moduleRepository.existsByIdAndCourseInstructorEmail(moduleId, instructorEmail);
-    }
-    
-    private boolean isContentOwner(long contentId, String instructorEmail) {
-        return contentRepository.existsByIdAndModuleCourseInstructorEmail(contentId, instructorEmail);
-    }
-    
-    private boolean isContentReleaseOwner(long contentReleaseId, String instructorEmail) {
-        return contentReleaseRepository.existsByIdAndContentModuleCourseInstructorEmail(contentReleaseId, instructorEmail);
-    }
-    
-    private boolean isEnrolled(long courseId, String studentEmail) {
-        return true; // Placeholder
-    }
-    
-    public void authorize(AuthorizationLevel requiredLevel, Object resource, String userEmail, String userRole) {
+    public void authorize(AuthorizationLevel requiredLevel, Object resource, HttpServletRequest request) throws AccessDeniedException, BadRequestException {
+//        UserRequestCache.UserInfo userInfo = parseUserInfoFromRequest(request);
+//        String userRole = userInfo.role();
+//        String userEmail = userInfo.email();
+        
+        String userRole = "STUDENT";
+        String userEmail = "student1@gmail.com";
+        
         if (isNull(requiredLevel)) {
             throw new RuntimeException();
         }
@@ -75,7 +74,7 @@ public class AuthorizationService {
         switch (requiredLevel) {
             case OWNER:
                 if (!AuthorizationLevel.OWNER.hasRole(userRole)) {
-                    throw new AccessDeniedException("Access Denied: Owner role required.");
+                    throw new AccessDeniedException(messageSource.getMessage("access.denied.owner", null, Locale.getDefault()));
                 }
                 
                 if (resource instanceof Course course && !isCourseOwner(course.getId(), userEmail)) {
@@ -89,6 +88,9 @@ public class AuthorizationService {
                     
                 } else if (resource instanceof ContentRelease release && !isContentReleaseOwner(release.getId(), userEmail)) {
                     throw new AccessDeniedException(messageSource.getMessage("access.denied.contentRelease", null, Locale.getDefault()));
+                    
+                } else if (resource instanceof Instructor instructor && !isOwnProfile(instructor, userEmail)) {
+                    throw new AccessDeniedException(messageSource.getMessage("access.denied.owner", null, Locale.getDefault()));
                 }
                 
                 break;
@@ -126,9 +128,38 @@ public class AuthorizationService {
                 if (!AuthorizationLevel.STUDENT.hasRole(userRole) || !AuthorizationLevel.STUDENT.hasRole(userRole)) {
                     throw new AccessDeniedException(messageSource.getMessage("access.denied.public", null, Locale.getDefault()));
                 }
+                
+                break;
             
             default:
                 throw new RuntimeException();
         }
+    }
+
+    private boolean isCourseOwner(long courseId, String instructorEmail) {
+        return courseRepository.existsByIdAndInstructorEmail(courseId, instructorEmail);
+    }
+    
+    private boolean isModuleOwner(long moduleId, String instructorEmail) {
+        return moduleRepository.existsByIdAndCourseInstructorEmail(moduleId, instructorEmail);
+    }
+    
+    private boolean isContentOwner(long contentId, String instructorEmail) {
+        return contentRepository.existsByIdAndModuleCourseInstructorEmail(contentId, instructorEmail);
+    }
+    
+    private boolean isContentReleaseOwner(long contentReleaseId, String instructorEmail) {
+        return contentReleaseRepository.existsByIdAndContentModuleCourseInstructorEmail(contentReleaseId, instructorEmail);
+    }
+    
+    private boolean isEnrolled(long courseId, String studentEmail) {
+        return true; // Placeholder
+    }
+    
+    
+    private boolean isOwnProfile(Instructor instructor, String userEmail) {
+        Optional<Instructor> instructorOptional = instructorRepository.findByEmail(userEmail);
+        
+        return instructorOptional.map(value -> value.equals(instructor)).orElse(false);
     }
 }

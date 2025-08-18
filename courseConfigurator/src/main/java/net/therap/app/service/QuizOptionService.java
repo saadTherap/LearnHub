@@ -1,10 +1,7 @@
 package net.therap.app.service;
 
 import net.therap.app.model.QuizOption;
-import net.therap.app.model.QuizQuestion;
 import net.therap.app.repository.QuizOptionRepository;
-import net.therap.app.repository.QuizQuestionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
