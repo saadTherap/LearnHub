@@ -5,8 +5,6 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.app.dto.ErrorResponse;
 import org.apache.coyote.BadRequestException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
@@ -142,7 +140,7 @@ public class GlobalExceptionHandler {
     }
     
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleGenericException(RuntimeException ex, HttpServletRequest request) {
         log.error("Unexpected runtime error: {}", ex.getMessage(), ex);
         Locale currentLocale = LocaleContextHolder.getLocale();
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, messageSource.getMessage(

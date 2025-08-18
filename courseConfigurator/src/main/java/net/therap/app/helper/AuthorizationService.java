@@ -1,6 +1,7 @@
 package net.therap.app.helper;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import net.therap.app.model.*;
 import net.therap.app.model.Module;
 import net.therap.app.model.enums.AuthorizationLevel;
@@ -21,6 +22,7 @@ import static java.util.Objects.isNull;
  * @author gazizafor
  * @since 13/8/25
  */
+@Slf4j
 @Service
 public class AuthorizationService {
     
@@ -45,7 +47,16 @@ public class AuthorizationService {
     }
     
     private UserRequestCache.UserInfo parseUserInfoFromRequest(HttpServletRequest request) throws BadRequestException {
-        long userId = Long.parseLong(request.getParameter("userId"));
+        long userId;
+        try {
+            userId = Long.parseLong(request.getParameter("userId"));
+            
+        } catch (Exception e) {
+            log.error(messageSource.getMessage("authorization.error.invalid.user.id", null, Locale.getDefault()), e);
+            
+            throw new RuntimeException(messageSource.getMessage("authorization.error.invalid.user.id", null, Locale.getDefault()));
+        }
+        
         UserRequestCache.UserInfo userInfo = AuthDataUtil.getUserInfo(userId);
 
         if(userInfo == null) {
