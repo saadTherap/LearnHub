@@ -46,11 +46,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(response);
     }
     
-    
     @ExceptionHandler(AuthServerException.class)
     public ResponseEntity<ErrorResponse> handleAuthServerException(AuthServerException ex) {
+        log.error("Caught AuthServerException: {}", ex.getMessage());
+        
         ErrorResponse response = buildErrorResponse(
-                MessageUtil.getMessage("err.verify.token.failed"),
+                "Auth Server end error.",
                 Map.of(ERROR, ex.getMessage())
         );
         

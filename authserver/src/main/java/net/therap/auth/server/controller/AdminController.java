@@ -1,4 +1,3 @@
-<<<<<<<< HEAD:authserver/src/main/java/net/therap/auth/server/controller/AdminController.java
 package net.therap.auth.server.controller;
 
 import jakarta.validation.Valid;
@@ -6,15 +5,6 @@ import lombok.RequiredArgsConstructor;
 import net.therap.auth.server.dto.JwtResponse;
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.service.UserService;
-========
-package net.therap.server.app.controller;
-
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import net.therap.server.app.dto.JwtResponse;
-import net.therap.server.app.entity.User;
-import net.therap.server.app.service.UserService;
->>>>>>>> 54db752 (Updated the auth):authserver/src/main/java/net/therap/server/app/controller/AdminController.java
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,18 +1,9 @@
-<<<<<<<< HEAD:authserver/src/main/java/net/therap/auth/server/controller/AuthController.java
 package net.therap.auth.server.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.therap.auth.server.dto.*;
 import net.therap.auth.server.service.interfaces.AuthService;
-========
-package net.therap.server.app.controller;
-
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import net.therap.server.app.dto.*;
-import net.therap.server.app.service.interfaces.AuthService;
->>>>>>>> 54db752 (Updated the auth):authserver/src/main/java/net/therap/server/app/controller/AuthController.java
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
     
     private final AuthService authService;

@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:authserver/src/main/java/net/therap/auth/server/dto/LoginRequest.java
 package net.therap.auth.server.dto;
-========
-package net.therap.server.app.dto;
->>>>>>>> 54db752 (Updated the auth):authserver/src/main/java/net/therap/server/app/dto/LoginRequest.java
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

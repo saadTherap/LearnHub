@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:authcommon/src/test/java/net/therap/auth/server/util/AuthDataUtilTest.java
 package net.therap.auth.server.util;
-========
-package net.therap.server.app.util;
->>>>>>>> 54db752 (Updated the auth):authcommon/src/test/java/net/therap/server/app/util/AuthDataUtilTest.java
 
 import net.therap.auth.lib.context.UserRequestCache;
 import net.therap.auth.lib.util.AuthDataUtil;

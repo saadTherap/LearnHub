@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:authserver/src/main/java/net/therap/auth/server/discovery/ServiceRegistrationRequest.java
 package net.therap.auth.server.discovery;
-========
-package net.therap.server.app.discovery;
->>>>>>>> 54db752 (Updated the auth):authserver/src/main/java/net/therap/server/app/discovery/ServiceRegistrationRequest.java
 
 /**
  * @author riadanonto

@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:authserver/src/main/java/net/therap/auth/server/enums/UserRole.java
 package net.therap.auth.server.enums;
-========
-package net.therap.server.app.enums;
->>>>>>>> 54db752 (Updated the auth):authserver/src/main/java/net/therap/server/app/enums/UserRole.java
 
 import lombok.Getter;
 
