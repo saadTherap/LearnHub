@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:authserver/src/main/java/net/therap/auth/server/dto/JwtResponse.java
 package net.therap.auth.server.dto;
+========
+package net.therap.server.app.dto;
+>>>>>>>> 54db752 (Updated the auth):authserver/src/main/java/net/therap/server/app/dto/JwtResponse.java
 
 import lombok.Data;
 

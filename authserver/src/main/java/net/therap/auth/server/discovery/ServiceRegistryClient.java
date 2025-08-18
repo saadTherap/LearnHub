@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:authserver/src/main/java/net/therap/auth/server/discovery/ServiceRegistryClient.java
 package net.therap.auth.server.discovery;
+========
+package net.therap.server.app.discovery;
+>>>>>>>> 54db752 (Updated the auth):authserver/src/main/java/net/therap/server/app/discovery/ServiceRegistryClient.java
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
