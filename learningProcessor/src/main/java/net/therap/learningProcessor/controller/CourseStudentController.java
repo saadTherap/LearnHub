@@ -89,11 +89,10 @@ public class CourseStudentController {
         return ResponseEntity.ok(courseStudentService.getContentStatusByStudentId(studentId));
     }
 
-    // Post Mapping, No Course Id, Receive CourseDetailWithProgressDto
-    @GetMapping("/progress/detailed/{studentId}/{courseId}")
-    public ResponseEntity<CourseDetailWithProgressDto> getStudentCourseProgressDetail(@PathVariable Long studentId, @PathVariable Long courseId) {
+    @PostMapping("/progress/detailed/{studentId}")
+    public ResponseEntity<CourseDetailWithProgressDto> getStudentCourseProgressDetail(@PathVariable Long studentId, @RequestBody CourseDetailWithProgressDto courseDetailWithProgressDto) {
 
-        CourseDetailWithProgressDto dto = courseStudentService.getCourseDetailWithProgress(studentId, courseId);
+        CourseDetailWithProgressDto dto = courseStudentService.getCourseDetailWithProgress(studentId, courseDetailWithProgressDto);
 
         return ResponseEntity.ok(dto);
     }
