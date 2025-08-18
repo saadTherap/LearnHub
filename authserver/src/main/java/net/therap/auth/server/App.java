@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.TimeZone;
 
-@SpringBootApplication(scanBasePackages = {"net.therap.server.app", "net.therap.auth.lib"})
+@SpringBootApplication(scanBasePackages = {"net.therap.auth.server", "net.therap.auth.lib"})
 @EnableScheduling
 public class App {
     
