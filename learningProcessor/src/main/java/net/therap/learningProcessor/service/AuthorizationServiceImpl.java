@@ -2,8 +2,8 @@ package net.therap.learningProcessor.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import net.therap.auth.context.UserRequestCache;
-import net.therap.auth.util.AuthDataUtil;
+import net.therap.auth.lib.context.UserRequestCache;
+import net.therap.auth.lib.util.AuthDataUtil;
 import net.therap.learningProcessor.client.CourseClient;
 import net.therap.learningProcessor.entity.Student;
 import net.therap.learningProcessor.eum.AccessLevel;
