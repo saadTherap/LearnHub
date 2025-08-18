@@ -1,0 +1,22 @@
+package net.therap.auth.server;
+
+import jakarta.annotation.PostConstruct;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+import java.util.TimeZone;
+
+@SpringBootApplication(scanBasePackages = {"net.therap.auth.server", "net.therap.auth.lib"})
+@EnableScheduling
+public class App {
+    
+    @PostConstruct
+    public void init() {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+    }
+    
+    public static void main(String[] args) {
+        SpringApplication.run(App.class, args);
+    }
+}
