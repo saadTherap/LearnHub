@@ -6,7 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
 * @author apurboturjo
 * @since 8/13/25
-*/public class UserRequestCache {
+*/
+public class UserRequestCache {
     
     public static Map<Long, UserInfo> cache = new ConcurrentHashMap<>();
     
