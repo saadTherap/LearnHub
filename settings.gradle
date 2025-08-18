@@ -1,5 +1,9 @@
 rootProject.name = 'LearnHub'
+<<<<<<< Updated upstream
+include('authserver', 'auth-common', 'courseConfigurator', 'secureFileServer', 'learningProcessor', 'service-registry', 'hazelcast-server', 'kafka-registry', 'infra:cache-support')
+
+
+=======
 include('authserver', 'authcommon', 'authkeyprovider', 'courseConfigurator', 'secureFileServer', 'learningProcessor',
         'service-registry', 'hazelcast-server')
-
-include 'authkeyprovider'
+>>>>>>> Stashed changes
