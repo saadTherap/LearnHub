@@ -1,5 +1,6 @@
 package net.therap.app.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.CourseCatalogDTO;
 import net.therap.app.dto.InstructorDtoCatalog;
@@ -11,6 +12,7 @@ import net.therap.app.model.enums.ReleaseStatus;
 import net.therap.app.service.CourseService;
 import net.therap.app.service.InstructorService;
 import net.therap.cache.support.HazelcastCacheService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
  * @author gazizafor
  * @since 11/8/25
  */
+@Slf4j
 @RestController
 @RequestMapping("/public")
 public class PublicController {
@@ -47,6 +50,7 @@ public class PublicController {
     
     @GetMapping("/courses")
     public ResponseEntity<List<CourseCatalogDTO>> getAllCoursesCatalog() {
+        log.info("[GET] /public/courses");
         List<Course> courses = courseService.findAll();
         List<CourseCatalogDTO> courseCatalogDTOs =
                 courses.stream().filter(course -> course.getCurrentRelease() > ReleaseStatus.DRAFT.getReleaseNumber()).map(dtoHelper::toCourseCatalogDTO).collect(Collectors.toList());
@@ -55,7 +59,7 @@ public class PublicController {
     
     @GetMapping("/courses/{id}")
     public ResponseEntity<CourseCatalogDTO> getCourseByIdPublic(@PathVariable Long id) {
-        
+        log.info("[GET] /public/courses/{}",id);
         CourseCatalogDTO cached = hazelcastCacheService.get(CacheConstants.COURSE_CATALOG_PUBLIC, id);
         if (cached != null) {
             return ResponseEntity.ok(cached);
@@ -74,6 +78,7 @@ public class PublicController {
     
     @GetMapping("/instructors")
     public ResponseEntity<List<InstructorDtoCatalog>> getAllInstructorsPublic() {
+        log.info("[GET] /public/instructors");
         List<Instructor> instructors = instructorService.getAllInstructors();
         List<InstructorDtoCatalog> instructorDTOs =
                 instructors.stream().map(instructorMapper::toInstructorDtoCatalog).collect(Collectors.toList());
@@ -83,6 +88,7 @@ public class PublicController {
     
     @GetMapping("/instructors/{id}")
     public ResponseEntity<InstructorDtoCatalog> getInstructorByIdPublic(@PathVariable long id) {
+        log.info("[GET] /public/instructors/{}", id);
         InstructorDtoCatalog cached = hazelcastCacheService.get(CacheConstants.INSTRUCTOR_CATALOG_PUBLIC, id);
         
         if (cached != null) {
@@ -95,5 +101,13 @@ public class PublicController {
             
             return ResponseEntity.ok(dto);
         }).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+    
+    @GetMapping("/courses/byInstructor/{instructorId}")
+    public ResponseEntity<List<CourseCatalogDTO>> getCourseByInstructorIdPublic(@PathVariable long instructorId) {
+        log.info("[GET] /public/courses/byInstructor/{}", instructorId);
+        List<Course> courseList = courseService.findByInstructor(instructorId);
+        
+        return new ResponseEntity<>(courseList.stream().map(dtoHelper::toCourseCatalogDTO).toList(), HttpStatus.OK);
     }
 }
