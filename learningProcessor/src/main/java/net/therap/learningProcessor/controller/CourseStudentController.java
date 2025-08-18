@@ -49,6 +49,7 @@ public class CourseStudentController {
     @GetMapping("/enrollments/course/{courseId}")
     public ResponseEntity<List<StudentDto>> getStudentsEnrolledInCourse(@PathVariable Long courseId) {
         List<StudentDto> cached = hazelcastCacheService.get(CacheConstants.STUDENTS_BY_COURSE, courseId);
+
         if (cached != null) {
             return ResponseEntity.ok(cached);
         }
@@ -97,15 +98,22 @@ public class CourseStudentController {
         return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("/progress/{studentId}/{courseId}")
-    public ResponseEntity<StudentCourseProgressDto> getStudentCourseProgress(@PathVariable Long studentId, @PathVariable Long courseId) {
+    @PostMapping("/progress/{studentId}")
+    public ResponseEntity<StudentCourseProgressDto> getStudentCourseProgress(
+            @PathVariable Long studentId,
+            @RequestBody CourseDetailWithProgressDto courseDetailDto) {
+
+        Long courseId = courseDetailDto.getId();
+
         String cacheKey = studentId + ":" + courseId;
         StudentCourseProgressDto cached = hazelcastCacheService.get(CacheConstants.STUDENT_COURSE_PROGRESS, cacheKey);
+
         if (cached != null) {
             return ResponseEntity.ok(cached);
         }
 
-        StudentCourseProgressDto dto = courseStudentService.getStudentCourseProgress(studentId, courseId);
+        StudentCourseProgressDto dto = courseStudentService.getStudentCourseProgress(studentId, courseDetailDto);
+
         if (dto != null) {
             hazelcastCacheService.put(CacheConstants.STUDENT_COURSE_PROGRESS, cacheKey, dto);
         }
@@ -113,14 +121,38 @@ public class CourseStudentController {
         return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("/progress/course/{courseId}")
-    public ResponseEntity<List<StudentCourseProgressDto>> getAllStudentProgressForCourse(@PathVariable Long courseId) {
-        List<StudentCourseProgressDto> cached = hazelcastCacheService.get(CacheConstants.ALL_STUDENT_PROGRESS_BY_COURSE, courseId);
+//    @GetMapping("/progress/course/{courseId}")
+//    public ResponseEntity<List<StudentCourseProgressDto>> getAllStudentProgressForCourse(@PathVariable Long courseId) {
+//        List<StudentCourseProgressDto> cached = hazelcastCacheService.get(CacheConstants.ALL_STUDENT_PROGRESS_BY_COURSE, courseId);
+//        if (cached != null) {
+//            return ResponseEntity.ok(cached);
+//        }
+//
+//        List<StudentCourseProgressDto> list = courseStudentService.getAllStudentProgressForCourse(courseId);
+//        if (list != null) {
+//            hazelcastCacheService.put(CacheConstants.ALL_STUDENT_PROGRESS_BY_COURSE, courseId, list);
+//        }
+//
+//        return ResponseEntity.ok(list);
+//    }
+
+    @PostMapping("/progress/course")
+    public ResponseEntity<List<StudentCourseProgressDto>> getAllStudentProgressForCourse(
+            @RequestBody CourseDetailWithProgressDto courseDetailWithProgressDto) {
+
+        Long courseId = courseDetailWithProgressDto.getId();
+
+        List<StudentCourseProgressDto> cached = hazelcastCacheService.get(
+                CacheConstants.ALL_STUDENT_PROGRESS_BY_COURSE,
+                courseId
+        );
+
         if (cached != null) {
             return ResponseEntity.ok(cached);
         }
 
-        List<StudentCourseProgressDto> list = courseStudentService.getAllStudentProgressForCourse(courseId);
+        List<StudentCourseProgressDto> list = courseStudentService.getAllStudentProgressForCourse(courseDetailWithProgressDto);
+
         if (list != null) {
             hazelcastCacheService.put(CacheConstants.ALL_STUDENT_PROGRESS_BY_COURSE, courseId, list);
         }
