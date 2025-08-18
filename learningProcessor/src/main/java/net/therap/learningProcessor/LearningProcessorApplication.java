@@ -23,7 +23,7 @@ import java.util.TimeZone;
         CacheAutoConfiguration.class,
         HazelcastAutoConfiguration.class
 })
-@EnableFeignClients(basePackages = {"net.therap.learningProcessor.client", "net.therap.auth.client"})
+@EnableFeignClients(basePackages = {"net.therap.learningProcessor.client"})
 @EnableScheduling
 @ComponentScan(basePackages = {
         "net.therap.auth",
