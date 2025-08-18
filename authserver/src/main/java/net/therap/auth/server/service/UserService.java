@@ -1,5 +1,6 @@
 package net.therap.auth.server.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.exception.AuthServerException;
@@ -26,16 +27,19 @@ public class UserService {
         return userRepository.findAll();
     }
     
+    // @Transactional
     public User findById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new AuthServerException(MessageUtil.getMessage("err.user.not.found")));
     }
     
+    // @Transactional
     public User findByEmail(String email) {
         return Optional.ofNullable(userRepository.findByEmail(email))
                 .orElseThrow(() -> new AuthServerException(MessageUtil.getMessage("err.user.not.found")));
     }
     
+    // @Transactional
     public User saveUser(User user) {
         Optional<User> existingUserOptional = Optional.ofNullable(userRepository.findByEmail(user.getEmail()));
         
@@ -57,6 +61,7 @@ public class UserService {
         }
     }
     
+    // @Transactional
     public User updateUser(User user) {
         if (!userExistsById(user.getId())) {
             throw new AuthServerException(MessageUtil.getMessage("err.id.missing.update"));
@@ -65,6 +70,7 @@ public class UserService {
         return userRepository.save(user);
     }
     
+    // @Transactional
     public void deleteById(Long id) {
         if (!userExistsById(id)) {
             throw new AuthServerException(MessageUtil.getMessage("err.id.missing.delete"));
@@ -73,11 +79,8 @@ public class UserService {
         userRepository.deleteById(id);
     }
     
+    // @Transactional
     public boolean userExistsById(Long userId) {
         return Objects.nonNull(userId) && userRepository.existsById(userId);
-    }
-    
-    public boolean userExistsByEmail(String email) {
-        return Objects.nonNull(email) && userRepository.existsByEmail(email);
     }
 }
