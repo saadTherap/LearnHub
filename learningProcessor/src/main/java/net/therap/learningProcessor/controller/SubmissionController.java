@@ -1,6 +1,7 @@
 package net.therap.learningProcessor.controller;
 
 import lombok.RequiredArgsConstructor;
+import net.therap.learningProcessor.dto.StoredFileDto;
 import net.therap.learningProcessor.dto.StudentDto;
 import net.therap.learningProcessor.dto.content.quiz.QuizSubmissionRequestDto;
 import net.therap.learningProcessor.dto.content.quiz.QuizSubmissionResultDto;
@@ -34,15 +35,15 @@ public class SubmissionController {
     private final StudentService studentService;
     private final NotificationService notificationService;
 
-    @PostMapping(value = "/assignments", consumes =  MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping("/assignments")
     public ResponseEntity<StudentSubmissionDto> submitAssignment(
             @RequestParam Long studentId,
             @RequestParam Long contentId,
-            @RequestParam("file") MultipartFile file) {
+            @RequestBody StoredFileDto fileDto) {
 
         StudentDto studentDto = studentService.getStudentById(studentId);
 
-        StudentSubmissionDto submissionDto = submissionService.submit(studentDto, contentId, file);
+        StudentSubmissionDto submissionDto = submissionService.submit(studentDto, contentId, fileDto);
 
         SubmissionNotification notification = new SubmissionNotification();
         notification.setType(NotificationType.SUBMISSION);
