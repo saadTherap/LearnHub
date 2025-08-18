@@ -140,7 +140,7 @@ public class GlobalExceptionHandler {
     }
     
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(RuntimeException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, HttpServletRequest request) {
         log.error("Unexpected runtime error: {}", ex.getMessage(), ex);
         Locale currentLocale = LocaleContextHolder.getLocale();
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, messageSource.getMessage(
