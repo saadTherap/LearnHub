@@ -71,9 +71,10 @@ class CourseServiceTest {
 
         // Verify util is called with expected arguments (string key if your util expects String)
         verify(cacheInvalidationUtil).invalidateCachesAfterCommit(
-                eq(String.valueOf(1L)),
+                eq(1L),
                 eq(CacheConstants.COURSES),
-                eq(CacheConstants.COURSE_CATALOG)
+                eq(CacheConstants.COURSE_CATALOG),
+                eq(CacheConstants.COURSE_CATALOG_PUBLIC)
         );
         verifyNoMoreInteractions(cacheInvalidationUtil);
     }
@@ -108,9 +109,10 @@ class CourseServiceTest {
 
         // Assert: util got called to invalidate both caches for the course id
         verify(cacheInvalidationUtil).invalidateCachesAfterCommit(
-                eq(String.valueOf(1L)),
+                eq(1L),
                 eq(CacheConstants.COURSES),
-                eq(CacheConstants.COURSE_CATALOG)
+                eq(CacheConstants.COURSE_CATALOG),
+                eq(CacheConstants.COURSE_CATALOG_PUBLIC)
         );
 
         verifyNoMoreInteractions(cacheInvalidationUtil);
