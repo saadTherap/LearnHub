@@ -89,19 +89,11 @@ public class CourseStudentController {
         return ResponseEntity.ok(courseStudentService.getContentStatusByStudentId(studentId));
     }
 
+    // Post Mapping, No Course Id, Receive CourseDetailWithProgressDto
     @GetMapping("/progress/detailed/{studentId}/{courseId}")
     public ResponseEntity<CourseDetailWithProgressDto> getStudentCourseProgressDetail(@PathVariable Long studentId, @PathVariable Long courseId) {
 
-        String cacheKey = studentId + ":" + courseId;
-        CourseDetailWithProgressDto cached = hazelcastCacheService.get(CacheConstants.COURSE_PROGRESS_DETAIL, cacheKey);
-        if (cached != null) {
-            return ResponseEntity.ok(cached);
-        }
-
         CourseDetailWithProgressDto dto = courseStudentService.getCourseDetailWithProgress(studentId, courseId);
-        if (dto != null) {
-            hazelcastCacheService.put(CacheConstants.COURSE_PROGRESS_DETAIL, cacheKey, dto);
-        }
 
         return ResponseEntity.ok(dto);
     }
