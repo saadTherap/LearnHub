@@ -135,9 +135,10 @@ public class CourseStudentServiceImpl implements CourseStudentService {
     @Override
     public CourseDetailWithProgressDto getCourseDetailWithProgress(Long studentId, Long courseId) {
         studentValidator.validateStudentExists(studentId);
-        courseValidator.validateCourseExists(courseId);
+//        courseValidator.validateCourseExists(courseId);
 
         CourseDetailWithProgressDto courseDetail = courseClient.getCourseDetail(courseId);
+
         List<StudentContentCompletionDto> completedContentDtos = studentContentCompletionRepository.getStudentContentStatusByStudentId(studentId);
 
         CourseProgressUtil.addProgressDetailsToCourse(courseDetail, completedContentDtos);
