@@ -1,6 +1,8 @@
 package net.therap.learningProcessor.controller;
 
 import lombok.RequiredArgsConstructor;
+import net.therap.learningProcessor.dto.StoredFileDto;
+import lombok.extern.slf4j.Slf4j;
 import net.therap.learningProcessor.dto.StudentDto;
 import net.therap.learningProcessor.dto.content.quiz.QuizSubmissionRequestDto;
 import net.therap.learningProcessor.dto.content.quiz.QuizSubmissionResultDto;
@@ -12,10 +14,8 @@ import net.therap.learningProcessor.service.QuizService;
 import net.therap.learningProcessor.service.StudentService;
 import net.therap.learningProcessor.service.StudentSubmissionService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +24,7 @@ import java.util.Optional;
  * @author avidewan
  * @since 8/7/25
  */
+@Slf4j
 @RestController
 @RequestMapping("/submissions")
 @RequiredArgsConstructor
@@ -34,15 +35,15 @@ public class SubmissionController {
     private final StudentService studentService;
     private final NotificationService notificationService;
 
-    @PostMapping(value = "/assignments", consumes =  MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping("/assignments")
     public ResponseEntity<StudentSubmissionDto> submitAssignment(
             @RequestParam Long studentId,
             @RequestParam Long contentId,
-            @RequestParam("file") MultipartFile file) {
+            @RequestBody StoredFileDto fileDto) {
 
         StudentDto studentDto = studentService.getStudentById(studentId);
 
-        StudentSubmissionDto submissionDto = submissionService.submit(studentDto, contentId, file);
+        StudentSubmissionDto submissionDto = submissionService.submit(studentDto, contentId, fileDto);
 
         SubmissionNotification notification = new SubmissionNotification();
         notification.setType(NotificationType.SUBMISSION);
@@ -55,7 +56,12 @@ public class SubmissionController {
 
     @PostMapping("/quizzes")
     public ResponseEntity<QuizSubmissionResultDto> submitQuiz(@RequestBody QuizSubmissionRequestDto submissionRequestDto) {
+
+        log.info("Quiz Submission RequestDto: {}", submissionRequestDto);
+
         QuizSubmissionResultDto result = quizService.submitAndEvaluate(submissionRequestDto);
+
+        log.info("Result: {}", result);
 
         return ResponseEntity.ok(result);
     }
@@ -77,6 +83,9 @@ public class SubmissionController {
     @GetMapping("/student/{studentId}/content/{contentId}")
     public ResponseEntity<List<StudentSubmissionDto>> getSubmissionsByStudentAndContent(@PathVariable Long studentId,
                                                                                         @PathVariable Long contentId) {
+
+        log.info("Student Submission Requested for: studentId-{} and contentId- {}", studentId, contentId);
+
         List<StudentSubmissionDto> submissions = submissionService.getAllByStudentIdAndContentId(studentId, contentId);
 
         return ResponseEntity.ok(submissions);

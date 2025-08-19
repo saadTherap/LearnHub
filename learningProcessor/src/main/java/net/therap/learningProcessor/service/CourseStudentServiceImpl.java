@@ -2,7 +2,6 @@ package net.therap.learningProcessor.service;
 
 import lombok.RequiredArgsConstructor;
 import net.therap.cache.support.CacheInvalidationUtil;
-import net.therap.learningProcessor.client.CourseClient;
 import net.therap.learningProcessor.constants.CacheConstants;
 import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
 import net.therap.learningProcessor.dto.StudentContentCompletionDto;
@@ -19,7 +18,6 @@ import net.therap.learningProcessor.repository.CourseEnrollmentRepository;
 import net.therap.learningProcessor.repository.StudentContentCompletionRepository;
 import net.therap.learningProcessor.repository.StudentRepository;
 import net.therap.learningProcessor.util.CourseProgressUtil;
-import net.therap.learningProcessor.validator.CourseValidator;
 import net.therap.learningProcessor.validator.StudentValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,9 +38,6 @@ public class CourseStudentServiceImpl implements CourseStudentService {
     private final StudentContentCompletionRepository studentContentCompletionRepository;
     private final CacheInvalidationUtil cacheInvalidationUtil;
 
-    private final CourseClient courseClient;
-
-    private final CourseValidator courseValidator;
     private final StudentValidator studentValidator;
 
     private final StudentMapper studentMapper;
@@ -57,8 +52,6 @@ public class CourseStudentServiceImpl implements CourseStudentService {
 
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("error.student.notFound", studentId));
-
-        courseValidator.validateCourseExists(courseId);
 
         CourseEnrollment enrollment = new CourseEnrollment();
         enrollment.setStudent(student);
@@ -81,7 +74,6 @@ public class CourseStudentServiceImpl implements CourseStudentService {
 
     @Override
     public List<Long> getStudentIdsEnrolledInCourse(Long courseId) {
-        courseValidator.validateCourseExists(courseId);
 
         return courseEnrollmentRepository.findByCourseId(courseId).stream()
                 .map(CourseEnrollment::getStudent)
@@ -91,7 +83,6 @@ public class CourseStudentServiceImpl implements CourseStudentService {
 
     @Override
     public List<StudentDto> getStudentsEnrolledInCourse(Long courseId) {
-        courseValidator.validateCourseExists(courseId);
 
         return courseEnrollmentRepository.findByCourseId(courseId).stream()
                 .map(CourseEnrollment::getStudent)
@@ -114,7 +105,11 @@ public class CourseStudentServiceImpl implements CourseStudentService {
         Student student = studentRepository.findById(studentId).
                 orElseThrow(() -> new ResourceNotFoundException("error.student.notFound", studentId));
 
-        courseValidator.validateContentExists(contentId);
+        StudentContentCompletion alreadyExists = studentContentCompletionRepository.findByStudentIdAndContentId(studentId, contentId).orElse(null);
+
+        if(alreadyExists != null) {
+            return true;
+        }
 
         StudentContentCompletion completion = new StudentContentCompletion();
         completion.setContentId(contentId);
@@ -144,22 +139,18 @@ public class CourseStudentServiceImpl implements CourseStudentService {
     }
 
     @Override
-    public StudentCourseProgressDto getStudentCourseProgress(Long studentId, Long courseId) {
+    public StudentCourseProgressDto getStudentCourseProgress(Long studentId, CourseDetailWithProgressDto courseDetail) {
         studentValidator.validateStudentExists(studentId);
-        courseValidator.validateCourseExists(courseId);
 
         Student student = studentRepository.findById(studentId).orElseThrow();
-        CourseDetailWithProgressDto courseDetail = courseClient.getCourseDetail(courseId);
 
         return createStudentCourseProgressDto(student, courseDetail);
     }
 
     @Override
-    public List<StudentCourseProgressDto> getAllStudentProgressForCourse(Long courseId) {
-        courseValidator.validateCourseExists(courseId);
+    public List<StudentCourseProgressDto> getAllStudentProgressForCourse(CourseDetailWithProgressDto courseDetail) {
 
-        CourseDetailWithProgressDto courseDetail = courseClient.getCourseDetail(courseId);
-        List<Student> students = getEnrolledStudents(courseId);
+        List<Student> students = getEnrolledStudents(courseDetail.getId());
 
         return students.stream()
                 .map(student -> createStudentCourseProgressDto(student, courseDetail))

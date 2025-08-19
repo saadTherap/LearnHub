@@ -62,9 +62,14 @@ public class FileController {
 
         fileValidator.validate(file);
 
+        log.info("File is validated");
+
         StoredFile storedFile = fileStorageService.saveFile(file, uploaderEmail);
 
+        log.info("File is stored");
+
         StoredFileDto dto = fileMapper.toDto(storedFile);
+
 
         log.info("File upload successful: id={}, storedName='{}', uploaderEmail={}",
                 storedFile.getId(), storedFile.getStoredFilename(), uploaderEmail);

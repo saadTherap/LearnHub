@@ -17,4 +17,6 @@ public class QuizSubmissionRequestDto {
     private Long contentId;
 
     private Map<Long, List<Long>> answers;
+
+    private QuizDto quiz;
 }
