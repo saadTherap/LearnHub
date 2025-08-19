@@ -60,7 +60,7 @@ pipeline {
                         dir('service-registry') {
                             sh '''
                             # Kill any process running on 8761
-                            PID=$(lsof -t -i:8761)
+                            PID=$(lsof -t -i:8761) || true
                             if [ ! -z "$PID" ]; then
                             kill -9 $PID
                             fi
@@ -75,7 +75,7 @@ pipeline {
                         dir('authserver') {
                             sh '''
                             # Kill any process running on 8090
-                            PID=$(lsof -t -i:8090)
+                            PID=$(lsof -t -i:8090) || true
                             if [ ! -z "$PID" ]; then
                             kill -9 $PID
                             fi
@@ -90,7 +90,7 @@ pipeline {
                         dir('learningProcessor') {
                             sh '''
                             # Kill any process running on 8028
-                            PID=$(lsof -t -i:8028)
+                            PID=$(lsof -t -i:8028) || true
                             if [ ! -z "$PID" ]; then
                             kill -9 $PID
                             fi
@@ -105,7 +105,7 @@ pipeline {
                         dir('courseConfigurator') {
                             sh '''
                             # Kill any process running on 8082
-                            PID=$(lsof -t -i:8082)
+                            PID=$(lsof -t -i:8082) || true
                             if [ ! -z "$PID" ]; then
                             kill -9 $PID
                             fi
