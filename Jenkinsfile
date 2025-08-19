@@ -48,31 +48,48 @@ pipeline {
 
         stage('Deploy') {
             parallel {
+                stage('Auth Server') {
+                    steps {
+                        dir('authserver') {
+                            sh '''
+                            # Kill any process running on 8090
+                            PID=$(lsof -t -i:8090)
+                            if [ ! -z "$PID" ]; then
+                            kill -9 $PID
+                            fi
+
+                            gradle bootRun
+                            '''
+                        }
+                    }
+                }
                 stage('Learning Processor') {
                     steps {
                         dir('learningProcessor') {
-                            sh 'gradle bootRun'
+                            sh '''
+                            # Kill any process running on 8028
+                            PID=$(lsof -t -i:8028)
+                            if [ ! -z "$PID" ]; then
+                            kill -9 $PID
+                            fi
+
+                            gradle bootRun
+                            '''
                         }
                     }
                 }
                 stage('Course Configurator') {
                     steps {
                         dir('courseConfigurator') {
-                            sh 'gradle bootRun'
-                        }
-                    }
-                }
-                stage('Auth Server') {
-                    steps {
-                        dir('authserver') {
-                            sh 'gradle bootRun'
-                        }
-                    }
-                }
-                stage('Hazelcast Server') {
-                    steps {
-                        dir('hazelcast-server') {
-                            sh 'gradle bootRun'
+                            sh '''
+                            # Kill any process running on 8082
+                            PID=$(lsof -t -i:8082)
+                            if [ ! -z "$PID" ]; then
+                            kill -9 $PID
+                            fi
+
+                            gradle bootRun
+                            '''
                         }
                     }
                 }
