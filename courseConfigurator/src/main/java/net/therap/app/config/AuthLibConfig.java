@@ -14,16 +14,16 @@ import java.util.List;
  */
 
 
-@Configuration
-public class AuthLibConfig {
-    
-    @Bean
-    public JwtAuthFilter jwtAuthFilter(TokenValidator tokenValidator) {
-        List<String> excludedPaths = List.of("/swagger-ui/", "/swagger-resources/", "/v3/api-docs", "/webjars/",
-                                             "/public/");
-        
-        System.out.println("Filter bean created");
-        
-        return new JwtAuthFilter(tokenValidator, excludedPaths);
-    }
-}
+//@Configuration
+//public class AuthLibConfig {
+//
+//    @Bean
+//    public JwtAuthFilter jwtAuthFilter(TokenValidator tokenValidator) {
+//        List<String> excludedPaths = List.of("/swagger-ui/", "/swagger-resources/", "/v3/api-docs", "/webjars/",
+//                                             "/public/");
+//
+//        System.out.println("Filter bean created");
+//
+//        return new JwtAuthFilter(tokenValidator, excludedPaths);
+//    }
+//}

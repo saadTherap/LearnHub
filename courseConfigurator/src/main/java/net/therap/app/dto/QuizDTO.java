@@ -16,7 +16,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuizDTO extends ContentReleaseDTO implements Serializable {
+public class QuizDTO extends ContentReleaseDTO {
     private List<QuizQuestionDTO> questions;
     
     public QuizDTO(long id, long releaseNum, long orderedIndex, String title, long contentId,
