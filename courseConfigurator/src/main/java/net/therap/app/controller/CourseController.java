@@ -130,7 +130,7 @@ public class CourseController {
         
         Optional<Course> courseOptional = courseService.findById(id);
         
-        if (courseOptional.isPresent()) {
+        if (courseOptional.isEmpty()) {
             throw new NoSuchElementException(messageSource.getMessage("not.found.course", null, Locale.getDefault()));
         }
         
