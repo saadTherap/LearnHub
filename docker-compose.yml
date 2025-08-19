@@ -1,4 +1,13 @@
 services:
+  auth-key-provider:
+    build:
+      context: ./authkeyprovider
+      dockerfile: Dockerfile
+    container_name: authkeyprovider
+    ports:
+      - "8091:8091"
+    restart: always
+
   auth-server:
     build:
       context: ./authserver
