@@ -72,7 +72,7 @@ pipeline {
                         [dir: 'authserver', port: 8090],
                         [dir: 'learningProcessor', port: 8028],
                         [dir: 'courseConfigurator', port: 8082],
-                        [dir: 'auth-key-provider', port: 8091]
+//                         [dir: 'auth-key-provider', port: 8091]
                     ]
                     for (svc in services) {
                         sh """
@@ -89,11 +89,10 @@ pipeline {
                     }
                     echo "Deploying services with Docker Compose..."
 
-                    sh 'docker compose down auth-key-provider auth-server course-configurator learning-processor service-registry || true'
+                    sh 'docker compose down auth-server course-configurator learning-processor service-registry || true'
 
                     sh '''
                       docker compose up -d --build \
-                      auth-key-provider
                       auth-server \
                       course-configurator \
                       learning-processor \
