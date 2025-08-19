@@ -15,6 +15,13 @@ pipeline {
 
         stage('Build & Test') {
             parallel {
+                stage('Service rgistry') {
+                    steps {
+                        dir('service-registry') {
+                            sh 'gradle clean build'
+                        }
+                    }
+                }
                 stage('Learning Processor') {
                     steps {
                         dir('learningProcessor') {
@@ -48,6 +55,21 @@ pipeline {
 
         stage('Deploy') {
             parallel {
+                stage('Service Registry') {
+                    steps {
+                        dir('service-registry') {
+                            sh '''
+                            # Kill any process running on 8761
+                            PID=$(lsof -t -i:8761)
+                            if [ ! -z "$PID" ]; then
+                            kill -9 $PID
+                            fi
+
+                            gradle bootRun
+                            '''
+                        }
+                    }
+                }
                 stage('Auth Server') {
                     steps {
                         dir('authserver') {
