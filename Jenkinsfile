@@ -5,6 +5,10 @@ pipeline {
         gradle 'Gradle-8'
     }
 
+    environment {
+        BASE_LOG_DIR = "/home/app-rnd01/Desktop/logs"
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -53,6 +57,32 @@ pipeline {
             }
         }
 
+        stage('Kill Existing Processes') {
+            steps {
+                script {
+                    def ports = [
+                        [name: 'service-registry', port: 8761],
+                        [name: 'authserver', port: 8090],
+                        [name: 'learningProcessor', port: 8028],
+                        [name: 'courseConfigurator', port: 8082]
+                    ]
+
+                    for (svc in ports) {
+                        echo "Checking for existing process on port ${svc.port} (${svc.name})..."
+                        sh """
+                        PID=\$(lsof -t -i:${svc.port}) || true
+                        if [ ! -z "\$PID" ]; then
+                            echo "Killing process \$PID on port ${svc.port}"
+                            kill -9 \$PID
+                        else
+                            echo "No process running on port ${svc.port}"
+                        fi
+                        """
+                    }
+                }
+            }
+        }
+
         stage('Deploy Services via systemd') {
             steps {
                 script {
@@ -64,7 +94,7 @@ pipeline {
                     ]
 
                     for (svc in systemdServices) {
-                        echo "Restarting ${svc} systemd service..."
+                        echo "Starting/restarting ${svc} systemd service..."
                         sh """
                         sudo systemctl daemon-reload
                         sudo systemctl enable ${svc}
