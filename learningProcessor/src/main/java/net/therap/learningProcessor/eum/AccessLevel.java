@@ -11,5 +11,9 @@ public enum AccessLevel {
     STUDENT_WITH_ID,
 
     STUDENT_ENROLLED_IN_COURSE,
+
+    TEACHER_ONLY,
+
+    TEACHER_AND_STUDENT_WITH_ID
 }
 
