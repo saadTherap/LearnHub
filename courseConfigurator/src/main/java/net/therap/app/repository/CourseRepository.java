@@ -15,8 +15,8 @@ import java.util.Optional;
 //@Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
     
-    @Query("FROM Course c WHERE c.currentRelease = 0")
-    List<Course> findAllDrafts();
+    @Query("FROM Course c WHERE c.currentRelease = 0 AND c.instructor.id = :instructorId")
+    List<Course> findAllDrafts(@Param("instructorId") long instructorId);
     
     List<Course> findByInstructor_Id(long instructorId);
     

@@ -2,6 +2,8 @@ package net.therap.app.helper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import net.therap.app.dto.CourseCatalogDTO;
+import net.therap.app.dto.CourseDTO;
 import net.therap.app.model.*;
 import net.therap.app.model.Module;
 import net.therap.app.model.enums.AuthorizationLevel;
@@ -14,6 +16,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
 import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static java.util.Objects.isNull;
@@ -49,7 +52,7 @@ public class AuthorizationService {
     private UserRequestCache.UserInfo parseUserInfoFromRequest(HttpServletRequest request) throws BadRequestException {
         long userId;
         try {
-            userId = Long.parseLong((String) request.getAttribute("userId"));
+            userId = (Long) request.getAttribute("userId");
             
         } catch (Exception e) {
             log.error(messageSource.getMessage("authorization.error.invalid.user.id", null, Locale.getDefault()), e);
@@ -64,6 +67,18 @@ public class AuthorizationService {
         }
 
         return userInfo;
+    }
+    
+    public long getInstructorIdFromRequest(HttpServletRequest request) throws BadRequestException {
+        UserRequestCache.UserInfo userInfo = parseUserInfoFromRequest(request);
+        String email = userInfo.email();
+        Optional<Instructor> instructorOptional = instructorRepository.findByEmail(email);
+        
+        if (instructorOptional.isEmpty()) {
+            throw new NoSuchElementException(messageSource.getMessage("not.found.instructor", null, Locale.getDefault()));
+        }
+        
+        return instructorOptional.get().getId();
     }
     
     public void authorize(AuthorizationLevel requiredLevel, Object resource, HttpServletRequest request) throws AccessDeniedException, BadRequestException {
@@ -101,6 +116,12 @@ public class AuthorizationService {
                     throw new AccessDeniedException(messageSource.getMessage("access.denied.contentRelease", null, Locale.getDefault()));
                     
                 } else if (resource instanceof Instructor instructor && !isOwnProfile(instructor, userEmail)) {
+                    throw new AccessDeniedException(messageSource.getMessage("access.denied.owner", null, Locale.getDefault()));
+                
+                } else if (resource instanceof CourseCatalogDTO courseCatalogDTO && !isCourseOwner(courseCatalogDTO.getId(), userEmail)) {
+                    throw new AccessDeniedException(messageSource.getMessage("access.denied.owner", null, Locale.getDefault()));
+                    
+                } else if (resource instanceof CourseDTO courseDTO && !isCourseOwner(courseDTO.getId(), userEmail)) {
                     throw new AccessDeniedException(messageSource.getMessage("access.denied.owner", null, Locale.getDefault()));
                 }
                 
