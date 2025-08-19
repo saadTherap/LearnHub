@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 */
 @FeignClient(
         name = "publicKeyClient",
-        url = "http://192.168.0.215:8091"
+        url = "https://app-rnd01.therapbd.net/keys"
 )
 public interface PublicKeyClient {
     
