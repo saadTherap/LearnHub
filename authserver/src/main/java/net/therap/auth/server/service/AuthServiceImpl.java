@@ -98,7 +98,6 @@ public class AuthServiceImpl implements AuthService {
     
     @Transactional
     public JwtResponse verifyEmail(String token) {
-        System.out.println("The verification token found is: " + token);
         VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
                 .orElseThrow(() -> new AuthServerException(MessageUtil.getMessage("err.token.verify.invalid")));
         
