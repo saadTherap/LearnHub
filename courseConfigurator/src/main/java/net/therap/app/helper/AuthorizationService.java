@@ -49,7 +49,7 @@ public class AuthorizationService {
     private UserRequestCache.UserInfo parseUserInfoFromRequest(HttpServletRequest request) throws BadRequestException {
         long userId;
         try {
-            userId = Long.parseLong(request.getParameter("userId"));
+            userId = Long.parseLong((String) request.getAttribute("userId"));
             
         } catch (Exception e) {
             log.error(messageSource.getMessage("authorization.error.invalid.user.id", null, Locale.getDefault()), e);
