@@ -105,6 +105,12 @@ public class CourseStudentServiceImpl implements CourseStudentService {
         Student student = studentRepository.findById(studentId).
                 orElseThrow(() -> new ResourceNotFoundException("error.student.notFound", studentId));
 
+        StudentContentCompletion alreadyExists = studentContentCompletionRepository.findByStudentIdAndContentId(studentId, contentId).orElse(null);
+
+        if(alreadyExists != null) {
+            return true;
+        }
+
         StudentContentCompletion completion = new StudentContentCompletion();
         completion.setContentId(contentId);
         completion.setStudent(student);

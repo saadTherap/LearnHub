@@ -39,23 +39,15 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             throwUnauthorized("Authentication required");
         }
 
-        if(isAdmin(userInfo)) {
+        if(isAdmin(userInfo) | isTeacher(userInfo)) {
             return;
         }
 
         switch (level) {
 
-            case TEACHER_ONLY -> checkTeacher(userInfo);
-
             case STUDENT_WITH_ID -> checkStudentWithId(userInfo, params);
 
-            case TEACHER_AND_STUDENT_WITH_ID -> checkTeacherOrStudentWithId(userInfo, params);
-
-            case TEACHER_OF_COURSE -> checkTeacherOfCourse(userInfo, params);
-
             case STUDENT_ENROLLED_IN_COURSE -> checkStudentEnrolledInCourse(userInfo, params);
-
-            case TEACHER_OF_COURSE_OR_STUDENT_WITH_ID -> checkTeacherOfCourseOrStudentWithId(userInfo, params);
 
             default -> throwForbidden("Unknown access policy");
         }
@@ -84,29 +76,6 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         return "ADMIN".equals(userInfo.role());
     }
 
-    private boolean isTeacherOfCourse(String email, Long courseId) {
-        return true;
-    }
-
-    private void checkTeacher(UserRequestCache.UserInfo userInfo) {
-        if (isTeacher(userInfo)) {
-
-            throwForbidden("");
-        }
-    }
-
-    private void checkTeacherOfCourse(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
-        Long courseId = (Long) params.get("courseId");
-
-        checkTeacher(userInfo);
-
-        String email = userInfo.email();
-
-        if (isTeacherOfCourse(email, courseId)) {
-            throwForbidden("Access denied - not teacher of this course");
-        }
-    }
-
     private void checkStudentWithId(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
         Long studentId = (Long) params.get("studentId");
         String email = userInfo.email();
@@ -127,21 +96,6 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         if (!courseEnrollmentRepository.existsByStudentIdAndCourseId(studentId, courseId)) {
             throwForbidden("Access denied - student not enrolled in course");
         }
-    }
-
-    private void checkTeacherOrStudentWithId(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
-        Long studentId = (Long) params.get("studentId");
-
-        checkTeacher(userInfo);
-        checkStudentWithId(userInfo, Map.of("studentId", studentId));
-    }
-
-    private void checkTeacherOfCourseOrStudentWithId(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
-        Long studentId = (Long) params.get("studentId");
-        Long courseId = (Long) params.get("courseId");
-
-        checkTeacherOfCourse(userInfo, Map.of("courseId", courseId));
-        checkStudentWithId(userInfo, Map.of("studentId", studentId));
     }
 
     private void throwUnauthorized(String messageKey) {
