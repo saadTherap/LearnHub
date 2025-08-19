@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration;
 import org.springframework.boot.autoconfigure.hazelcast.HazelcastAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.TimeZone;
@@ -23,12 +24,13 @@ import java.util.TimeZone;
         CacheAutoConfiguration.class,
         HazelcastAutoConfiguration.class
 })
-@EnableFeignClients(basePackages = {"net.therap.learningProcessor.client"})
+@EnableJpaRepositories(basePackages = "net.therap.learningProcessor.repository")
+@EnableFeignClients(basePackages = {"net.therap.learningProcessor.client","net.therap.auth.lib.client"})
 @EnableScheduling
 @ComponentScan(basePackages = {
-        "net.therap.auth",
         "net.therap.learningProcessor",
-        "net.therap.kafkaregistry.service"
+        "net.therap.kafkaregistry.service",
+        "net.therap.auth.lib"
 }
 )
 public class LearningProcessorApplication {
