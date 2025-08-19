@@ -1,6 +1,7 @@
 package net.therap.learningProcessor.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.therap.learningProcessor.dto.StoredFileDto;
 import net.therap.learningProcessor.dto.StudentDto;
 import net.therap.learningProcessor.dto.content.quiz.QuizSubmissionRequestDto;
@@ -25,6 +26,7 @@ import java.util.Optional;
  * @author avidewan
  * @since 8/7/25
  */
+@Slf4j
 @RestController
 @RequestMapping("/submissions")
 @RequiredArgsConstructor
@@ -56,7 +58,12 @@ public class SubmissionController {
 
     @PostMapping("/quizzes")
     public ResponseEntity<QuizSubmissionResultDto> submitQuiz(@RequestBody QuizSubmissionRequestDto submissionRequestDto) {
+
+        log.info("Quiz Submission RequestDto: {}", submissionRequestDto);
+
         QuizSubmissionResultDto result = quizService.submitAndEvaluate(submissionRequestDto);
+
+        log.info("Result: {}", result);
 
         return ResponseEntity.ok(result);
     }
@@ -78,6 +85,9 @@ public class SubmissionController {
     @GetMapping("/student/{studentId}/content/{contentId}")
     public ResponseEntity<List<StudentSubmissionDto>> getSubmissionsByStudentAndContent(@PathVariable Long studentId,
                                                                                         @PathVariable Long contentId) {
+
+        log.info("Student Submission Requested for: studentId-{} and contentId- {}", studentId, contentId);
+
         List<StudentSubmissionDto> submissions = submissionService.getAllByStudentIdAndContentId(studentId, contentId);
 
         return ResponseEntity.ok(submissions);

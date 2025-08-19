@@ -18,5 +18,5 @@ public class QuizSubmissionRequestDto {
 
     private Map<Long, List<Long>> answers;
 
-    private QuizDto quizDto;
+    private QuizDto quiz;
 }

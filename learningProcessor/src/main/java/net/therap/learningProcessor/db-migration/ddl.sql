@@ -57,6 +57,5 @@ CREATE TABLE avi_student_submission (
     created_at          TIMESTAMP NOT NULL,
     updated_at          TIMESTAMP NOT NULL,
     version             NUMBER(10) NOT NULL,
-    CONSTRAINT uk_student_submission UNIQUE (student_id, content_id),
     CONSTRAINT fk_student_submission FOREIGN KEY (student_id) REFERENCES avi_student(id)
 );

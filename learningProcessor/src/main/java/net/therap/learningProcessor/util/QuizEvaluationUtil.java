@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class QuizEvaluationUtil {
 
-    private static final double PASS_MARKS_PERCENT = 70.0;
+    private static final double PASS_MARKS_PERCENT = 60.0;
 
     public static QuizSubmissionResultDto evaluate(QuizDto quiz, QuizSubmissionRequestDto submissionRequestDto) {
         int totalQuestions = quiz.getQuestions().size();
