@@ -68,6 +68,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         log.debug("Request URI: " + request.getRequestURI());
         log.debug("Context Path: " + request.getContextPath());
         log.debug("========================");
+        
+        if ("OPTIONS".equals(request.getMethod())) {
+            log.debug("OPTIONS request detected, bypassing JWT validation");
+            filterChain.doFilter(request, response);
+            
+            return;
+        }
 
         String token = extractTokenFromRequest(request);
         log.debug("token ===> " + token);
