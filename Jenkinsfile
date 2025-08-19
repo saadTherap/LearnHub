@@ -5,10 +5,6 @@ pipeline {
         gradle 'Gradle-8'
     }
 
-    environment {
-        BASE_LOG_DIR = "/home/app-rnd01/Desktop/logs"
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -57,35 +53,24 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy Services via systemd') {
             steps {
                 script {
-                    // Ensure log directory exists
-                    sh "mkdir -p ${BASE_LOG_DIR}"
-
-                    def services = [
-                        [dir: 'service-registry', port: 8761, jar: 'service-registry-0.0.1-SNAPSHOT.jar'],
-                        [dir: 'authserver', port: 8090, jar: 'authserver-0.1-SNAPSHOT.jar'],
-                        [dir: 'learningProcessor', port: 8028, jar: 'learningProcessor-0.0.1-SNAPSHOT.jar'],
-                        [dir: 'courseConfigurator', port: 8082, jar: 'courseConfigurator-0.0.1-SNAPSHOT.jar'],
-                        [dir: 'hazelcast-server', port: 5701, jar: 'hazelcast-server-0.0.1-SNAPSHOT.jar']
+                    def systemdServices = [
+                        'service-registry',
+                        'authserver',
+                        'learningProcessor',
+                        'courseConfigurator'
                     ]
 
-                    for (svc in services) {
-                        dir(svc.dir) {
-                            // Kill existing process on port
-                            sh """
-                            PID=\$(lsof -t -i:${svc.port}) || true
-                            if [ ! -z "\$PID" ]; then
-                                kill -9 \$PID
-                            fi
-                            """
-
-                            // Start service detached using 'at now' (fire-and-forget)
-                            sh """
-                            echo "java -jar build/libs/${svc.jar} > ${BASE_LOG_DIR}/${svc.dir}.log 2>&1 &" | at now
-                            """
-                        }
+                    for (svc in systemdServices) {
+                        echo "Restarting ${svc} systemd service..."
+                        sh """
+                        sudo systemctl daemon-reload
+                        sudo systemctl enable ${svc}
+                        sudo systemctl restart ${svc}
+                        sudo systemctl status ${svc} --no-pager
+                        """
                     }
                 }
             }
