@@ -60,35 +60,67 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Ensure log directory exists
-                    sh "mkdir -p ${BASE_LOG_DIR}"
-
                     def services = [
-                        [dir: 'service-registry', port: 8761, jar: 'service-registry-0.0.1-SNAPSHOT.jar'],
-                        [dir: 'authserver', port: 8090, jar: 'authserver-0.1-SNAPSHOT.jar'],
-                        [dir: 'learningProcessor', port: 8028, jar: 'learningProcessor-0.0.1-SNAPSHOT.jar'],
-                        [dir: 'courseConfigurator', port: 8082, jar: 'courseConfigurator-0.0.1-SNAPSHOT.jar'],
-                        [dir: 'hazelcast-server', port: 5701, jar: 'hazelcast-server-0.0.1-SNAPSHOT.jar']
+                        [dir: 'service-registry', port: 8761],
+                        [dir: 'authserver', port: 8090],
+                        [dir: 'learningProcessor', port: 8028],
+                        [dir: 'courseConfigurator', port: 8082],
                     ]
-
                     for (svc in services) {
-                        dir(svc.dir) {
-                            // Kill existing process on port
-                            sh """
+                        sh '''
                             PID=\$(lsof -t -i:${svc.port}) || true
                             if [ ! -z "\$PID" ]; then
                                 kill -9 \$PID
                             fi
-                            """
-
-                            // Start service detached using 'at now' (fire-and-forget)
-                            sh """
-                            echo "java -jar build/libs/${svc.jar} > ${BASE_LOG_DIR}/${svc.dir}.log 2>&1 &" | at now
-                            """
-                        }
+                        '''
                     }
+                    echo "Deploying services with Docker Compose..."
+
+                    sh 'docker compose down authserver courseConfigurator learningProcessor service-registry || true'
+
+                    sh '''
+                      docker compose up -d --build \
+                      authserver \
+                      courseConfigurator \
+                      learningProcessor \
+                      service-registry \
+                    '''
                 }
             }
         }
+
+//         stage('Deploy') {
+//             steps {
+//                 script {
+//                     // Ensure log directory exists
+//                     sh "mkdir -p ${BASE_LOG_DIR}"
+//
+//                     def services = [
+//                         [dir: 'service-registry', port: 8761, jar: 'service-registry-0.0.1-SNAPSHOT.jar'],
+//                         [dir: 'authserver', port: 8090, jar: 'authserver-0.1-SNAPSHOT.jar'],
+//                         [dir: 'learningProcessor', port: 8028, jar: 'learningProcessor-0.0.1-SNAPSHOT.jar'],
+//                         [dir: 'courseConfigurator', port: 8082, jar: 'courseConfigurator-0.0.1-SNAPSHOT.jar'],
+//                         [dir: 'hazelcast-server', port: 5701, jar: 'hazelcast-server-0.0.1-SNAPSHOT.jar']
+//                     ]
+//
+//                     for (svc in services) {
+//                         dir(svc.dir) {
+//                             // Kill existing process on port
+//                             sh """
+//                             PID=\$(lsof -t -i:${svc.port}) || true
+//                             if [ ! -z "\$PID" ]; then
+//                                 kill -9 \$PID
+//                             fi
+//                             """
+//
+//                             // Start service detached using 'at now' (fire-and-forget)
+//                             sh """
+//                             echo "java -jar build/libs/${svc.jar} > ${BASE_LOG_DIR}/${svc.dir}.log 2>&1 &" | at now
+//                             """
+//                         }
+//                     }
+//                 }
+//             }
+//         }
     }
 }

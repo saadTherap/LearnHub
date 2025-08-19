@@ -1,4 +1,41 @@
 services:
+  authserver:
+    build:
+      context: ./authserver
+      dockerfile: Dockerfile
+    container_name: authserver
+    ports:
+      - "8090:8090"
+    restart: always
+
+  courseConfigurator:
+    build:
+      context: ./courseConfigurator
+      dockerfile: Dockerfile
+    container_name: courseConfigurator
+    ports:
+      - "8082:8082"
+    restart: always
+
+  learningProcessor:
+    build:
+      context: ./learningProcessor
+      dockerfile: Dockerfile
+    container_name: learningProcessor
+    ports:
+      - "8028:8028"
+    restart: always
+
+  service-registry:
+    build:
+      context: ./service-registry
+      dockerfile: Dockerfile
+    container_name: service-registry
+    ports:
+      - "8761:8761"
+    restart: always
+
+
   kafka-ui:
     image: provectuslabs/kafka-ui
     container_name: kafka-ui
