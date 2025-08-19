@@ -1,8 +1,8 @@
 package net.therap.learningProcessor.controller;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import net.therap.learningProcessor.dto.StoredFileDto;
+import lombok.extern.slf4j.Slf4j;
 import net.therap.learningProcessor.dto.StudentDto;
 import net.therap.learningProcessor.dto.content.quiz.QuizSubmissionRequestDto;
 import net.therap.learningProcessor.dto.content.quiz.QuizSubmissionResultDto;
@@ -14,10 +14,8 @@ import net.therap.learningProcessor.service.QuizService;
 import net.therap.learningProcessor.service.StudentService;
 import net.therap.learningProcessor.service.StudentSubmissionService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
