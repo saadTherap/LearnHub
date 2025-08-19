@@ -27,7 +27,11 @@ import java.util.TimeZone;
 @EntityScan("net.therap.app.model")
 //@EnableFeignClients(basePackages = "net.therap.auth.client")
 @EnableFeignClients(basePackages = {"net.therap.app.client", "net.therap.auth.lib.client"})
-@ComponentScan(basePackages = {"net.therap.auth", "net.therap.app", "net.therap.kafkaregistry.service"})
+@ComponentScan(basePackages = {
+        "net.therap.auth",
+        "net.therap.app",
+        "net.therap.kafkaregistry.service"
+})
 //@ComponentScan(basePackages = {"net.therap.app", "net.therap.kafkaregistry.service"})
 
 public class AppApplication {
