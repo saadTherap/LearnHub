@@ -28,20 +28,20 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private final CourseEnrollmentRepository courseEnrollmentRepository;
 
     @Override
-    public void authorize(AccessLevel level) {
-        authorize(level, Map.of());
+    public void authorize(AccessLevel level, HttpServletRequest request) {
+        authorize(level, Map.of(), request);
     }
 
     @Override
-    public void authorize(AccessLevel level, Map<String, Object> params) {
+    public void authorize(AccessLevel level, Map<String, Object> params, HttpServletRequest request) {
         if (level == AccessLevel.PUBLIC) {
             return;
         }
 
-        UserRequestCache.UserInfo userInfo = getCurrentUserInfo();
+        UserRequestCache.UserInfo userInfo = getCurrentUserInfo(request);
 
         if (userInfo == null) {
-            throwUnauthorized("Authentication required");
+            throwUnauthorized("error.auth.required");
         }
 
         if(isAdmin(userInfo)) {
@@ -58,23 +58,25 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
             case STUDENT_ENROLLED_IN_COURSE -> checkStudentEnrolledInCourse(userInfo, params);
 
-            default -> throwForbidden("Unknown access policy");
+            default -> throwForbidden("error.access.content.denied");
         }
     }
 
     // ---------- PRIVATE STRATEGY METHODS ----------
 
-    private UserRequestCache.UserInfo getCurrentUserInfo() {
-        HttpServletRequest request = ((ServletRequestAttributes)
-                RequestContextHolder.currentRequestAttributes()).getRequest();
+    private UserRequestCache.UserInfo getCurrentUserInfo(HttpServletRequest request) {
 
         Long userId = (Long) request.getAttribute("userId");
+
+        if (userId == null) {
+            throwUnauthorized("error.auth.required");
+        }
 
         return AuthDataUtil.getUserInfo(userId);
     }
 
     private boolean isTeacher(UserRequestCache.UserInfo userInfo) {
-        return "TEACHER".equals(userInfo.role());
+        return "INSTRUCTOR".equals(userInfo.role());
     }
 
     private boolean isStudent(UserRequestCache.UserInfo userInfo) {
@@ -86,20 +88,22 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     private void checkTeacher(UserRequestCache.UserInfo userInfo) {
-        if (isTeacher(userInfo)) {
-
-            throwForbidden("");
+        if (!isTeacher(userInfo)) {
+            throwForbidden("error.access.teacher");
         }
     }
 
     private void checkStudentWithId(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
         Long studentId = (Long) params.get("studentId");
-        String email = userInfo.email();
 
-        Student student = studentRepository.findByEmail(email);
+        if (studentId == null) {
+            throwForbidden("error.access.student");
+        }
 
-        if (!(isStudent(userInfo) && student.getId() == studentId)) {
-            throwForbidden("Access denied - student ID mismatch");
+        Student student = studentRepository.findByEmail(userInfo.email());
+
+        if (!(isStudent(userInfo) && student != null && student.getId() == studentId)) {
+            throwForbidden("error.access.student.mismatch");
         }
     }
 
@@ -107,17 +111,23 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         Long studentId = (Long) params.get("studentId");
         Long courseId = (Long) params.get("courseId");
 
+        if (studentId == null || courseId == null) {
+            throwForbidden("error.access.enrollment.denied");
+        }
+
         checkStudentWithId(userInfo, Map.of("studentId", studentId));
 
         if (!courseEnrollmentRepository.existsByStudentIdAndCourseId(studentId, courseId)) {
-            throwForbidden("Access denied - student not enrolled in course");
+            throwForbidden("error.access.not.enrolled");
         }
     }
 
     private void checkTeacherOrStudentWithId(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
         Long studentId = (Long) params.get("studentId");
 
-        checkTeacher(userInfo);
+        if (isTeacher(userInfo)) {
+            return; // Teacher always allowed
+        }
         checkStudentWithId(userInfo, Map.of("studentId", studentId));
     }
 

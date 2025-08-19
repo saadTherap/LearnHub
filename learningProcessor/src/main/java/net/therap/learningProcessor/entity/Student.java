@@ -39,7 +39,6 @@ public class Student extends Persistent {
     private LocalDate dateOfBirth;
 
     @Column(nullable = false, unique = true)
-    @Email
     private String email;
 
     private String phone;

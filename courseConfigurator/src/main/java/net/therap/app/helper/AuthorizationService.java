@@ -63,6 +63,7 @@ public class AuthorizationService {
         UserRequestCache.UserInfo userInfo = AuthDataUtil.getUserInfo(userId);
 
         if(userInfo == null) {
+//            log.error("User info is null for user id : {}", userId);
             throw new BadRequestException(messageSource.getMessage("invalid.user.id", null, Locale.getDefault()));
         }
 

@@ -74,30 +74,20 @@ pipeline {
                         [dir: 'courseConfigurator', port: 8082],
 //                         [dir: 'auth-key-provider', port: 8091]
                     ]
+
+                    // 1. Kill old processes to prevent port conflicts
                     for (svc in services) {
-                        sh """
-                            bash -c '
-                            PID=\$(lsof -t -i:${svc.port} || true)
-                            if [ -n "\$PID" ]; then
-                                kill -9 \$PID
-                                echo "Killed process \$PID on port ${svc.port}"
-                            else
-                                echo "No process on port ${svc.port}"
-                            fi
-                            '
-                        """
+                        sh "lsof -t -i:${svc.port} | xargs -r kill -9"
                     }
+
                     echo "Deploying services with Docker Compose..."
 
+
+                    // 2. Stop and remove old containers gracefully
                     sh 'docker compose down auth-server course-configurator learning-processor service-registry || true'
 
-                    sh '''
-                      docker compose up -d --build \
-                      auth-server \
-                      course-configurator \
-                      learning-processor \
-                      service-registry \
-                    '''
+                    // 3. Build and start new containers
+                    sh 'docker compose up -d --build auth-server course-configurator learning-processor service-registry'
                 }
             }
         }

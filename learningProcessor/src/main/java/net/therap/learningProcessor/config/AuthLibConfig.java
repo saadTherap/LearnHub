@@ -30,7 +30,7 @@ public class AuthLibConfig {
         FilterRegistrationBean<JwtAuthFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(jwtAuthFilter);
         registration.addUrlPatterns("/*"); // Apply to all paths
-        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 1); // Set order
+        registration.setOrder(Ordered.LOWEST_PRECEDENCE); // Set order
 
         System.out.println("FilterRegistrationBean bean created");
 
