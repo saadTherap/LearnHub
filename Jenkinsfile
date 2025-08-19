@@ -57,7 +57,7 @@ pipeline {
             }
         }
 
-        stage('Kill Existing Processes') {
+        stage('Deploy') {
             steps {
                 script {
                     def services = [
@@ -67,12 +67,17 @@ pipeline {
                         [dir: 'courseConfigurator', port: 8082],
                     ]
                     for (svc in services) {
-                        sh '''
-                            PID=\$(lsof -t -i:${svc.port}) || true
-                            if [ ! -z "\$PID" ]; then
+                        sh """
+                            bash -c '
+                            PID=\$(lsof -t -i:${svc.port} || true)
+                            if [ -n "\$PID" ]; then
                                 kill -9 \$PID
+                                echo "Killed process \$PID on port ${svc.port}"
+                            else
+                                echo "No process on port ${svc.port}"
                             fi
-                        ''' 
+                            '
+                        """
                     }
                     echo "Deploying services with Docker Compose..."
 
