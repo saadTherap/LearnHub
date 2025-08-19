@@ -83,7 +83,7 @@ pipeline {
                     echo "Deploying services with Docker Compose..."
 
                     // 2. Stop and remove old containers gracefully
-                    sh 'docker compose down || true'
+                    sh 'docker compose down auth-key-provider auth-server course-configurator learning-processor service-registry || true'
 
                     // 3. Build and start new containers
                     sh 'docker compose up -d --build auth-key-provider auth-server course-configurator learning-processor service-registry'
