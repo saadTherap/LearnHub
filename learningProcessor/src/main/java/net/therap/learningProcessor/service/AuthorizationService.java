@@ -10,6 +10,7 @@ import java.util.Map;
  */
 public interface AuthorizationService {
 
-    public void authorize(AccessLevel level, Map<String, Object> params);
+    void authorize(AccessLevel level);
 
+    void authorize(AccessLevel level, Map<String, Object> params);
 }

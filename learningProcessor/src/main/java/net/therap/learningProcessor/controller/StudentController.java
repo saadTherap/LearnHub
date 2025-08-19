@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import net.therap.cache.support.HazelcastCacheService;
 import net.therap.learningProcessor.constants.CacheConstants;
 import net.therap.learningProcessor.dto.StudentDto;
+import net.therap.learningProcessor.eum.AccessLevel;
+import net.therap.learningProcessor.service.AuthorizationService;
 import net.therap.learningProcessor.service.StudentService;
 import net.therap.learningProcessor.validator.group.OnCreate;
 import net.therap.learningProcessor.validator.group.OnUpdate;
@@ -13,6 +15,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -27,15 +30,20 @@ public class StudentController {
 
     private final StudentService studentService;
     private final HazelcastCacheService hazelcastCacheService;
+    private final AuthorizationService authorizationService;
 
     @GetMapping
     public ResponseEntity<List<StudentDto>> getAllStudents() {
+        authorizationService.authorize(AccessLevel.TEACHER_ONLY);
+
         List<StudentDto> students = studentService.getAllStudents();
         return ResponseEntity.ok(students);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<StudentDto> getStudentById(@PathVariable Long id) {
+
+        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID,  Map.of("studentId", id));
 
         StudentDto cachedStudent = hazelcastCacheService.get(CacheConstants.STUDENTS, id);
         if (cachedStudent != null) {
@@ -63,6 +71,9 @@ public class StudentController {
     @PutMapping("/{id}")
     public ResponseEntity<StudentDto> updateStudent(@PathVariable Long id,
                                                     @Validated(OnUpdate.class) @RequestBody StudentDto studentDto) {
+
+        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID,  Map.of("studentId", id));
+
         studentDto.setId(id);
         StudentDto updatedStudent = studentService.updateStudent(studentDto);
 

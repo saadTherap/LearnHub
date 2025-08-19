@@ -28,6 +28,11 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private final CourseEnrollmentRepository courseEnrollmentRepository;
 
     @Override
+    public void authorize(AccessLevel level) {
+        authorize(level, Map.of());
+    }
+
+    @Override
     public void authorize(AccessLevel level, Map<String, Object> params) {
         if (level == AccessLevel.PUBLIC) {
             return;
@@ -39,13 +44,17 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             throwUnauthorized("Authentication required");
         }
 
-        if(isAdmin(userInfo) | isTeacher(userInfo)) {
+        if(isAdmin(userInfo)) {
             return;
         }
 
         switch (level) {
 
+            case TEACHER_ONLY -> checkTeacher(userInfo);
+
             case STUDENT_WITH_ID -> checkStudentWithId(userInfo, params);
+
+            case TEACHER_AND_STUDENT_WITH_ID -> checkTeacherOrStudentWithId(userInfo, params);
 
             case STUDENT_ENROLLED_IN_COURSE -> checkStudentEnrolledInCourse(userInfo, params);
 
@@ -76,6 +85,13 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         return "ADMIN".equals(userInfo.role());
     }
 
+    private void checkTeacher(UserRequestCache.UserInfo userInfo) {
+        if (isTeacher(userInfo)) {
+
+            throwForbidden("");
+        }
+    }
+
     private void checkStudentWithId(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
         Long studentId = (Long) params.get("studentId");
         String email = userInfo.email();
@@ -96,6 +112,13 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         if (!courseEnrollmentRepository.existsByStudentIdAndCourseId(studentId, courseId)) {
             throwForbidden("Access denied - student not enrolled in course");
         }
+    }
+
+    private void checkTeacherOrStudentWithId(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
+        Long studentId = (Long) params.get("studentId");
+
+        checkTeacher(userInfo);
+        checkStudentWithId(userInfo, Map.of("studentId", studentId));
     }
 
     private void throwUnauthorized(String messageKey) {
