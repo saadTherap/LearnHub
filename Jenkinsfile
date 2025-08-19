@@ -60,50 +60,67 @@ pipeline {
         stage('Kill Existing Processes') {
             steps {
                 script {
-                    def ports = [
-                        [name: 'service-registry', port: 8761],
-                        [name: 'authserver', port: 8090],
-                        [name: 'learningProcessor', port: 8028],
-                        [name: 'courseConfigurator', port: 8082]
+                    def services = [
+                        [dir: 'service-registry', port: 8761],
+                        [dir: 'authserver', port: 8090],
+                        [dir: 'learningProcessor', port: 8028],
+                        [dir: 'courseConfigurator', port: 8082],
                     ]
-
-                    for (svc in ports) {
-                        echo "Checking for existing process on port ${svc.port} (${svc.name})..."
-                        sh """
-                        PID=\$(lsof -t -i:${svc.port}) || true
-                        if [ ! -z "\$PID" ]; then
-                            echo "Killing process \$PID on port ${svc.port}"
-                            kill -9 \$PID
-                        else
-                            echo "No process running on port ${svc.port}"
-                        fi
-                        """
+                    for (svc in services) {
+                        sh '''
+                            PID=\$(lsof -t -i:${svc.port}) || true
+                            if [ ! -z "\$PID" ]; then
+                                kill -9 \$PID
+                            fi
+                        ''' 
                     }
+                    echo "Deploying services with Docker Compose..."
+
+                    sh 'docker compose down authserver courseConfigurator learningProcessor service-registry || true'
+
+                    sh '''
+                      docker compose up -d --build \
+                      authserver \
+                      courseConfigurator \
+                      learningProcessor \
+                      service-registry \
+                    '''
                 }
             }
         }
 
-        stage('Deploy Services via systemd') {
-            steps {
-                script {
-                    def systemdServices = [
-                        'service-registry',
-                        'authserver',
-                        'learningProcessor',
-                        'courseConfigurator'
-                    ]
-
-                    for (svc in systemdServices) {
-                        echo "Starting/restarting ${svc} systemd service..."
-                        sh """
-                        sudo systemctl daemon-reload
-                        sudo systemctl enable ${svc}
-                        sudo systemctl restart ${svc}
-                        sudo systemctl status ${svc} --no-pager
-                        """
-                    }
-                }
-            }
-        }
+//         stage('Deploy') {
+//             steps {
+//                 script {
+//                     // Ensure log directory exists
+//                     sh "mkdir -p ${BASE_LOG_DIR}"
+//
+//                     def services = [
+//                         [dir: 'service-registry', port: 8761, jar: 'service-registry-0.0.1-SNAPSHOT.jar'],
+//                         [dir: 'authserver', port: 8090, jar: 'authserver-0.1-SNAPSHOT.jar'],
+//                         [dir: 'learningProcessor', port: 8028, jar: 'learningProcessor-0.0.1-SNAPSHOT.jar'],
+//                         [dir: 'courseConfigurator', port: 8082, jar: 'courseConfigurator-0.0.1-SNAPSHOT.jar'],
+//                         [dir: 'hazelcast-server', port: 5701, jar: 'hazelcast-server-0.0.1-SNAPSHOT.jar']
+//                     ]
+//
+//                     for (svc in services) {
+//                         dir(svc.dir) {
+//                             // Kill existing process on port
+//                             sh """
+//                             PID=\$(lsof -t -i:${svc.port}) || true
+//                             if [ ! -z "\$PID" ]; then
+//                                 kill -9 \$PID
+//                             fi
+//                             """
+//
+//                             // Start service detached using 'at now' (fire-and-forget)
+//                             sh """
+//                             echo "java -jar build/libs/${svc.jar} > ${BASE_LOG_DIR}/${svc.dir}.log 2>&1 &" | at now
+//                             """
+//                         }
+//                     }
+//                 }
+//             }
+//         }
     }
 }
