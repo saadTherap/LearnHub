@@ -65,7 +65,7 @@ pipeline {
                             kill -9 $PID
                             fi
 
-                            nohup gradle bootRun &
+                            nohup gradle bootRun > app.log 2>&1 &
                             '''
                         }
                     }
@@ -80,7 +80,7 @@ pipeline {
                             kill -9 $PID
                             fi
 
-                            nohup gradle bootRun &
+                            nohup gradle bootRun > app.log 2>&1 &
                             '''
                         }
                     }
@@ -95,7 +95,7 @@ pipeline {
                             kill -9 $PID
                             fi
 
-                            nohup gradle bootRun &
+                            nohup gradle bootRun > app.log 2>&1 &
                             '''
                         }
                     }
@@ -110,7 +110,7 @@ pipeline {
                             kill -9 $PID
                             fi
 
-                            nohup gradle bootRun &
+                            nohup gradle bootRun > app.log 2>&1 &
                             '''
                         }
                     }
