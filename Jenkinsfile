@@ -57,7 +57,7 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Kill Existing Processes') {
             steps {
                 script {
                     def services = [
@@ -72,7 +72,7 @@ pipeline {
                             if [ ! -z "\$PID" ]; then
                                 kill -9 \$PID
                             fi
-                        '''
+                        ''' 
                     }
                     echo "Deploying services with Docker Compose..."
 
