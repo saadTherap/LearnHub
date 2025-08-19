@@ -42,20 +42,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String path = contextPath.isEmpty() ? requestURI : requestURI.substring(contextPath.length());
 
-        log.debug("=== SHOULD NOT FILTER DEBUG ===");
-        log.debug("Request URI: " + requestURI);
-        log.debug("Context Path: '" + contextPath + "'");
-        log.debug("Extracted Path: '" + path + "'");
-        log.debug("Excluded Paths: " + excludedPaths);
+        System.out.println("=== SHOULD NOT FILTER DEBUG ===");
+        System.out.println("Request URI: " + requestURI);
+        System.out.println("Context Path: '" + contextPath + "'");
+        System.out.println("Extracted Path: '" + path + "'");
+        System.out.println("Excluded Paths: " + excludedPaths);
 
         boolean shouldExclude = excludedPaths.stream().anyMatch(excludedPath -> {
             boolean matches = path.startsWith(excludedPath);
-            log.debug("Checking '" + path + "' starts with '" + excludedPath + "': " + matches);
+            System.out.println("Checking '" + path + "' starts with '" + excludedPath + "': " + matches);
             return matches;
         });
 
-        log.debug("Should exclude (shouldNotFilter): " + shouldExclude);
-        log.debug("===============================");
+        System.out.println("Should exclude (shouldNotFilter): " + shouldExclude);
+        System.out.println("===============================");
 
         return shouldExclude;
     }
@@ -75,12 +75,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             
             return;
         }
+        
+        System.out.println("==================------------------===============================");
+        System.out.println(request.getHeader("Hello-Header"));
+        System.out.println("=== JWT FILTER CALLED ===");
+        System.out.println("Request URI: " + request.getRequestURI());
+        System.out.println("Context Path: " + request.getContextPath());
+        System.out.println("========================");
 
         String token = extractTokenFromRequest(request);
-        log.debug("token ===> " + token);
+        System.out.println("token ===> " + token);
 
         if (!StringUtils.hasText(token)) {
-            log.debug("No JWT token found in request");
+            System.out.println("No JWT token found in request");
             sendUnauthorizedError(response, "Authentication token required");
 
             return;
@@ -95,9 +102,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             UserRequestCache.put(userId, email, role);
             request.setAttribute(CLAIM_USER_ID, userId);
             
-            log.debug("Token validated successfully for user: {} ===> " + email);
+            System.out.println("Token validated successfully for user: {} ===> " + email);
 
-            log.debug("Response: " + response);
+            System.out.println("Response: " + response);
             filterChain.doFilter(request, response);
 
         } catch (AuthenticationException e) {
