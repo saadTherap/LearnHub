@@ -92,12 +92,7 @@ pipeline {
                     sh 'docker compose down auth-key-provider auth-server course-configurator learning-processor service-registry || true'
 
                     sh '''
-                      docker compose up -d --build \
-                      auth-key-provider
-                      auth-server \
-                      course-configurator \
-                      learning-processor \
-                      service-registry \
+                      sh 'docker compose up -d --build auth-key-provider auth-server course-configurator learning-processor service-registry'
                     '''
                 }
             }
