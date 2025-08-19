@@ -3,10 +3,7 @@ package net.therap.auth.server.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.therap.auth.server.dto.DeleteRequest;
-import net.therap.auth.server.dto.JwtResponse;
-import net.therap.auth.server.dto.LoginRequest;
-import net.therap.auth.server.dto.RegisterRequest;
+import net.therap.auth.server.dto.*;
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.entity.VerificationToken;
 import net.therap.auth.server.enums.UserRole;
@@ -54,14 +51,22 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Override
-    public JwtResponse login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         User user = authenticateUser(request.getEmail(), request.getPassword());
         
         if (!user.isEnabled()) {
             throw new AuthServerException(MessageUtil.getMessage("err.user.not.enabled"));
         }
         
-        return generateTokenPair(user.getId());
+        JwtResponse jwt = generateTokenPair(user.getId());
+        
+        LoginResponse response = new LoginResponse();
+        response.setEmail(user.getEmail());
+        response.setRole(user.getRole().name());
+        response.setAccessToken(jwt.getAccessToken());
+        response.setRefreshToken(jwt.getRefreshToken());
+        
+        return response;
     }
     
     @Override
