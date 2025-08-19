@@ -76,7 +76,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     private boolean isTeacher(UserRequestCache.UserInfo userInfo) {
-        return "TEACHER".equals(userInfo.role());
+        return "INSTRUCTOR".equals(userInfo.role());
     }
 
     private boolean isStudent(UserRequestCache.UserInfo userInfo) {
