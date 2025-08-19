@@ -76,13 +76,13 @@ pipeline {
                     }
                     echo "Deploying services with Docker Compose..."
 
-                    sh 'docker compose down authserver courseConfigurator learningProcessor service-registry || true'
+                    sh 'docker compose down auth-server course-configurator learning-processor service-registry || true'
 
                     sh '''
                       docker compose up -d --build \
-                      authserver \
-                      courseConfigurator \
-                      learningProcessor \
+                      auth-server \
+                      course-configurator \
+                      learning-processor \
                       service-registry \
                     '''
                 }
