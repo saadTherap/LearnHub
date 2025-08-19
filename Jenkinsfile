@@ -15,7 +15,7 @@ pipeline {
 
         stage('Build & Test') {
             parallel {
-                stage('Service rgistry') {
+                stage('Service Registry') {
                     steps {
                         dir('service-registry') {
                             sh 'gradle clean build'
@@ -65,7 +65,7 @@ pipeline {
                             kill -9 $PID
                             fi
 
-                            gradle bootRun
+                            nohup gradle bootRun &
                             '''
                         }
                     }
@@ -80,7 +80,7 @@ pipeline {
                             kill -9 $PID
                             fi
 
-                            gradle bootRun
+                            nohup gradle bootRun &
                             '''
                         }
                     }
@@ -95,7 +95,7 @@ pipeline {
                             kill -9 $PID
                             fi
 
-                            gradle bootRun
+                            nohup gradle bootRun &
                             '''
                         }
                     }
@@ -110,7 +110,7 @@ pipeline {
                             kill -9 $PID
                             fi
 
-                            gradle bootRun
+                            nohup gradle bootRun &
                             '''
                         }
                     }
