@@ -4,6 +4,8 @@ import lombok.Data;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -11,7 +13,7 @@ import java.util.Map;
  * @since 12/8/25
  */
 @Data
-public class ContentPublishRequestDTO {
+public class ContentPublishRequestDTO implements Serializable {
     
     @NotNull(message = "{validation.content.ids.notnull}")
     @NotEmpty(message = "{validation.content.ids.notempty}")

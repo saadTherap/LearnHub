@@ -3,6 +3,7 @@ package net.therap.app.dto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @Builder
-public class StoredFileDTO {
+public class StoredFileDTO implements Serializable {
     
     private Long id;
     

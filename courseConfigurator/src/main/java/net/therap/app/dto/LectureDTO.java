@@ -17,7 +17,7 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LectureDTO extends ContentReleaseDTO implements Serializable {
+public class LectureDTO extends ContentReleaseDTO {
 
     private String description;
     
