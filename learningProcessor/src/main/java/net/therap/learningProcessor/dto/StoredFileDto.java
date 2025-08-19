@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 public class StoredFileDto {
 
-    private Long id;
+    private String formId;
 
     private String originalFilename;
 
@@ -22,4 +22,6 @@ public class StoredFileDto {
     private String downloadUrl;
 
     private LocalDateTime uploadTime;
+
+    private String uploaderEmail;
 }

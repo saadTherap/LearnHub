@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import net.therap.auth.lib.context.UserRequestCache;
 import net.therap.auth.lib.util.AuthDataUtil;
-import net.therap.learningProcessor.client.CourseClient;
 import net.therap.learningProcessor.entity.Student;
 import net.therap.learningProcessor.eum.AccessLevel;
 import net.therap.learningProcessor.exception.ForbiddenException;
@@ -27,7 +26,6 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     private final StudentRepository studentRepository;
     private final CourseEnrollmentRepository courseEnrollmentRepository;
-    private final CourseClient courseClient;
 
     @Override
     public void authorize(AccessLevel level, Map<String, Object> params) {
