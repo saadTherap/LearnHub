@@ -2,6 +2,7 @@ package net.therap.learningProcessor.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.therap.auth.lib.context.UserRequestCache;
 import net.therap.auth.lib.util.AuthDataUtil;
 import net.therap.learningProcessor.entity.Student;
@@ -20,6 +21,7 @@ import java.util.Map;
  * @author avidewan
  * @since 8/13/25
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthorizationServiceImpl implements AuthorizationService {
@@ -39,6 +41,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         }
 
         UserRequestCache.UserInfo userInfo = getCurrentUserInfo(request);
+
+        log.info("userinfo: {}", userInfo);
 
         if (userInfo == null) {
             throwUnauthorized("error.auth.required");
@@ -67,6 +71,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private UserRequestCache.UserInfo getCurrentUserInfo(HttpServletRequest request) {
 
         Long userId = (Long) request.getAttribute("userId");
+
+        log.info("User Id: {}", userId);
 
         if (userId == null) {
             throwUnauthorized("error.auth.required");
