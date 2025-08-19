@@ -72,8 +72,8 @@ public class CourseService {
         return courseRepository.findByInstructor_Id((instructorId));
     }
     
-    public List<Course> findAllDrafts() {
-        return courseRepository.findAllDrafts();
+    public List<Course> findAllDrafts(long instructorId) {
+        return courseRepository.findAllDrafts(instructorId);
     }
     
     // find specific draft by id
