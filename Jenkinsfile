@@ -67,8 +67,7 @@ pipeline {
                             fi
 
                             # Start the Service Registry in the background
-                            nohup java -jar build/libs/service-registry-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
-                            disown
+                            nohup setsid java -jar build/libs/service-registry-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
                             '''
                         }
                     }
@@ -91,8 +90,7 @@ pipeline {
                             kill -9 $PID
                             fi
 
-                            nohup java -jar build/libs/authserver-0.1-SNAPSHOT.jar > app.log 2>&1 &
-                            disown
+                            nohup setsid java -jar build/libs/authserver-0.1-SNAPSHOT.jar > app.log 2>&1 &
                             '''
                         }
                     }
@@ -107,8 +105,7 @@ pipeline {
                             kill -9 $PID
                             fi
 
-                            nohup java -jar build/libs/learningProcessor-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
-                            disown
+                            nohup setsid java -jar build/libs/learningProcessor-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
                             '''
                         }
                     }
@@ -123,8 +120,7 @@ pipeline {
                             kill -9 $PID
                             fi
 
-                            nohup java -jar build/libs/courseConfigurator-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
-                            disown
+                            nohup setsid java -jar build/libs/courseConfigurator-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
                             '''
                         }
                     }
