@@ -41,7 +41,7 @@ public class CourseStudentController {
                                                @RequestParam Long courseId,
                                                HttpServletRequest request) {
 
-//        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
+        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
 
         courseStudentService.enrollInCourse(studentId, courseId);
 
@@ -59,7 +59,7 @@ public class CourseStudentController {
     public ResponseEntity<List<StudentDto>> getStudentsEnrolledInCourse(@PathVariable Long courseId,
                                                                         HttpServletRequest request) {
 
-//        authorizationService.authorize(AccessLevel.TEACHER_ONLY,  request);
+        authorizationService.authorize(AccessLevel.TEACHER_ONLY,  request);
 
         List<StudentDto> cached = hazelcastCacheService.get(CacheConstants.STUDENTS_BY_COURSE, courseId);
 
@@ -80,7 +80,7 @@ public class CourseStudentController {
     public ResponseEntity<List<Long>> getStudentIdsEnrolledInCourse(@PathVariable Long courseId,
                                                                     HttpServletRequest request) {
 
-//        authorizationService.authorize(AccessLevel.TEACHER_ONLY,  request);
+        authorizationService.authorize(AccessLevel.TEACHER_ONLY,  request);
 
         return ResponseEntity.ok(courseStudentService.getStudentIdsEnrolledInCourse(courseId));
     }
@@ -89,17 +89,20 @@ public class CourseStudentController {
     public ResponseEntity<List<Long>> getEnrolledCourseIdsByStudent(@PathVariable Long studentId,
                                                                     HttpServletRequest request) {
 
-//        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
+        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
 
         return ResponseEntity.ok(courseStudentService.getEnrolledCourseIdsByStudent(studentId));
     }
 
-    @PatchMapping("/student-contents/{studentId}/{contentId}/complete")
+    @PatchMapping("/student-contents/student/{studentId}/course/{courseId}/content/{contentId}/complete")
     public ResponseEntity<Void> markContentCompleted(@PathVariable Long studentId,
+                                                     @PathVariable Long courseId,
                                                      @PathVariable Long contentId,
                                                      HttpServletRequest request) {
 
-//        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
+        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_ENROLLED_IN_COURSE,
+                Map.of("studentId", studentId, "courseId", courseId),
+                request);
 
         boolean success = courseStudentService.completeContent(studentId, contentId);
 
@@ -114,7 +117,7 @@ public class CourseStudentController {
     public ResponseEntity<List<StudentContentCompletionDto>> getContentStatus(@PathVariable Long studentId,
                                                                               HttpServletRequest request) {
 
-//        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
+        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
 
         return ResponseEntity.ok(courseStudentService.getContentStatusByStudentId(studentId));
     }
@@ -124,7 +127,7 @@ public class CourseStudentController {
                                                                                       @RequestBody CourseDetailWithProgressDto courseDetailWithProgressDto,
                                                                                       HttpServletRequest request) {
 
-//        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
+        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
 
         CourseDetailWithProgressDto dto = courseStudentService.getCourseDetailWithProgress(studentId, courseDetailWithProgressDto);
 
@@ -137,7 +140,7 @@ public class CourseStudentController {
             @RequestBody CourseDetailWithProgressDto courseDetailDto,
             HttpServletRequest request) {
 
-//        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
+        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
 
         Long courseId = courseDetailDto.getId();
 
@@ -177,7 +180,7 @@ public class CourseStudentController {
             @RequestBody CourseDetailWithProgressDto courseDetailWithProgressDto,
             HttpServletRequest request) {
 
-//        authorizationService.authorize(AccessLevel.TEACHER_ONLY,  request);
+        authorizationService.authorize(AccessLevel.TEACHER_ONLY,  request);
 
         Long courseId = courseDetailWithProgressDto.getId();
 

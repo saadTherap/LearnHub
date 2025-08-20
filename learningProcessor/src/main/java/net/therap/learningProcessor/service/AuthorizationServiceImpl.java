@@ -63,6 +63,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
             case STUDENT_ENROLLED_IN_COURSE -> checkStudentEnrolledInCourse(userInfo, params);
 
+            case TEACHER_AND_STUDENT_ENROLLED_IN_COURSE -> checkTeacherOrStudentEnrolledInCourse(userInfo, params);
+
             default -> throwForbidden("error.access.content.denied");
         }
     }
@@ -137,12 +139,21 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     private void checkTeacherOrStudentWithId(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
-        Long studentId = (Long) params.get("studentId");
-
         if (isTeacher(userInfo)) {
             return;
         }
+
+        Long studentId = (Long) params.get("studentId");
+
         checkStudentWithId(userInfo, Map.of("studentId", studentId));
+    }
+
+    private void checkTeacherOrStudentEnrolledInCourse(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
+        if (isTeacher(userInfo)) {
+            return;
+        }
+
+        checkStudentEnrolledInCourse(userInfo, params);
     }
 
     private void throwUnauthorized(String messageKey) {
