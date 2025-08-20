@@ -9,6 +9,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author gazizafor
@@ -46,4 +47,10 @@ public class Course extends Persistent {
     
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Module> modules;
+    
+    public List<Module> getModules() {
+        return modules.stream()
+                .filter(module -> !module.isDeleted())
+                .collect(Collectors.toList());
+    }
 }

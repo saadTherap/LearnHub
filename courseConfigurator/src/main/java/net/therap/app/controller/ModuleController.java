@@ -1,6 +1,7 @@
 package net.therap.app.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.*;
 import net.therap.app.helper.DtoHelper;
@@ -37,9 +38,8 @@ import static net.therap.app.util.CollectionUtil.isValidOrderedList;
  */
 @RestController
 @RequestMapping("/modules")
+@Slf4j
 public class ModuleController {
-    
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     
     private final ModuleService moduleService;
     private final DtoHelper dtoHelper;
@@ -108,7 +108,7 @@ public class ModuleController {
     
     @PostMapping
     public ResponseEntity<ModuleDTO> createModule(@RequestBody @Validated ModuleDTO moduleDTO, HttpServletRequest request) {
-        logger.info("Creating new module {}", moduleDTO);
+        log.info("Creating new module {}", moduleDTO);
         
         if (moduleDTO.getId() != 0) {
             moduleDTO.setId(0);
@@ -125,7 +125,7 @@ public class ModuleController {
         Module module = moduleMapper.toModule(moduleDTO);
         module.setOrderIndex(moduleService.getMaxOrderIndexOfModules(module.getCourse().getId()));
         
-        logger.info("Module from DTO: {}", module);
+        log.info("Module from DTO: {}", module);
         Module savedModule = moduleService.save(module);
         
         return new ResponseEntity<>(moduleMapper.toModuleDTO(savedModule), HttpStatus.CREATED);
@@ -133,11 +133,13 @@ public class ModuleController {
     
     @PostMapping("/contents/reorder")
     public ResponseEntity<List<ContentCatalogueDTO>> reorderModules(@RequestBody @Validated(OnUpdate.class) List<ReorderDTO> contents) throws BadRequestException {
+        log.info("[POST] /modules/contents/reorder\n{}", contents);
         
         if (!isValidOrderedList(contents)) {
             throw new BadRequestException(messageSource.getMessage("invalid.reorder", null, Locale.getDefault()));
         }
         
+        log.info("passed validation");
         List<ReorderDTO> sortedContents = contents.stream()
                 .sorted(Comparator.comparingLong(ReorderDTO::getOrderIndex))
                 .toList();
@@ -148,6 +150,7 @@ public class ModuleController {
             module.setOrderIndex(newOrderIndex++);
         }
         
+        log.info("sort done!");
         List<Content> updatedContents = moduleService.reorderContents(sortedContents);
         
         return ResponseEntity.ok(updatedContents.stream().map(dtoHelper::toContentCatalogueDTO).toList());
