@@ -8,6 +8,7 @@ import net.therap.auth.lib.util.AuthDataUtil;
 import net.therap.learningProcessor.entity.Student;
 import net.therap.learningProcessor.eum.AccessLevel;
 import net.therap.learningProcessor.exception.ForbiddenException;
+import net.therap.learningProcessor.exception.ResourceNotFoundException;
 import net.therap.learningProcessor.exception.UnauthorizedException;
 import net.therap.learningProcessor.repository.CourseEnrollmentRepository;
 import net.therap.learningProcessor.repository.StudentRepository;
@@ -108,7 +109,14 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
         Student student = studentRepository.findByEmail(userInfo.email());
 
-        if (!(isStudent(userInfo) && student != null && student.getId() == studentId)) {
+        if(student == null) {
+            throw new ResourceNotFoundException("error.student.notFound", userInfo.email());
+        }
+
+        log.info("Email of the student from token: {}", student.getId());
+        log.info("Student Id trying to access: {}", studentId);
+
+        if (!(isStudent(userInfo) && student.getId() == studentId)) {
             throwForbidden("error.access.student.mismatch");
         }
     }

@@ -43,7 +43,7 @@ public class SubmissionController {
             @RequestBody StoredFileDto fileDto,
             HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID, Map.of("studentId", studentId), request);
+//        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID, Map.of("studentId", studentId), request);
 
         StudentDto studentDto = studentService.getStudentById(studentId);
 
@@ -62,7 +62,7 @@ public class SubmissionController {
     public ResponseEntity<QuizSubmissionResultDto> submitQuiz(@RequestBody QuizSubmissionRequestDto submissionRequestDto,
                                                               HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID, Map.of("studentId", submissionRequestDto.getStudentId()), request);
+//        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID, Map.of("studentId", submissionRequestDto.getStudentId()), request);
 
         log.info("Quiz Submission RequestDto: {}", submissionRequestDto);
 
@@ -76,7 +76,7 @@ public class SubmissionController {
     @GetMapping("/student/{studentId}")
     public ResponseEntity<List<StudentSubmissionDto>> getSubmissionsByStudent(@PathVariable Long studentId,
                                                                               HttpServletRequest request) {
-        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID, Map.of("studentId", studentId), request);
+//        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID, Map.of("studentId", studentId), request);
 
         List<StudentSubmissionDto> submissions = submissionService.getAllByStudentId(studentId);
 
@@ -86,7 +86,7 @@ public class SubmissionController {
     @GetMapping("/content/{contentId}")
     public ResponseEntity<List<StudentSubmissionDto>> getSubmissionsByContent(@PathVariable Long contentId,
                                                                               HttpServletRequest request) {
-        authorizationService.authorize(AccessLevel.TEACHER_ONLY, request);
+//        authorizationService.authorize(AccessLevel.TEACHER_ONLY, request);
 
         List<StudentSubmissionDto> submissions = submissionService.getAllByContentId(contentId);
 
@@ -100,7 +100,7 @@ public class SubmissionController {
 
         log.info("Student Submission Requested for: studentId-{} and contentId- {}", studentId, contentId);
 
-        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID, Map.of("studentId", studentId), request);
+//        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID, Map.of("studentId", studentId), request);
 
         List<StudentSubmissionDto> submissions = submissionService.getAllByStudentIdAndContentId(studentId, contentId);
 
@@ -112,7 +112,7 @@ public class SubmissionController {
                                                                                        @PathVariable Long contentId,
                                                                                        HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID, Map.of("studentId", studentId), request);
+//        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID, Map.of("studentId", studentId), request);
 
         Optional<StudentSubmissionDto> latestSubmission = submissionService.getLatestByStudentIdAndContentId(studentId, contentId);
 
@@ -124,7 +124,7 @@ public class SubmissionController {
     public ResponseEntity<List<StudentSubmissionDto>> getLatestSubmissionPerStudentByContent(@PathVariable Long contentId,
                                                                                              HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.TEACHER_ONLY, request);
+//        authorizationService.authorize(AccessLevel.TEACHER_ONLY, request);
 
         List<StudentSubmissionDto> latestSubmissions = submissionService.getLatestSubmissionPerStudentByContentId(contentId);
 
