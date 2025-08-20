@@ -73,10 +73,6 @@ public class StudentServiceImpl implements StudentService {
     public StudentDto getStudentByEmail(String email) {
         Student student = studentRepository.findByEmail(email);
 
-        if (student == null) {
-            throw new ResourceNotFoundException("error.student.notFound.byEmail", email);
-        }
-
         return studentMapper.toDto(student);
     }
 

@@ -140,7 +140,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         Long studentId = (Long) params.get("studentId");
 
         if (isTeacher(userInfo)) {
-            return; // Teacher always allowed
+            return;
         }
         checkStudentWithId(userInfo, Map.of("studentId", studentId));
     }
