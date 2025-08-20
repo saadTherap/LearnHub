@@ -14,7 +14,7 @@ import java.util.Optional;
  */
 //@Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
-    
+
     @Override
     @Query("FROM Course c WHERE c.isDeleted = false")
     List<Course> findAll();
@@ -24,13 +24,14 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     
     @Query("FROM Course c WHERE c.currentRelease = 0 AND c.instructor.id = :instructorId")
     List<Course> findAllDrafts(@Param("instructorId") long instructorId);
-    
-    @Query("FROM Course c WHERE c.currentRelease = 0")
+
+    @Query("FROM Course c WHERE c.currentRelease = 0 AND c.isDeleted = false")
     List<Course> findAllDrafts();
-    
-    List<Course> findByInstructor_Id(long instructorId);
-    
-    @Query("FROM Course c WHERE c.currentRelease = 0 AND c.id = :id")
+
+    @Query("FROM Course c WHERE c.instructor.id = :instructorId AND c.isDeleted = false")
+    List<Course> findByInstructor_Id(@Param("instructorId") long instructorId);
+
+    @Query("FROM Course c WHERE c.currentRelease = 0 AND c.id = :id AND c.isDeleted = false")
     Optional<Course> findDraftById(@Param("id") long id);
     
     boolean existsByIdAndInstructorId(long courseId, long instructorId);

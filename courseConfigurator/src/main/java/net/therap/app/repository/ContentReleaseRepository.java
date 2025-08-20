@@ -14,9 +14,13 @@ import java.util.List;
  */
 @Repository
 public interface ContentReleaseRepository extends JpaRepository<ContentRelease, Long> {
-    
-    @Query("SELECT cr FROM Content c JOIN c.currentContentRelease cr WHERE c.module.course.instructor.id = :instructorId")
+
+    @Override
+    @Query("FROM ContentRelease cr WHERE cr.isDeleted = false")
+    List<ContentRelease> findAll();
+
+    @Query("SELECT cr FROM Content c JOIN c.currentContentRelease cr WHERE c.module.course.instructor.id = :instructorId AND cr.isDeleted = false")
     List<ContentRelease> findByInstructorId(@Param("instructorId") long instructorId);
-    
+
     boolean existsByIdAndContentModuleCourseInstructorEmail(long id, String contentModuleCourseInstructorEmail);
 }
