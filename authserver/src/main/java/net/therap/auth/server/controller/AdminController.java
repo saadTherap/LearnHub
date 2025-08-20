@@ -1,12 +1,17 @@
 package net.therap.auth.server.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.therap.auth.server.dto.JwtResponse;
 import net.therap.auth.server.entity.User;
+import net.therap.auth.server.enums.UserRole;
+import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author apurboturjo
@@ -15,26 +20,58 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class AdminController {
     
     private final UserService userService;
     
+    private void checkAdmin(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            throw new AuthServerException("Authentication required");
+        }
+        
+        User user = userService.findById(userId);
+        if (!UserRole.ADMIN.equals(user.getRole())) {
+            throw new AuthServerException("Admin access required");
+        }
+    }
+    
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getAllUsers(HttpServletRequest request) {
+        checkAdmin(request);
+        return ResponseEntity.ok(userService.findAll());
+    }
+    
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<User> getUserById(@PathVariable Long userId, HttpServletRequest request) {
+        checkAdmin(request);
+        return ResponseEntity.ok(userService.findById(userId));
+    }
+    
     @PutMapping("/update-user")
-    public ResponseEntity<User> update(@Valid @RequestBody User user) {
+    public ResponseEntity<User> updateUser(@Valid @RequestBody User user, HttpServletRequest request) {
+        checkAdmin(request);
         return ResponseEntity.ok(userService.updateUser(user));
     }
     
     @DeleteMapping("/delete-user/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id, HttpServletRequest request) {
+        checkAdmin(request);
         userService.deleteById(id);
-        
         return ResponseEntity.ok().build();
     }
     
-    @GetMapping("/logout-force")
-    public ResponseEntity<JwtResponse> forceLogout() {
-//        To Do
-        
-        return null;
+    @PutMapping("/user/{userId}/toggle-status")
+    public ResponseEntity<User> toggleUserStatus(@PathVariable Long userId, HttpServletRequest request) {
+        checkAdmin(request);
+        return ResponseEntity.ok(userService.toggleUserStatus(userId));
+    }
+    
+    @PostMapping("/logout-force")
+    public ResponseEntity<JwtResponse> forceLogout(HttpServletRequest request) {
+        checkAdmin(request);
+        // TODO: Implement force logout
+        return ResponseEntity.ok().build();
     }
 }
