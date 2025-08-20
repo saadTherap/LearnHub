@@ -57,6 +57,20 @@ public class InstructorController {
         this.messageSource = messageSource;
     }
     
+    @GetMapping("/myProfile")
+    public ResponseEntity<InstructorDTO> getMyProfile(HttpServletRequest request) throws BadRequestException {
+        long id = authorizationService.getInstructorIdFromRequest(request);
+        Optional<Instructor> instructorOptional = instructorService.getInstructorById(id);
+        
+        if (instructorOptional.isEmpty()) {
+            throw new NoSuchElementException(messageSource.getMessage("instructor.not.found", null, request.getLocale()));
+        }
+        
+        authorizationService.authorize(AuthorizationLevel.OWNER, instructorOptional.get(), request);
+        
+        return ResponseEntity.ok(instructorMapper.toInstructorDTO(instructorOptional.get()));
+    }
+    
     @GetMapping("/{id}")
     public ResponseEntity<InstructorDTO> getInstructorById(@PathVariable long id, HttpServletRequest request) throws BadRequestException {
         log.debug("GET /instructors/{}", id);
@@ -86,7 +100,8 @@ public class InstructorController {
     }
     
     @GetMapping
-    public ResponseEntity<List<InstructorDTO>> getAllInstructors() {
+    public ResponseEntity<List<InstructorDTO>> getAllInstructors(HttpServletRequest request) throws BadRequestException {
+        authorizationService.authorize(AuthorizationLevel.INSTRUCTOR, null, request);
         log.info("[GET] /instructors");
         List<Instructor> instructors = instructorService.getAllInstructors();
         List<InstructorDTO> instructorDTOs = instructors.stream()
