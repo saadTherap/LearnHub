@@ -83,4 +83,11 @@ public class UserService {
     public boolean userExistsById(Long userId) {
         return Objects.nonNull(userId) && userRepository.existsById(userId);
     }
+    
+    public User toggleUserStatus(Long userId) {
+        User user = findById(userId);
+        user.setEnabled(!user.isEnabled());
+        
+        return userRepository.save(user);
+    }
 }
