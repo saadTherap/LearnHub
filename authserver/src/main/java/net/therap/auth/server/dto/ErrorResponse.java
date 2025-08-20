@@ -17,5 +17,7 @@ public class ErrorResponse implements Serializable {
     
     private String message;
     
-    private Map<String, String> errors;
+    private String error;
+    
+    private Map<String, String> formErrors;
 }
