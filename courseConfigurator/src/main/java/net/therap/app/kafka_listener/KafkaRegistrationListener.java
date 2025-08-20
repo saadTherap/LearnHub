@@ -27,10 +27,14 @@ public class KafkaRegistrationListener {
             topics = "${kafka.topics.registration}",
             groupId = "${kafka.topics.registration.grp}"
     )
-    void listen(String email) {
+    void listen(String json) {
+        String  email = producerConsumerTask.deserialize(json, String.class);
+        System.out.println(email);
+        
         Instructor instructor = new Instructor();
         instructor.setEmail(email);
-
+        System.out.println(email);
+        
         instructorService.createInstructor(instructor);
     }
 }
