@@ -9,6 +9,7 @@ import net.therap.learningProcessor.dto.StudentDto;
 import net.therap.learningProcessor.eum.AccessLevel;
 import net.therap.learningProcessor.service.AuthorizationService;
 import net.therap.learningProcessor.service.StudentService;
+import net.therap.learningProcessor.util.StudentUtil;
 import net.therap.learningProcessor.validator.group.OnCreate;
 import net.therap.learningProcessor.validator.group.OnUpdate;
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,7 @@ public class StudentController {
     private final StudentService studentService;
     private final HazelcastCacheService hazelcastCacheService;
     private final AuthorizationService authorizationService;
+    private final StudentUtil studentUtil;
 
     @GetMapping
     public ResponseEntity<List<StudentDto>> getAllStudents(HttpServletRequest request) {
@@ -46,7 +48,7 @@ public class StudentController {
     @GetMapping("/{id}")
     public ResponseEntity<StudentDto> getStudentById(@PathVariable Long id, HttpServletRequest request) {
 
-        log.info("Getting Student, {}", id);
+        log.info("[Get] Student, {}", id);
 
         authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID,  Map.of("studentId", id), request);
 
@@ -94,7 +96,11 @@ public class StudentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteStudent(@PathVariable Long id,
+                                              HttpServletRequest request) {
+
+        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID,  Map.of("studentId", id), request);
+
         boolean deleted = studentService.deleteStudent(id);
 
         if (!deleted) {
@@ -115,4 +121,18 @@ public class StudentController {
 
         return ResponseEntity.ok(student);
     }
+
+    @GetMapping("/fromToken")
+    public ResponseEntity<StudentDto> getStudentFromToken(HttpServletRequest request) {
+
+        StudentDto student = studentUtil.getStudentFromRequest(request);
+
+        if (student == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(student);
+    }
+
+
 }
