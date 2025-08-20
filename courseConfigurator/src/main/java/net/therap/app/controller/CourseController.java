@@ -69,7 +69,7 @@ public class CourseController {
         log.info("[GET] /courses/{} ", id);
         CourseCatalogDTO cached = hazelcastCacheService.get(CacheConstants.COURSE_CATALOG, id);
         if (cached != null) {
-            authorizationService.authorize(AuthorizationLevel.OWNER, cached, request);
+            authorizationService.authorize(AuthorizationLevel.STUDENT, cached, request);
             return ResponseEntity.ok(cached);
         }
         
@@ -77,7 +77,7 @@ public class CourseController {
         
         if (courseOptional.isPresent()) {
             Course course = courseOptional.get();
-            authorizationService.authorize(AuthorizationLevel.OWNER, course, request);
+            authorizationService.authorize(AuthorizationLevel.STUDENT, course, request);
             log.info("course modules size: {}", course.getModules().size());
             CourseCatalogDTO dto = dtoHelper.toDetailedCourseCatalogDTO(course);
             hazelcastCacheService.put(CacheConstants.COURSE_CATALOG, course.getId(), dto);
