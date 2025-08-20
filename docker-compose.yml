@@ -14,7 +14,7 @@ services:
       dockerfile: Dockerfile
     container_name: authserver
     ports:
-      - "8090:8090"
+      - "8082:8090"
 
   course-configurator:
     build:
@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile
     container_name: courseConfigurator
     ports:
-      - "8082:8082"
+      - "8090:8082"
     restart: always
 
   learning-processor:
