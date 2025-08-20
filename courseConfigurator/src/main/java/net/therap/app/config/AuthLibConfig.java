@@ -1,7 +1,6 @@
 package net.therap.app.config;
 
 
-import com.fasterxml.jackson.databind.ser.std.ToEmptyObjectSerializer;
 import net.therap.auth.lib.filter.JwtAuthFilter;
 import net.therap.auth.lib.validator.TokenValidator;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -28,7 +27,6 @@ public class AuthLibConfig {
         System.out.println("Filter bean created");
 
         JwtAuthFilter jwtAuthFilter = new JwtAuthFilter(tokenValidator, excludedPaths);
-
         FilterRegistrationBean<JwtAuthFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(jwtAuthFilter);
         registration.addUrlPatterns("/*"); // Apply to all paths
