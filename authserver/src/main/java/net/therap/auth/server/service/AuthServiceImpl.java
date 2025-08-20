@@ -52,6 +52,7 @@ public class AuthServiceImpl implements AuthService {
     
     @Override
     public LoginResponse login(LoginRequest request) {
+        log.info("LOGIN request RECEIVED!");
         User user = authenticateUser(request.getEmail(), request.getPassword());
         
         if (!user.isEnabled()) {
@@ -65,6 +66,8 @@ public class AuthServiceImpl implements AuthService {
         response.setRole(user.getRole().name());
         response.setAccessToken(jwt.getAccessToken());
         response.setRefreshToken(jwt.getRefreshToken());
+        
+        log.info("LOGIN SUCCESSFUL!. Sent the tokens.");
         
         return response;
     }
