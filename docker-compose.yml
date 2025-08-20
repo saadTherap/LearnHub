@@ -15,7 +15,6 @@ services:
     container_name: authserver
     ports:
       - "8080:8090"
-    restart: always
 
   course-configurator:
     build:
