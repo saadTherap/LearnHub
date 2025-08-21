@@ -3,6 +3,7 @@ package net.therap.cache.support;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import com.hazelcast.query.Predicates;
+import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.Set;
  * @author riadanonto
  * @since 14/8/25
  */
+@Service
 public class HazelcastCacheService {
 
     private final HazelcastInstance hazelcastInstance;
