@@ -17,7 +17,7 @@ services:
       - "8090:8090"
     restart: unless-stopped
 
-  securefileserver:
+  secure-file-server:
     build:
       context: .
       dockerfile: Dockerfile
