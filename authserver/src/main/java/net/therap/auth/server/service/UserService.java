@@ -29,7 +29,7 @@ public class UserService {
     private final HazelcastCacheService hazelcastCacheService;
     
     public List<User> findAll() {
-        return userRepository.findAllSorted();
+        return userRepository.findAll();
     }
     
     public User findById(Long id) {
