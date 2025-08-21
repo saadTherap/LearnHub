@@ -9,25 +9,37 @@ import lombok.Getter;
 @Getter
 public enum AuthorizationLevel {
     
-    ADMIN("ADMIN"),
+    ADMIN("ADMIN", 5),
     
-    INSTRUCTOR("INSTRUCTOR"),
+    OWNER("INSTRUCTOR", 4),
     
-    STUDENT("STUDENT"),
+    INSTRUCTOR("INSTRUCTOR", 3),
     
-    OWNER("INSTRUCTOR"),
+    STUDENT("STUDENT", 2),
     
-    PUBLIC("PUBLIC"),
+    STUDENT_ENROLLED("STUDENT", 1),
     
-    STUDENT_ENROLLED("STUDENT");
+    PUBLIC("PUBLIC", 0);
     
     private final String role;
+    private final int level;
     
-    AuthorizationLevel(String role) {
+    AuthorizationLevel(String role, int level) {
         this.role = role;
+        this.level = level;
     }
     
     public boolean hasRole(String userRole) {
-        return this.getRole().equals(userRole);
+        AuthorizationLevel userLevel = getByRole(userRole);
+        return userLevel != null && userLevel.getLevel() >= this.level;
+    }
+    
+    public static AuthorizationLevel getByRole(String role) {
+        for (AuthorizationLevel level : values()) {
+            if (level.getRole().equals(role)) {
+                return level;
+            }
+        }
+        return null;
     }
 }
