@@ -8,6 +8,7 @@ import net.therap.learningProcessor.eum.Gender;
 import net.therap.learningProcessor.validator.group.OnCreate;
 import net.therap.learningProcessor.validator.group.OnUpdate;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 /**
@@ -15,7 +16,7 @@ import java.time.LocalDate;
  * @since 7/27/25
  */
 @Data
-public class StudentDto {
+public class StudentDto implements Serializable {
 
     private Long id;
 

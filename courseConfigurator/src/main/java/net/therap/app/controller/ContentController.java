@@ -79,6 +79,7 @@ public class ContentController {
         return contents.stream().map(dtoHelper::toContentCatalogueDTO).toList();
     }
 
+    // Avi uses this
     @GetMapping("/detail/{contentReleaseId}")
     public ResponseEntity<ContentCatalogueDTO> getContentReleaseById(@PathVariable long contentReleaseId) {
         log.info("[GET] /contents/detail/{}", contentReleaseId);

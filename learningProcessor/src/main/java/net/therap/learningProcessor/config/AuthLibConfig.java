@@ -1,4 +1,4 @@
-package net.therap.app.config;
+package net.therap.learningProcessor.config;
 
 
 import net.therap.auth.lib.filter.JwtAuthFilter;
@@ -15,18 +15,18 @@ import java.util.List;
  * @since 18/8/25
  */
 
-
 @Configuration
 public class AuthLibConfig {
 
     @Bean
     public FilterRegistrationBean<JwtAuthFilter> jwtAuthFilter(TokenValidator tokenValidator) {
         List<String> excludedPaths = List.of("/swagger-ui/", "/swagger-resources/", "/v3/api-docs", "/webjars/",
-                                             "/public/","/appStatus");
+                "/public/", "/appStatus");
 
         System.out.println("Filter bean created");
 
         JwtAuthFilter jwtAuthFilter = new JwtAuthFilter(tokenValidator, excludedPaths);
+
         FilterRegistrationBean<JwtAuthFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(jwtAuthFilter);
         registration.addUrlPatterns("/*"); // Apply to all paths
@@ -36,14 +36,4 @@ public class AuthLibConfig {
 
         return registration;
     }
-
-//    @Bean
-//    public JwtAuthFilter jwtAuthFilter(TokenValidator tokenValidator) {
-//        List<String> excludedPaths = List.of("/swagger-ui/", "/swagger-resources/", "/v3/api-docs", "/webjars/",
-//                                             "/public/");
-//
-//        System.out.println("Filter bean created");
-//
-//        return new JwtAuthFilter(tokenValidator,excludedPaths);
-//    }
 }

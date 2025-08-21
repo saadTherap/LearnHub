@@ -44,17 +44,18 @@ CREATE TABLE avi_student_content_completion (
 );
 
 CREATE TABLE avi_student_submission (
-    id              NUMBER(19) PRIMARY KEY,
-    student_id      NUMBER(19) NOT NULL,
-    content_id      NUMBER(19) NOT NULL,
-    submitted_at    TIMESTAMP NOT NULL,
-    file_id         NUMBER(19) NOT NULL,
-    download_url    VARCHAR2(1024),
-    original_file_name VARCHAR2(255),
-    is_deleted      NUMBER(1) DEFAULT 0 NOT NULL,
-    created_at      TIMESTAMP NOT NULL,
-    updated_at      TIMESTAMP NOT NULL,
-    version         NUMBER(10) NOT NULL,
-    CONSTRAINT uk_student_submission UNIQUE (student_id, content_id, submitted_at),
-    CONSTRAINT fk_student_submission FOREIGN KEY (student_id) REFERENCES  avi_student(id)
+    id                  NUMBER(19) PRIMARY KEY,
+    student_id          NUMBER(19) NOT NULL,
+    content_id          NUMBER(19) NOT NULL,
+    form_id             VARCHAR2(100) NOT NULL,
+    download_url        VARCHAR2(1024) NOT NULL,
+    original_file_name  VARCHAR2(255) NOT NULL,
+    submitted_at        TIMESTAMP NOT NULL,
+    content_type        VARCHAR2(255) NOT NULL,
+    uploader_email      VARCHAR2(255),
+    is_deleted          NUMBER(1) DEFAULT 0 NOT NULL,
+    created_at          TIMESTAMP NOT NULL,
+    updated_at          TIMESTAMP NOT NULL,
+    version             NUMBER(10) NOT NULL,
+    CONSTRAINT fk_student_submission FOREIGN KEY (student_id) REFERENCES avi_student(id)
 );

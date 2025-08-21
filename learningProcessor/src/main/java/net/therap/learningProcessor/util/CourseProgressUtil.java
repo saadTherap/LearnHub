@@ -49,7 +49,7 @@ public class CourseProgressUtil {
 
     public static void addProgressDetailsToCourse(CourseDetailWithProgressDto courseDetail, List<StudentContentCompletionDto> completedContentDtos) {
 
-        if(Objects.isNull(courseDetail.getModules())) {
+        if (Objects.isNull(courseDetail.getModules()) || courseDetail.getModules().isEmpty()) {
             courseDetail.setProgress(0);
 
             return;
@@ -76,6 +76,7 @@ public class CourseProgressUtil {
                 boolean isCompleted = completedContentIds.contains(content.getId());
 
                 if (isCompleted) {
+                    content.setCompleted(true);
                     moduleCompleted++;
                 }
             }

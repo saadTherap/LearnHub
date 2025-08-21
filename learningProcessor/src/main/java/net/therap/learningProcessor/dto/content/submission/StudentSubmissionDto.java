@@ -23,11 +23,17 @@ public class StudentSubmissionDto {
 
     private Long contentId;
 
-    private String studentName;
-
-    private String originalFileName;
+    private String formId;
 
     private String downloadUrl;
 
+    private String originalFileName;
+
     private LocalDateTime submittedAt;
+
+    private String contentType;
+
+    private String uploaderEmail;
+
+    private String studentName;
 }

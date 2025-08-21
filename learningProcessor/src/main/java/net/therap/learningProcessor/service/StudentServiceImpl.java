@@ -1,6 +1,7 @@
 package net.therap.learningProcessor.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.therap.cache.support.CacheInvalidationUtil;
 import net.therap.learningProcessor.constants.CacheConstants;
 import net.therap.learningProcessor.dto.StudentDto;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class StudentServiceImpl implements StudentService {
 
     private final StudentRepository studentRepository;
@@ -49,6 +51,8 @@ public class StudentServiceImpl implements StudentService {
         Student savedEntity = studentRepository.save(entity);
         cacheInvalidationUtil.invalidateCachesAfterCommit(savedEntity.getId(), CacheConstants.STUDENTS);
 
+        log.info("Student Created from Kafka: {}", dto.getEmail());
+
         return studentMapper.toDto(savedEntity);
     }
 
@@ -63,6 +67,13 @@ public class StudentServiceImpl implements StudentService {
         cacheInvalidationUtil.invalidateCachesAfterCommit(updatedStudent.getId(), CacheConstants.STUDENTS);
 
         return studentMapper.toDto(updatedStudent);
+    }
+
+    @Override
+    public StudentDto getStudentByEmail(String email) {
+        Student student = studentRepository.findByEmail(email);
+
+        return studentMapper.toDto(student);
     }
 
     @Override

@@ -76,6 +76,10 @@ public class CourseService {
         return courseRepository.findAllDrafts();
     }
     
+    public List<Course> findAllDrafts(long instructorId) {
+        return courseRepository.findAllDrafts(instructorId);
+    }
+    
     // find specific draft by id
     public Optional<Course> findDraftById(long id) {
         return courseRepository.findDraftById(id);

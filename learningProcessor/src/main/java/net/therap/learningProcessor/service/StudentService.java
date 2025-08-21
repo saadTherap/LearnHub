@@ -18,5 +18,7 @@ public interface StudentService {
 
     StudentDto updateStudent(StudentDto dto);
 
+    StudentDto getStudentByEmail(String email);
+
     boolean deleteStudent(Long id);
 }

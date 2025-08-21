@@ -16,6 +16,8 @@ public class ModuleWithProgressDto {
 
     private long id;
 
+    private long orderIndex;
+
     private String title;
 
     private long courseId;
