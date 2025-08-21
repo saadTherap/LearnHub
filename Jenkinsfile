@@ -26,9 +26,9 @@ pipeline {
                         }
                     }
                 }
-                stage('Service Registry') {
+                stage('Secure File Server') {
                     steps {
-                        dir('service-registry') {
+                        dir('secureFileServer') {
                             sh 'gradle clean build'
                         }
                     }
@@ -72,7 +72,7 @@ pipeline {
                         [dir: 'authserver', port: 8090],
                         [dir: 'learningProcessor', port: 8028],
                         [dir: 'courseConfigurator', port: 8082],
-//                         [dir: 'auth-key-provider', port: 8091]
+                        [dir: 'secure-file-server', port: 8026]
                     ]
 
                     // 1. Kill old processes to prevent port conflicts
@@ -84,46 +84,12 @@ pipeline {
 
 
                     // 2. Stop and remove old containers gracefully
-                    sh 'docker compose down auth-server course-configurator learning-processor service-registry || true'
+                    sh 'docker compose down auth-server secure-file-server course-configurator learning-processor || true'
 
                     // 3. Build and start new containers
-                    sh 'docker compose up -d --build auth-server course-configurator learning-processor service-registry'
+                    sh 'docker compose up -d --build auth-server secure-file-server course-configurator learning-processor'
                 }
             }
         }
-
-//         stage('Deploy') {
-//             steps {
-//                 script {
-//                     // Ensure log directory exists
-//                     sh "mkdir -p ${BASE_LOG_DIR}"
-//
-//                     def services = [
-//                         [dir: 'service-registry', port: 8761, jar: 'service-registry-0.0.1-SNAPSHOT.jar'],
-//                         [dir: 'authserver', port: 8090, jar: 'authserver-0.1-SNAPSHOT.jar'],
-//                         [dir: 'learningProcessor', port: 8028, jar: 'learningProcessor-0.0.1-SNAPSHOT.jar'],
-//                         [dir: 'courseConfigurator', port: 8082, jar: 'courseConfigurator-0.0.1-SNAPSHOT.jar'],
-//                         [dir: 'hazelcast-server', port: 5701, jar: 'hazelcast-server-0.0.1-SNAPSHOT.jar']
-//                     ]
-//
-//                     for (svc in services) {
-//                         dir(svc.dir) {
-//                             // Kill existing process on port
-//                             sh """
-//                             PID=\$(lsof -t -i:${svc.port}) || true
-//                             if [ ! -z "\$PID" ]; then
-//                                 kill -9 \$PID
-//                             fi
-//                             """
-//
-//                             // Start service detached using 'at now' (fire-and-forget)
-//                             sh """
-//                             echo "java -jar build/libs/${svc.jar} > ${BASE_LOG_DIR}/${svc.dir}.log 2>&1 &" | at now
-//                             """
-//                         }
-//                     }
-//                 }
-//             }
-//         }
     }
 }
