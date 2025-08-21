@@ -19,11 +19,11 @@ services:
 
   secure-file-server:
     build:
-      context: .
+      context: ./secureFileServer
       dockerfile: Dockerfile
-    container_name: securefileserver
+    container_name: secureFileServer
     ports:
-      - "8082:8082"
+      - "8026:8026"
     depends_on:
       - clamav
     environment:
