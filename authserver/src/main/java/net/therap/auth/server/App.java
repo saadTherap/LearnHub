@@ -39,10 +39,17 @@ public class App {
     @PostConstruct
     public void init() {
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-        kafkaTopicRegistrar.registerTopic(studentRegistrationTopic, Integer.parseInt(partition), Short.parseShort(replication));
-        kafkaTopicRegistrar.registerTopic(instructorRegistrationTopic, Integer.parseInt(partition), Short.parseShort(replication));
-        kafkaTopicRegistrar.registerTopic(studentDeletionTopic, Integer.parseInt(partition), Short.parseShort(replication));
-        kafkaTopicRegistrar.registerTopic(instructorDeletionTopic, Integer.parseInt(partition), Short.parseShort(replication));
+        
+        try {
+            kafkaTopicRegistrar.registerTopic(studentRegistrationTopic, Integer.parseInt(partition), Short.parseShort(replication));
+            kafkaTopicRegistrar.registerTopic(instructorRegistrationTopic, Integer.parseInt(partition), Short.parseShort(replication));
+            kafkaTopicRegistrar.registerTopic(studentDeletionTopic, Integer.parseInt(partition), Short.parseShort(replication));
+            kafkaTopicRegistrar.registerTopic(instructorDeletionTopic, Integer.parseInt(partition), Short.parseShort(replication));
+            
+        } catch (Exception e) {
+            System.out.println("Kafka DOWN!! I repeat KAFKA is DOWN!!");
+        }
+        
     }
     
     public static void main(String[] args) {
