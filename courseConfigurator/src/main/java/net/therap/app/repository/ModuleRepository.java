@@ -22,8 +22,8 @@ public interface ModuleRepository extends JpaRepository<Module, Long> {
 
     @Query("FROM Module m WHERE m.course.id = :courseId AND m.isDeleted = false")
     List<Module> findByCourseId(@Param("courseId") long courseId);
-
-    @Query("SELECT MAX(m.orderIndex) FROM Course c JOIN c.modules m WHERE c.id = :courseId AND m.isDeleted = false")
+    
+    @Query("SELECT COALESCE(MAX(m.orderIndex), 0) FROM Course c JOIN c.modules m WHERE c.id = :courseId AND m.isDeleted = false")
     long findMaxOrderIndexOfModules(@Param("courseId") long courseId);
     
     boolean existsByIdAndCourseInstructorId(long moduleId, long instructorId);

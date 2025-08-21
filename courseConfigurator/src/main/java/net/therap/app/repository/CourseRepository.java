@@ -22,7 +22,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     @Query("FROM Course c WHERE c.id = :id AND c.isDeleted = false")
     Optional<Course> findById(@Param("id") long id);
     
-    @Query("FROM Course c WHERE c.currentRelease = 0 AND c.instructor.id = :instructorId")
+    @Query("FROM Course c WHERE c.currentRelease = 0 AND c.instructor.id = :instructorId AND c.isDeleted = false")
     List<Course> findAllDrafts(@Param("instructorId") long instructorId);
 
     @Query("FROM Course c WHERE c.currentRelease = 0 AND c.isDeleted = false")

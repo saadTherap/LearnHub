@@ -26,9 +26,4 @@ public class MainController {
     public ResponseEntity<String> hello() {
         return ResponseEntity.ok("Welcome to LearnHub!!");
     }
-    
-    @GetMapping("/test")
-    public ResponseEntity<Long> test() {
-        return ResponseEntity.ok(moduleRepository.findMaxOrderIndexOfModules(3));
-    }
 }

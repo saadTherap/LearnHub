@@ -1,13 +1,17 @@
 package net.therap.app.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.*;
+import net.therap.app.helper.AuthorizationService;
 import net.therap.app.helper.ContentHelper;
 import net.therap.app.helper.DtoHelper;
 import net.therap.app.mapper.LectureMapper;
 import net.therap.app.mapper.SubmissionMapper;
 import net.therap.app.model.*;
+import net.therap.app.model.Module;
+import net.therap.app.model.enums.AuthorizationLevel;
 import net.therap.app.model.enums.ReleaseStatus;
 import net.therap.app.service.*;
 import net.therap.app.validation.OnCreate;
@@ -49,14 +53,16 @@ public class ContentController {
     private final SubmissionMapper submissionMapper;
     private final MessageSource messageSource;
     private final HazelcastCacheService hazelcastCacheService;
-
+    private final AuthorizationService authorizationService;
+    private final ModuleService moduleService;
+    
     
     @Autowired
     public ContentController(ContentService contentService, DtoHelper dtoHelper, ContentHelper contentHelper,
                              LectureService lectureService, QuizService quizService,
                              SubmissionService submissionService, ContentReleaseService contentReleaseService,
                              CourseService courseService, LectureMapper lectureMapper,
-                             SubmissionMapper submissionMapper, MessageSource messageSource, HazelcastCacheService hazelcastCacheService) {
+                             SubmissionMapper submissionMapper, MessageSource messageSource, HazelcastCacheService hazelcastCacheService, AuthorizationService authorizationService, ModuleService moduleService) {
         this.contentService = contentService;
         this.dtoHelper = dtoHelper;
         this.contentHelper = contentHelper;
@@ -69,11 +75,14 @@ public class ContentController {
         this.submissionMapper = submissionMapper;
         this.messageSource = messageSource;
         this.hazelcastCacheService = hazelcastCacheService;
+        this.authorizationService = authorizationService;
+        this.moduleService = moduleService;
     }
     
     @GetMapping("/byModule/{moduleId}")
-    public List<ContentCatalogueDTO> getContentByModuleId(@PathVariable long moduleId) {
+    public List<ContentCatalogueDTO> getContentByModuleId(@PathVariable long moduleId, HttpServletRequest request) throws BadRequestException {
         log.info("[GET] /contents/byModule/{}", moduleId);
+        authorizationService.authorize(AuthorizationLevel.STUDENT, null, request);
         List<Content> contents = contentService.findByModuleId(moduleId);
         
         return contents.stream().map(dtoHelper::toContentCatalogueDTO).toList();
@@ -81,67 +90,82 @@ public class ContentController {
 
     // Avi uses this
     @GetMapping("/detail/{contentReleaseId}")
-    public ResponseEntity<ContentCatalogueDTO> getContentReleaseById(@PathVariable long contentReleaseId) {
+    public ResponseEntity<ContentCatalogueDTO> getContentReleaseById(@PathVariable long contentReleaseId, HttpServletRequest request) throws BadRequestException {
         log.info("[GET] /contents/detail/{}", contentReleaseId);
         ContentCatalogueDTO cached = hazelcastCacheService.get(CacheConstants.CONTENT_CATALOG, contentReleaseId);
         
         if (cached != null) {
+            authorizationService.authorize(AuthorizationLevel.OWNER, cached, request);
             return ResponseEntity.ok(cached);
         }
-
+        
         Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
-
-        return contentOptional
-                .map(content -> {
-                    ContentRelease contentRelease = content.getCurrentContentRelease();
-                    
-                    if (contentRelease instanceof Quiz quiz) {
-                        Hibernate.initialize(quiz.getQuestions());
-                    }
-                    
-                    ContentCatalogueDTO dto = contentService.toDetailedContentCatalogueDTO(contentRelease);
-
-                    hazelcastCacheService.put(CacheConstants.CONTENT_CATALOG, contentReleaseId, dto);
-
-                    return new ResponseEntity<>(dto, HttpStatus.OK);
-                })
-                .orElseThrow(() -> new NoSuchElementException(messageSource.getMessage("content.not.found", null, Locale.getDefault())));
+        
+        if (contentOptional.isPresent()) {
+            authorizationService.authorize(AuthorizationLevel.OWNER, contentOptional.get(), request);
+            ContentRelease contentRelease = contentOptional.get().getCurrentContentRelease();
+            
+            if (contentRelease instanceof Quiz quiz) {
+                Hibernate.initialize(quiz.getQuestions());
+            }
+            
+            ContentCatalogueDTO dto = contentService.toDetailedContentCatalogueDTO(contentRelease);
+            hazelcastCacheService.put(CacheConstants.CONTENT_CATALOG, contentReleaseId, dto);
+            
+            return new ResponseEntity<>(dto, HttpStatus.OK);
+        }
+        
+        throw new NoSuchElementException(messageSource.getMessage("content.not.found", null, Locale.getDefault()));
     }
     
     @GetMapping("/detail/exact/{contentReleaseId}")
-    public ResponseEntity<ContentReleaseDTO> getContentReleaseDetailedInstructorView(@PathVariable long contentReleaseId) {
+    public ResponseEntity<ContentReleaseDTO> getContentReleaseDetailedInstructorView(@PathVariable long contentReleaseId, HttpServletRequest request) throws BadRequestException {
         log.info("[GET] /contents/detail/exact/{}", contentReleaseId);
         
         Optional<ContentRelease> contentReleaseOptional = contentReleaseService.findById(contentReleaseId);
         
-        return contentReleaseOptional
-                .map(contentRelease -> {
-                    ContentReleaseDTO dto = dtoHelper.toContentReleaseDTO(contentRelease);
-                    
-                    return new ResponseEntity<>(dto, HttpStatus.OK);
-                })
-                .orElseThrow(() -> new NoSuchElementException(messageSource.getMessage("content.not.found", null, Locale.getDefault())));
+        if (contentReleaseOptional.isEmpty()) {
+            throw new NoSuchElementException(messageSource.getMessage("content.not.found", null, Locale.getDefault()));
+        }
+        
+        authorizationService.authorize(AuthorizationLevel.OWNER, contentReleaseOptional.get(), request);
+        ContentReleaseDTO dto = dtoHelper.toContentReleaseDTO(contentReleaseOptional.get());
+        
+        return new ResponseEntity<>(dto, HttpStatus.OK);
+         
     }
 
 
     @GetMapping
-    public ResponseEntity<List<ContentReleaseDTO>> getAllContentReleases() {
+    public ResponseEntity<List<ContentReleaseDTO>> getAllContentReleases(HttpServletRequest request) throws BadRequestException {
         log.info("[GET] /contents");
-        List<ContentRelease> contentReleases = contentService.findAllContents();
+        authorizationService.authorize(AuthorizationLevel.ADMIN, null, request);
+        List<ContentRelease> contentReleases = contentService.findAllContentReleases();
         
         return new ResponseEntity<>(contentReleases.stream().map(dtoHelper::toContentReleaseDTO).toList(),
                                     HttpStatus.OK);
     }
 
     @GetMapping("/{contentReleaseId}/releases")
-    public ResponseEntity<List<ContentReleaseDTO>> getAllContentReleases(@PathVariable long contentReleaseId) {
+    public ResponseEntity<List<ContentReleaseDTO>> getAllContentReleases(@PathVariable long contentReleaseId,
+                                                                         HttpServletRequest request) throws BadRequestException {
+        
         log.info("[GET] /contents/{}/releases", contentReleaseId);
         List<ContentReleaseDTO> cached = hazelcastCacheService.get(CacheConstants.CONTENT_RELEASE_LIST, contentReleaseId);
         
         if (cached != null) {
+            authorizationService.authorize(AuthorizationLevel.OWNER, cached, request);
             return ResponseEntity.ok(cached);
         }
-
+        
+        Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
+        
+        if (contentOptional.isEmpty()) {
+            throw new NoSuchElementException(messageSource.getMessage("content.not.found", null, Locale.getDefault()));
+        }
+        
+        authorizationService.authorize(AuthorizationLevel.OWNER, contentOptional.get(), request);
+        
         List<ContentRelease> contentReleases = contentService.findAllReleases(contentReleaseId);
         List<ContentReleaseDTO> dtos = contentReleases.stream()
                 .map(dtoHelper::toContentReleaseDTO)
@@ -152,8 +176,15 @@ public class ContentController {
     }
     
     @GetMapping("/releases/{contentId}")
-    public ResponseEntity<List<ContentReleaseDTO>> getContentReleases(@PathVariable long contentId) {
+    public ResponseEntity<List<ContentReleaseDTO>> getContentReleases(@PathVariable long contentId, HttpServletRequest request) throws BadRequestException {
         log.info("[GET] /contents/releases/{}", contentId);
+        Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentId);
+        
+        if (contentOptional.isEmpty()) {
+            throw new NoSuchElementException(messageSource.getMessage("content.not.found", null, Locale.getDefault()));
+        }
+        
+        authorizationService.authorize(AuthorizationLevel.OWNER, contentOptional.get(), request);
         List<ContentRelease> releases = contentService.findAllReleasesOfContent(contentId);
         
         return ResponseEntity.ok(releases.stream().map(dtoHelper::toContentReleaseDTO).toList());
@@ -161,16 +192,20 @@ public class ContentController {
 
     @GetMapping("/{contentReleaseId}/releases/{releaseNum}")
     public ResponseEntity<ContentReleaseDTO> getSpecificContentRelease(@PathVariable long contentReleaseId,
-                                                                       @PathVariable long releaseNum) {
+                                                                       @PathVariable long releaseNum,
+                                                                       HttpServletRequest request) throws BadRequestException {
+        
         log.info("[GET] /contents/{}/releases/{}", contentReleaseId, releaseNum);
         String key = contentReleaseId + ":" + releaseNum;
         ContentReleaseDTO cached = hazelcastCacheService.get(CacheConstants.CONTENT_RELEASES, key);
         
         if (cached != null) {
+            authorizationService.authorize(AuthorizationLevel.OWNER, cached, request);
             return ResponseEntity.ok(cached);
         }
 
         ContentRelease contentRelease = contentService.findSpecificContentRelease(contentReleaseId, releaseNum);
+        authorizationService.authorize(AuthorizationLevel.OWNER, contentRelease, request);
         ContentReleaseDTO dto = dtoHelper.toContentReleaseDTO(contentRelease);
         hazelcastCacheService.put(CacheConstants.CONTENT_RELEASES, key, dto);
 
@@ -178,17 +213,27 @@ public class ContentController {
     }
     
     @GetMapping("/draft")
-    public ResponseEntity<List<ContentReleaseDTO>> getDraftContentReleases() {
+    public ResponseEntity<List<ContentReleaseDTO>> getDraftContentReleases(HttpServletRequest request) throws BadRequestException {
         log.info("[GET] /contents/draft");
-        List<ContentRelease> contentReleases = contentReleaseService.findAllDrafts(1);
+        authorizationService.authorize(AuthorizationLevel.INSTRUCTOR, null, request);
+        long instructorId = authorizationService.getInstructorIdFromRequest(request);
+        List<ContentRelease> contentReleases = contentReleaseService.findAllDrafts(instructorId);
         
         return ResponseEntity.ok(contentReleases.stream().map(dtoHelper::toContentReleaseDTO).toList());
     }
     
     @PostMapping("/draft")
-    public ResponseEntity<ContentReleaseDTO> createContent(@RequestBody @Validated(OnCreate.class) ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
+    public ResponseEntity<ContentReleaseDTO> createContent(@RequestBody @Validated(OnCreate.class) ContentCatalogueDTO contentCatalogueDTO,
+                                                           HttpServletRequest request) throws BadRequestException {
+        
         log.info("[POST] /contents/draft\nRequest Body:\n{}", contentCatalogueDTO);
-        log.info("Creating draft course...");
+        Optional<Module> moduleOptional = moduleService.findById(contentCatalogueDTO.getModuleId());
+        
+        if (moduleOptional.isEmpty()) {
+            throw new NoSuchElementException(messageSource.getMessage("module.not.found", null, Locale.getDefault()));
+        }
+        
+        authorizationService.authorize(AuthorizationLevel.INSTRUCTOR, moduleOptional.get(), request);
         Content content = contentHelper.getContent(contentCatalogueDTO);
         ContentRelease contentRelease = contentHelper.getContentRelease(contentCatalogueDTO, content);
         
@@ -219,7 +264,8 @@ public class ContentController {
     
     @PatchMapping("/publish/{contentReleaseId}")
     public ResponseEntity<ContentReleaseDTO> publishContentRelease(@PathVariable long contentReleaseId,
-                                                                   @RequestBody @Validated(OnUpdate.class) ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
+                                                                   @RequestBody @Validated(OnUpdate.class) ContentCatalogueDTO contentCatalogueDTO,
+                                                                   HttpServletRequest request) throws BadRequestException {
         
         log.info("[PATCH] /contents/publish/{}\nRequest Body:\n{}", contentReleaseId, contentCatalogueDTO);
         Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
@@ -228,6 +274,7 @@ public class ContentController {
             throw new NoSuchElementException(messageSource.getMessage("not.found.content", null, Locale.getDefault()));
         }
         
+        authorizationService.authorize(AuthorizationLevel.OWNER, contentOptional.get(), request);
         Content content = contentOptional.get();
         ContentRelease oldContentRelease = content.getCurrentContentRelease();
         Course course = oldContentRelease.getContent().getModule().getCourse();
@@ -258,7 +305,7 @@ public class ContentController {
             contentService.save(content);
             courseService.save(course);
             
-            return ResponseEntity.ok(dtoHelper.toContentReleaseDTO(newContentRelease));
+            return ResponseEntity.ok(dtoHelper.toContentReleaseDTO(content.getCurrentContentRelease()));
         }
         
         throw new BadRequestException(messageSource.getMessage("bad.request.publish.content",null, Locale.getDefault()));
@@ -266,7 +313,8 @@ public class ContentController {
     
     @PatchMapping("/draft/{contentReleaseId}")
     public ResponseEntity<ContentReleaseDTO> editDraftContentRelease(@PathVariable long contentReleaseId,
-                                                                   @RequestBody @Validated(OnUpdate.class) ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
+                                                                   @RequestBody @Validated(OnUpdate.class) ContentCatalogueDTO contentCatalogueDTO,
+                                                                     HttpServletRequest request) throws BadRequestException {
         
         log.info("[PATCH] /contents/draft/{}\nRequest Body:\n{}", contentReleaseId, contentCatalogueDTO);
         log.info("Editing draft contentRelease...");
@@ -276,6 +324,7 @@ public class ContentController {
             throw new NoSuchElementException(messageSource.getMessage("not.found.content", null, Locale.getDefault()));
         }
         
+        authorizationService.authorize(AuthorizationLevel.OWNER, contentOptional.get(), request);
         Content content = contentOptional.get();
         ContentRelease oldContentRelease = content.getCurrentContentRelease();
         
@@ -290,7 +339,8 @@ public class ContentController {
     
     @PatchMapping("/edit/{contentReleaseId}")
     public ResponseEntity<ContentCatalogueDTO> editContentMetadata(@PathVariable long contentReleaseId,
-                                                                   @RequestBody @Validated(OnUpdate.class) ContentCatalogueDTO contentCatalogueDTO) throws BadRequestException {
+                                                                   @RequestBody @Validated(OnUpdate.class) ContentCatalogueDTO contentCatalogueDTO,
+                                                                   HttpServletRequest request) throws BadRequestException {
         log.info("[PATCH] /edit/{}", contentReleaseId);
         Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
         
@@ -298,6 +348,7 @@ public class ContentController {
             throw new NoSuchElementException(messageSource.getMessage("not.found.content", null, Locale.getDefault()));
         }
         
+        authorizationService.authorize(AuthorizationLevel.OWNER, contentOptional.get(), request);
         Content content = contentOptional.get();
         
         if (content.getTitle().equals(contentCatalogueDTO.getTitle())) {
@@ -311,7 +362,7 @@ public class ContentController {
     }
     
     @PostMapping("/delete/{contentReleaseId}")
-    public ResponseEntity<ContentReleaseDTO> deleteContentRelease(@PathVariable long contentReleaseId) {
+    public ResponseEntity<ContentReleaseDTO> deleteContentRelease(@PathVariable long contentReleaseId, HttpServletRequest request) throws BadRequestException {
         log.info("[DELETE] /delete/{}", contentReleaseId);
         Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
         
@@ -319,6 +370,7 @@ public class ContentController {
             throw new NoSuchElementException(messageSource.getMessage("not.found.content", null, Locale.getDefault()));
         }
         
+        authorizationService.authorize(AuthorizationLevel.OWNER, contentOptional.get(), request);
         ContentRelease contentRelease = contentOptional.get().getCurrentContentRelease();
         
         if (contentRelease.getRelease() == ReleaseStatus.DRAFT.getReleaseNumber()) {
@@ -358,9 +410,13 @@ public class ContentController {
             BeanUtils.copyProperties(originalQuiz, newQuiz, "id", "questions");
 
             QuizCatalogDTO quizCatalogDTO = (QuizCatalogDTO) contentCatalogueDTO;
+            
+            if (quizCatalogDTO.getQuestions() == null) {
+                throw new BadRequestException(messageSource.getMessage("bad.request.publish.content", null, Locale.getDefault()));
+            }
 
             List<QuizQuestion> newQuestions = new ArrayList<>();
-
+            
             for (QuizQuestionDTO originalQuestionDTO : quizCatalogDTO.getQuestions()) {
                 QuizQuestion newQuestion = new QuizQuestion();
                 newQuestion.setQuestionText(originalQuestionDTO.getQuestionText());

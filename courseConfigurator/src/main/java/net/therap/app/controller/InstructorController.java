@@ -169,6 +169,7 @@ public class InstructorController {
         if (instructorOptional.isPresent()) {
             authorizationService.authorize(AuthorizationLevel.OWNER, instructorOptional.get(), request);
             instructorService.deleteById(id);
+            
             return ResponseEntity.noContent().build();
         }
         

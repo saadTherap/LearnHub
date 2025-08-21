@@ -77,6 +77,7 @@ public class DtoHelper {
         
         Optional.ofNullable(course.getInstructor()).ifPresent(instructor -> {
             dto.setInstructorName(instructor.getName());
+            dto.setInstructorId(instructor.getId());
         });
         
         // REMOVED: dto.setModules(new ArrayList<>()); and the loop
@@ -99,6 +100,7 @@ public class DtoHelper {
         
         Optional.ofNullable(course.getInstructor()).ifPresent(instructor -> {
             dto.setInstructorName(instructor.getName());
+            dto.setInstructorId(instructor.getId());
         });
         
         dto.setModules(course.getModules().stream().map(this::toModuleCatalogueDTO).collect(Collectors.toList()));

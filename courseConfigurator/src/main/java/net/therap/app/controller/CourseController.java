@@ -12,6 +12,7 @@ import net.therap.app.model.Instructor;
 import net.therap.app.model.Module;
 import net.therap.app.model.enums.AuthorizationLevel;
 import net.therap.app.model.enums.ReleaseStatus;
+import net.therap.app.service.ContentService;
 import net.therap.app.service.CourseService;
 import net.therap.app.service.InstructorService;
 import net.therap.app.validation.OnCreate;
@@ -46,9 +47,10 @@ public class CourseController {
     private final AuthorizationService authorizationService;
     private final MessageSource messageSource;
     private final InstructorService instructorService;
+    private final ContentService contentService;
     
     public CourseController(CourseMapper courseMapper, CourseService courseService, DtoHelper dtoHelper,
-                            HazelcastCacheService hazelcastCacheService, AuthorizationService authorizationService, MessageSource messageSource, InstructorService instructorService) {
+                            HazelcastCacheService hazelcastCacheService, AuthorizationService authorizationService, MessageSource messageSource, InstructorService instructorService, ContentService contentService) {
         this.courseMapper = courseMapper;
         this.courseService = courseService;
         this.dtoHelper = dtoHelper;
@@ -56,6 +58,7 @@ public class CourseController {
         this.authorizationService = authorizationService;
         this.messageSource = messageSource;
         this.instructorService = instructorService;
+        this.contentService = contentService;
     }
     
     @GetMapping
@@ -278,6 +281,7 @@ public class CourseController {
             }
             
             course.setCurrentRelease(ReleaseStatus.INITIAL_PUBLISHED.getReleaseNumber());
+            contentService.publishContentsOfCourse(course);
             Course savedCourse = courseService.save(course);
             
             return new ResponseEntity<>(dtoHelper.toCourseDTO(savedCourse), HttpStatus.OK);
