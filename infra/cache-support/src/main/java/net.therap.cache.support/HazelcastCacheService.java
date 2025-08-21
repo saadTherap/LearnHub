@@ -67,5 +67,13 @@ public class HazelcastCacheService {
 
         map.removeAll(Predicates.like("__key", "%" + suffix));
     }
+
+    public void removeKeysStartingWith(String mapName, String prefix) {
+        if (hazelcastInstance == null) return;
+        IMap<String, ?> map = hazelcastInstance.getMap(mapName);
+        if (map == null) return;
+
+        map.removeAll(Predicates.like("__key", prefix + "%"));
+    }
 }
 
