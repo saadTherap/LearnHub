@@ -53,7 +53,7 @@ public class AuthServiceImpl implements AuthService {
         log.info("Generating and sending verification token for user ID: {}", savedUser.getId());
         verificationTokenService.generateAndSendVerificationToken(savedUser);
         
-        log.info("REGISTRATION completed. Send the verification mail for email: {}", request.getEmail());
+        log.info("REGISTRATION completed. Sent the verification mail for email: {}", request.getEmail());
         
         return new JwtResponse(MessageUtil.getMessage("ok.user.registered.verify.pending"));
     }
