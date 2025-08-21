@@ -1,6 +1,5 @@
 package net.therap.auth.server.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.auth.server.entity.User;
@@ -30,7 +29,7 @@ public class UserService {
     private final HazelcastCacheService hazelcastCacheService;
     
     public List<User> findAll() {
-        return userRepository.findAllSorted();
+        return userRepository.findAll();
     }
     
     public User findById(Long id) {
@@ -94,11 +93,11 @@ public class UserService {
         
         if (user.getRole() == UserRole.STUDENT) {
             log.info("Sending student deletion info for email: {}", user.getEmail());
-            deletionService.sendStudentRegistrationInfo(user.getEmail());
+            deletionService.sendStudentDeletionInfo(user.getEmail());
             
         } else if (user.getRole() == UserRole.INSTRUCTOR) {
             log.info("Sending instructor registration info for email: {}", user.getEmail());
-            deletionService.sendInstructorRegistrationInfo(user.getEmail());
+            deletionService.sendInstructorDeletionInfo(user.getEmail());
         }
     }
 

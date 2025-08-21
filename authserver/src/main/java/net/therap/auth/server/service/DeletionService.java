@@ -21,11 +21,11 @@ public class DeletionService {
     @Value("${kafka.topics.instructor.deletion}")
     private String instructorDeletionTopic;
     
-    public void sendStudentRegistrationInfo(String email) {
+    public void sendStudentDeletionInfo(String email) {
         producerConsumerTask.send(studentDeletionTopic, email);
     }
     
-    public void sendInstructorRegistrationInfo(String email) {
+    public void sendInstructorDeletionInfo(String email) {
         producerConsumerTask.send(instructorDeletionTopic, email);
     }
 }
