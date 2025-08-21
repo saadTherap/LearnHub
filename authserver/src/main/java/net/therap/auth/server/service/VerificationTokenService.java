@@ -21,7 +21,7 @@ public class VerificationTokenService {
     private final EmailService emailService;
     
     @Transactional
-    public void generateAndSendVerificationToken(User user) {
+    public String generateAndSendVerificationToken(User user) {
         verificationTokenRepository.deleteByUser(user);
         verificationTokenRepository.flush();
         
@@ -31,5 +31,6 @@ public class VerificationTokenService {
         
 //        emailService.sendVerificationEmail(user.getEmail(), token);
         emailService.sendLinkToConsole(token);
+        emailService.getLink(token);
     }
 }
