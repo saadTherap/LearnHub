@@ -15,6 +15,7 @@ import net.therap.app.model.enums.ReleaseStatus;
 import net.therap.app.service.ContentService;
 import net.therap.app.service.CourseService;
 import net.therap.app.service.InstructorService;
+import net.therap.app.service.ModuleService;
 import net.therap.app.validation.OnCreate;
 import net.therap.app.validation.OnUpdate;
 import net.therap.cache.support.HazelcastCacheService;
@@ -48,9 +49,10 @@ public class CourseController {
     private final MessageSource messageSource;
     private final InstructorService instructorService;
     private final ContentService contentService;
+    private final ModuleService moduleService;
     
     public CourseController(CourseMapper courseMapper, CourseService courseService, DtoHelper dtoHelper,
-                            HazelcastCacheService hazelcastCacheService, AuthorizationService authorizationService, MessageSource messageSource, InstructorService instructorService, ContentService contentService) {
+                            HazelcastCacheService hazelcastCacheService, AuthorizationService authorizationService, MessageSource messageSource, InstructorService instructorService, ContentService contentService, ModuleService moduleService) {
         this.courseMapper = courseMapper;
         this.courseService = courseService;
         this.dtoHelper = dtoHelper;
@@ -59,12 +61,13 @@ public class CourseController {
         this.messageSource = messageSource;
         this.instructorService = instructorService;
         this.contentService = contentService;
+        this.moduleService = moduleService;
     }
     
     @GetMapping
     public ResponseEntity<List<CourseCatalogDTO>> getAllCourses(HttpServletRequest request) throws BadRequestException {
         log.info("[GET] /courses");
-        authorizationService.authorize(AuthorizationLevel.STUDENT, null, request);
+        authorizationService.authorize(AuthorizationLevel.ADMIN, null, request);
         List<Course> courses = courseService.findAll();
         List<CourseCatalogDTO> courseDTOs =
                 courses.stream().map(dtoHelper::toDetailedCourseCatalogDTO).collect(Collectors.toList());
@@ -74,10 +77,11 @@ public class CourseController {
     @GetMapping("/{id}")
     public ResponseEntity<CourseCatalogDTO> getCourseById(@PathVariable long id, HttpServletRequest request) throws BadRequestException {
         log.info("[GET] /courses/{} ", id);
-        authorizationService.authorize(AuthorizationLevel.STUDENT, null, request);
+        authorizationService.authorize(AuthorizationLevel.STUDENT_ENROLLED, null, request);
         CourseCatalogDTO cached = hazelcastCacheService.get(CacheConstants.COURSE_CATALOG, id);
+        
         if (cached != null) {
-            authorizationService.authorize(AuthorizationLevel.STUDENT, cached, request);
+            authorizationService.authorize(AuthorizationLevel.STUDENT_ENROLLED, cached, request);
             return ResponseEntity.ok(cached);
         }
         
@@ -85,7 +89,7 @@ public class CourseController {
         
         if (courseOptional.isPresent()) {
             Course course = courseOptional.get();
-            authorizationService.authorize(AuthorizationLevel.STUDENT, course, request);
+            authorizationService.authorize(AuthorizationLevel.STUDENT_ENROLLED, course, request);
             log.info("course modules size: {}", course.getModules().size());
             CourseCatalogDTO dto = dtoHelper.toDetailedCourseCatalogDTO(course);
             hazelcastCacheService.put(CacheConstants.COURSE_CATALOG, course.getId(), dto);
@@ -213,11 +217,18 @@ public class CourseController {
     @PostMapping("/modules/reorder")
     public ResponseEntity<List<ModuleDTO>> reorderModules(@RequestBody @Validated(OnUpdate.class) List<ReorderDTO> modules, HttpServletRequest request) throws BadRequestException {
         log.info("[POST] /courses/modules/reorder\nRequestBody:\n{}", modules);
-        authorizationService.authorize(AuthorizationLevel.INSTRUCTOR, null, request);
         
         if (!isValidOrderedList(modules)) {
             throw new BadRequestException(messageSource.getMessage("invalid.reorder", null, Locale.getDefault()));
         }
+        
+        Optional<Module> moduleOptional = moduleService.findById(modules.getFirst().getId());
+        
+        if (moduleOptional.isEmpty()) {
+            throw new NoSuchElementException(messageSource.getMessage("not.found.module", null, Locale.getDefault()));
+        }
+        
+        authorizationService.authorize(AuthorizationLevel.OWNER, moduleOptional.get(), request);
         
         List<ReorderDTO> sortedModules =
                 modules.stream().sorted(Comparator.comparingLong(ReorderDTO::getOrderIndex)).toList();

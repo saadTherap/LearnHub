@@ -35,18 +35,20 @@ public class AuthorizationService {
     private final ContentReleaseRepository contentReleaseRepository;
     private final InstructorRepository instructorRepository;
     private final MessageSource messageSource;
+    private final CourseEnrollmentRepository courseEnrollmentRepository;
     
     // Assuming a service for student enrollment checks
     // private final EnrollmentService enrollmentService;
     
     public AuthorizationService(CourseRepository courseRepository, ModuleRepository moduleRepository,
-                                ContentRepository contentRepository, ContentReleaseRepository contentReleaseRepository, InstructorRepository instructorRepository, MessageSource messageSource) {
+                                ContentRepository contentRepository, ContentReleaseRepository contentReleaseRepository, InstructorRepository instructorRepository, MessageSource messageSource, CourseEnrollmentRepository courseEnrollmentRepository) {
         this.courseRepository = courseRepository;
         this.moduleRepository = moduleRepository;
         this.contentRepository = contentRepository;
         this.contentReleaseRepository = contentReleaseRepository;
         this.instructorRepository = instructorRepository;
         this.messageSource = messageSource;
+        this.courseEnrollmentRepository = courseEnrollmentRepository;
     }
     
     private UserRequestCache.UserInfo parseUserInfoFromRequest(HttpServletRequest request) throws BadRequestException {
@@ -63,7 +65,6 @@ public class AuthorizationService {
         UserRequestCache.UserInfo userInfo = AuthDataUtil.getUserInfo(userId);
 
         if(userInfo == null) {
-//            log.error("User info is null for user id : {}", userId);
             throw new BadRequestException(messageSource.getMessage("invalid.user.id", null, Locale.getDefault()));
         }
 
@@ -142,9 +143,14 @@ public class AuthorizationService {
                 
                 if (resource instanceof Course course && !isEnrolled(course.getId(), userEmail)) {
                     throw new AccessDeniedException(messageSource.getMessage("access.denied.student.enrolled", null, Locale.getDefault()));
-                }
-                
-                if (resource instanceof ContentRelease release && !isContentReleaseOwner(release.getId(), userEmail)) {
+                    
+                } else if (resource instanceof Module module && !isModuleOwner(module.getCourse().getId(), userEmail)) {
+                    throw new AccessDeniedException(messageSource.getMessage("access.denied.student.enrolled", null, Locale.getDefault()));
+                    
+                } else if (resource instanceof Content content && !isContentOwner(content.getModule().getCourse().getId(), userEmail)) {
+                    throw new  AccessDeniedException(messageSource.getMessage("access.denied.student.enrolled", null, Locale.getDefault()));
+                    
+                } else if (resource instanceof ContentRelease release && !isEnrolled(release.getContent().getModule().getCourse().getId(), userEmail)) {
                     throw new AccessDeniedException(messageSource.getMessage("access.denied.student.enrolled", null, Locale.getDefault()));
                 }
                 
@@ -186,7 +192,7 @@ public class AuthorizationService {
     }
     
     private boolean isEnrolled(long courseId, String studentEmail) {
-        return true; // Placeholder
+        return courseEnrollmentRepository.existsCourseEnrollmentByCourseIdAndStudent_Email(courseId, studentEmail);
     }
     
     

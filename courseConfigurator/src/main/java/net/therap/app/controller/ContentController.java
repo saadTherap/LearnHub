@@ -82,7 +82,13 @@ public class ContentController {
     @GetMapping("/byModule/{moduleId}")
     public List<ContentCatalogueDTO> getContentByModuleId(@PathVariable long moduleId, HttpServletRequest request) throws BadRequestException {
         log.info("[GET] /contents/byModule/{}", moduleId);
-        authorizationService.authorize(AuthorizationLevel.STUDENT, null, request);
+        Optional<Module> moduleOptional = moduleService.findById(moduleId);
+        
+        if (moduleOptional.isEmpty()) {
+            throw new NoSuchElementException(messageSource.getMessage("not.found.module", null, request.getLocale()));
+        }
+        
+        authorizationService.authorize(AuthorizationLevel.STUDENT_ENROLLED, moduleOptional.get(), request);
         List<Content> contents = contentService.findByModuleId(moduleId);
         
         return contents.stream().map(dtoHelper::toContentCatalogueDTO).toList();
@@ -95,14 +101,14 @@ public class ContentController {
         ContentCatalogueDTO cached = hazelcastCacheService.get(CacheConstants.CONTENT_CATALOG, contentReleaseId);
         
         if (cached != null) {
-            authorizationService.authorize(AuthorizationLevel.OWNER, cached, request);
+            authorizationService.authorize(AuthorizationLevel.STUDENT_ENROLLED, cached, request);
             return ResponseEntity.ok(cached);
         }
         
         Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
         
         if (contentOptional.isPresent()) {
-            authorizationService.authorize(AuthorizationLevel.OWNER, contentOptional.get(), request);
+            authorizationService.authorize(AuthorizationLevel.STUDENT_ENROLLED, contentOptional.get(), request);
             ContentRelease contentRelease = contentOptional.get().getCurrentContentRelease();
             
             if (contentRelease instanceof Quiz quiz) {
