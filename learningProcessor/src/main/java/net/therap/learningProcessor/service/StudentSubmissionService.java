@@ -24,4 +24,6 @@ public interface StudentSubmissionService {
     List<StudentSubmissionDto> getAllByStudentIdAndContentId(Long studentId, Long contentId);
 
     Optional<StudentSubmissionDto> getLatestByStudentIdAndContentId(Long studentId, Long contentId);
+
+    String generateSignature(StudentSubmissionDto studentSubmissionDto);
 }

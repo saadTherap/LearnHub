@@ -6,6 +6,8 @@ import net.therap.secureFileServer.entity.StoredFile;
 import net.therap.secureFileServer.exception.FileNotFoundException;
 import net.therap.secureFileServer.repository.FileRepository;
 import net.therap.secureFileServer.util.MessageUtil;
+import net.therap.signaturegenerator.utils.GenerateSignature;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -28,17 +30,18 @@ import java.util.UUID;
 @Slf4j
 public class FileStorageService {
 
+    @Value("${file.hmac.secret}")
+    private String hmacSecret;
+
     private final Path storagePath;
     private final FileRepository fileRepository;
-    private final FileSignatureService fileSignatureService;
     private final MessageUtil messageUtil;
 
     public FileStorageService(FileRepository fileRepository,
-                              StorageProperties storageProperties, FileSignatureService fileSignatureService,
+                              StorageProperties storageProperties,
                               MessageUtil messageUtil) throws IOException {
 
         this.fileRepository = fileRepository;
-        this.fileSignatureService = fileSignatureService;
         this.messageUtil = messageUtil;
         this.storagePath = Paths.get(storageProperties.getUploadDir());
 
@@ -68,7 +71,14 @@ public class FileStorageService {
 
         StoredFile storedFile = mapToStoredFile(multipartFile, storedFilename, uploaderEmail);
 
-        String secret = fileSignatureService.generateSignature(storedFile);
+        String secret = GenerateSignature.generateSignature(
+                storedFile.getFormId(),
+                storedFile.getUploaderEmail(),
+                storedFile.getContentType(),
+                storedFile.getOriginalFilename(),
+                hmacSecret
+        );
+
         storedFile.setFileSecret(secret);
 
         log.info("File successfully stored: id={}, storedName='{}', uploader mail={}",
