@@ -59,7 +59,7 @@ public class CourseStudentController {
     public ResponseEntity<List<StudentDto>> getStudentsEnrolledInCourse(@PathVariable Long courseId,
                                                                         HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.TEACHER_ONLY,  request);
+        authorizationService.authorize(AccessLevel.INSTRUCTOR_OF_COURSE, Map.of("courseId", courseId), request);
 
         List<StudentDto> cached = hazelcastCacheService.get(CacheConstants.STUDENTS_BY_COURSE, courseId);
 
@@ -80,7 +80,7 @@ public class CourseStudentController {
     public ResponseEntity<List<Long>> getStudentIdsEnrolledInCourse(@PathVariable Long courseId,
                                                                     HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.TEACHER_ONLY,  request);
+        authorizationService.authorize(AccessLevel.INSTRUCTOR_OF_COURSE, Map.of("courseId", courseId),  request);
 
         return ResponseEntity.ok(courseStudentService.getStudentIdsEnrolledInCourse(courseId));
     }
@@ -100,7 +100,7 @@ public class CourseStudentController {
                                                      @PathVariable Long contentId,
                                                      HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_ENROLLED_IN_COURSE,
+        authorizationService.authorize(AccessLevel.INSTRUCTOR_OF_COURSE_OR_STUDENT_WITH_ID,
                 Map.of("studentId", studentId, "courseId", courseId),
                 request);
 
@@ -117,7 +117,7 @@ public class CourseStudentController {
     public ResponseEntity<List<StudentContentCompletionDto>> getContentStatus(@PathVariable Long studentId,
                                                                               HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
+        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
 
         return ResponseEntity.ok(courseStudentService.getContentStatusByStudentId(studentId));
     }
@@ -127,7 +127,7 @@ public class CourseStudentController {
                                                                                       @RequestBody CourseDetailWithProgressDto courseDetailWithProgressDto,
                                                                                       HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
+        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
 
         CourseDetailWithProgressDto dto = courseStudentService.getCourseDetailWithProgress(studentId, courseDetailWithProgressDto);
 
@@ -140,7 +140,7 @@ public class CourseStudentController {
             @RequestBody CourseDetailWithProgressDto courseDetailDto,
             HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
+        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
 
         Long courseId = courseDetailDto.getId();
 
@@ -160,29 +160,14 @@ public class CourseStudentController {
         return ResponseEntity.ok(dto);
     }
 
-//    @GetMapping("/progress/course/{courseId}")
-//    public ResponseEntity<List<StudentCourseProgressDto>> getAllStudentProgressForCourse(@PathVariable Long courseId) {
-//        List<StudentCourseProgressDto> cached = hazelcastCacheService.get(CacheConstants.ALL_STUDENT_PROGRESS_BY_COURSE, courseId);
-//        if (cached != null) {
-//            return ResponseEntity.ok(cached);
-//        }
-//
-//        List<StudentCourseProgressDto> list = courseStudentService.getAllStudentProgressForCourse(courseId);
-//        if (list != null) {
-//            hazelcastCacheService.put(CacheConstants.ALL_STUDENT_PROGRESS_BY_COURSE, courseId, list);
-//        }
-//
-//        return ResponseEntity.ok(list);
-//    }
-
     @PostMapping("/progress/course")
     public ResponseEntity<List<StudentCourseProgressDto>> getAllStudentProgressForCourse(
             @RequestBody CourseDetailWithProgressDto courseDetailWithProgressDto,
             HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.TEACHER_ONLY,  request);
-
         Long courseId = courseDetailWithProgressDto.getId();
+
+        authorizationService.authorize(AccessLevel.INSTRUCTOR_OF_COURSE, Map.of("courseId", courseId),  request);
 
         List<StudentCourseProgressDto> cached = hazelcastCacheService.get(
                 CacheConstants.ALL_STUDENT_PROGRESS_BY_COURSE,

@@ -36,7 +36,9 @@ public class StudentUtil {
             throw new UnauthorizedException("error.auth.required");
         }
 
-        Student student = studentRepository.findByEmail(userInfo.email());
+        Student student = studentRepository.findByEmail(userInfo.email())
+                .orElseThrow(() -> new ResourceNotFoundException("error.student.notFound", userInfo.email()));
+        ;
 
         return studentMapper.toDto(student);
     }

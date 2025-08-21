@@ -5,23 +5,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.auth.lib.context.UserRequestCache;
 import net.therap.auth.lib.util.AuthDataUtil;
+import net.therap.learningProcessor.entity.Course;
+import net.therap.learningProcessor.entity.Instructor;
 import net.therap.learningProcessor.entity.Student;
 import net.therap.learningProcessor.eum.AccessLevel;
 import net.therap.learningProcessor.exception.ForbiddenException;
 import net.therap.learningProcessor.exception.ResourceNotFoundException;
 import net.therap.learningProcessor.exception.UnauthorizedException;
 import net.therap.learningProcessor.repository.CourseEnrollmentRepository;
+import net.therap.learningProcessor.repository.CourseRepository;
+import net.therap.learningProcessor.repository.InstructorRepository;
 import net.therap.learningProcessor.repository.StudentRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Map;
 
-/**
- * @author avidewan
- * @since 8/13/25
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -29,6 +27,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     private final StudentRepository studentRepository;
     private final CourseEnrollmentRepository courseEnrollmentRepository;
+    private final CourseRepository courseRepository;
+    private final InstructorRepository instructorRepository;
 
     @Override
     public void authorize(AccessLevel level, HttpServletRequest request) {
@@ -37,45 +37,39 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Override
     public void authorize(AccessLevel level, Map<String, Object> params, HttpServletRequest request) {
-        if (level == AccessLevel.PUBLIC) {
-            return;
-        }
+
+        if (level == AccessLevel.PUBLIC) return; // always allow public access
 
         UserRequestCache.UserInfo userInfo = getCurrentUserInfo(request);
 
-        log.info("userinfo: {}", userInfo);
-
-        if (userInfo == null) {
-            throwUnauthorized("error.auth.required");
-        }
-
-        if(isAdmin(userInfo)) {
-            return;
-        }
+        if (isAdmin(userInfo)) return; // admins bypass all checks
 
         switch (level) {
 
-            case TEACHER_ONLY -> checkTeacher(userInfo);
+            case INSTRUCTOR_ONLY -> checkInstructor(userInfo);
+
+            case STUDENT_ONLY -> checkStudent(userInfo);
 
             case STUDENT_WITH_ID -> checkStudentWithId(userInfo, params);
 
-            case TEACHER_AND_STUDENT_WITH_ID -> checkTeacherOrStudentWithId(userInfo, params);
-
             case STUDENT_ENROLLED_IN_COURSE -> checkStudentEnrolledInCourse(userInfo, params);
 
-            case TEACHER_AND_STUDENT_ENROLLED_IN_COURSE -> checkTeacherOrStudentEnrolledInCourse(userInfo, params);
+            case INSTRUCTOR_OF_COURSE -> checkInstructorOfCourse(userInfo, params);
+
+            case INSTRUCTOR_OR_STUDENT_WITH_ID -> checkInstructorOrStudentWithId(userInfo, params);
+
+            case INSTRUCTOR_OR_STUDENT_ENROLLED_IN_COURSE -> checkInstructorOrStudentEnrolled(userInfo, params);
+
+            case INSTRUCTOR_OF_COURSE_OR_STUDENT_WITH_ID -> checkInstructorOfCourseOrStudentWithId(userInfo, params);
 
             default -> throwForbidden("error.access.content.denied");
         }
     }
 
-    // ---------- PRIVATE STRATEGY METHODS ----------
+    // ---------- PRIVATE HELPERS ----------
 
     private UserRequestCache.UserInfo getCurrentUserInfo(HttpServletRequest request) {
-
         Long userId = (Long) request.getAttribute("userId");
-
-        log.info("User Id: {}", userId);
 
         if (userId == null) {
             throwUnauthorized("error.auth.required");
@@ -84,7 +78,11 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         return AuthDataUtil.getUserInfo(userId);
     }
 
-    private boolean isTeacher(UserRequestCache.UserInfo userInfo) {
+    private boolean isAdmin(UserRequestCache.UserInfo userInfo) {
+        return "ADMIN".equals(userInfo.role());
+    }
+
+    private boolean isInstructor(UserRequestCache.UserInfo userInfo) {
         return "INSTRUCTOR".equals(userInfo.role());
     }
 
@@ -92,13 +90,15 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         return "STUDENT".equals(userInfo.role());
     }
 
-    private boolean isAdmin(UserRequestCache.UserInfo userInfo) {
-        return "ADMIN".equals(userInfo.role());
+    private void checkInstructor(UserRequestCache.UserInfo userInfo) {
+        if (!isInstructor(userInfo)) {
+            throwForbidden("error.access.instructor");
+        }
     }
 
-    private void checkTeacher(UserRequestCache.UserInfo userInfo) {
-        if (!isTeacher(userInfo)) {
-            throwForbidden("error.access.teacher");
+    private void checkStudent(UserRequestCache.UserInfo userInfo) {
+        if (!isStudent(userInfo)) {
+            throwForbidden("error.access.student");
         }
     }
 
@@ -109,16 +109,10 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             throwForbidden("error.access.student");
         }
 
-        Student student = studentRepository.findByEmail(userInfo.email());
+        Student student = studentRepository.findByEmail(userInfo.email())
+                .orElseThrow(() -> new ResourceNotFoundException("error.student.notFound", userInfo.email()));
 
-        if(student == null) {
-            throw new ResourceNotFoundException("error.student.notFound", userInfo.email());
-        }
-
-        log.info("Email of the student from token: {}", student.getId());
-        log.info("Student Id trying to access: {}", studentId);
-
-        if (!(isStudent(userInfo) && student.getId() == studentId)) {
+        if (!isStudent(userInfo) || !(student.getId() == (studentId))) {
             throwForbidden("error.access.student.mismatch");
         }
     }
@@ -138,22 +132,39 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         }
     }
 
-    private void checkTeacherOrStudentWithId(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
-        if (isTeacher(userInfo)) {
-            return;
+    private void checkInstructorOfCourse(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
+        Long courseId = (Long) params.get("courseId");
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("error.course.notFound", courseId));
+
+        Instructor instructor = instructorRepository.findByEmail(userInfo.email())
+                .orElseThrow(() -> new ResourceNotFoundException("error.instructor.notFound.byEmail", userInfo.email()));
+
+        if (!instructor.getId().equals(course.getInstructorId())) {
+            throwForbidden("error.access.instructor.mismatch");
         }
-
-        Long studentId = (Long) params.get("studentId");
-
-        checkStudentWithId(userInfo, Map.of("studentId", studentId));
     }
 
-    private void checkTeacherOrStudentEnrolledInCourse(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
-        if (isTeacher(userInfo)) {
-            return;
-        }
+    private void checkInstructorOrStudentWithId(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
+        if (isInstructor(userInfo)) return;
+
+        checkStudentWithId(userInfo, params);
+    }
+
+    private void checkInstructorOrStudentEnrolled(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
+        if (isInstructor(userInfo)) return;
 
         checkStudentEnrolledInCourse(userInfo, params);
+    }
+
+    private void checkInstructorOfCourseOrStudentWithId(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
+        if (isInstructor(userInfo)) {
+            checkInstructorOfCourse(userInfo, params);
+
+        } else {
+            checkStudentWithId(userInfo, params);
+        }
     }
 
     private void throwUnauthorized(String messageKey) {
