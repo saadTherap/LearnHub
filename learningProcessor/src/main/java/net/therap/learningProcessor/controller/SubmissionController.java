@@ -83,15 +83,21 @@ public class SubmissionController {
         return ResponseEntity.ok(submissions);
     }
 
-    @GetMapping("/content/{contentId}")
-    public ResponseEntity<List<StudentSubmissionDto>> getSubmissionsByContent(@PathVariable Long contentId,
+
+    @GetMapping("/course/{courseId}/content/{contentId}")
+    public ResponseEntity<List<StudentSubmissionDto>> getSubmissionsByContent(@PathVariable Long courseId,
+                                                                              @PathVariable Long contentId,
                                                                               HttpServletRequest request) {
-        authorizationService.authorize(AccessLevel.TEACHER_ONLY, request);
+
+        authorizationService.authorize(AccessLevel.INSTRUCTOR_OF_COURSE,
+                Map.of("courseId", courseId),
+                request);
 
         List<StudentSubmissionDto> submissions = submissionService.getAllByContentId(contentId);
 
         return ResponseEntity.ok(submissions);
     }
+
 
     @GetMapping("/student/{studentId}/content/{contentId}")
     public ResponseEntity<List<StudentSubmissionDto>> getSubmissionsByStudentAndContent(@PathVariable Long studentId,
@@ -100,19 +106,24 @@ public class SubmissionController {
 
         log.info("Student Submission Requested for: studentId-{} and contentId- {}", studentId, contentId);
 
-        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID, Map.of("studentId", studentId), request);
+        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID,
+                Map.of("studentId", studentId),
+                request);
 
         List<StudentSubmissionDto> submissions = submissionService.getAllByStudentIdAndContentId(studentId, contentId);
 
         return ResponseEntity.ok(submissions);
     }
 
-    @GetMapping("/latest/student/{studentId}/content/{contentId}")
+    @GetMapping("/latest/student/{studentId}/course/{courseId}/content/{contentId}")
     public ResponseEntity<StudentSubmissionDto> getLatestSubmissionByStudentAndContent(@PathVariable Long studentId,
+                                                                                       @PathVariable Long courseId,
                                                                                        @PathVariable Long contentId,
                                                                                        HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID, Map.of("studentId", studentId), request);
+        authorizationService.authorize(AccessLevel.INSTRUCTOR_OF_COURSE_OR_STUDENT_WITH_ID,
+                Map.of("studentId", studentId, "courseId", courseId),
+                request);
 
         Optional<StudentSubmissionDto> latestSubmission = submissionService.getLatestByStudentIdAndContentId(studentId, contentId);
 
@@ -120,11 +131,14 @@ public class SubmissionController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/latest/content/{contentId}")
-    public ResponseEntity<List<StudentSubmissionDto>> getLatestSubmissionPerStudentByContent(@PathVariable Long contentId,
+    @GetMapping("/latest/course/{courseId}/content/{contentId}")
+    public ResponseEntity<List<StudentSubmissionDto>> getLatestSubmissionPerStudentByContent(@PathVariable Long courseId,
+                                                                                             @PathVariable Long contentId,
                                                                                              HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.TEACHER_ONLY, request);
+        authorizationService.authorize(AccessLevel.INSTRUCTOR_OF_COURSE_OR_STUDENT_WITH_ID,
+                Map.of("courseId", courseId),
+                request);
 
         List<StudentSubmissionDto> latestSubmissions = submissionService.getLatestSubmissionPerStudentByContentId(contentId);
 

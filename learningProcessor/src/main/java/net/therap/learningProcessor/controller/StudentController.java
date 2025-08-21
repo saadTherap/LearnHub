@@ -39,7 +39,7 @@ public class StudentController {
 
     @GetMapping
     public ResponseEntity<List<StudentDto>> getAllStudents(HttpServletRequest request) {
-        authorizationService.authorize(AccessLevel.TEACHER_ONLY, request);
+        authorizationService.authorize(AccessLevel.INSTRUCTOR_ONLY, request);
 
         List<StudentDto> students = studentService.getAllStudents();
         return ResponseEntity.ok(students);
@@ -50,7 +50,7 @@ public class StudentController {
 
         log.info("[Get] Student, {}", id);
 
-        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID,  Map.of("studentId", id), request);
+        authorizationService.authorize(AccessLevel.INSTRUCTOR_OR_STUDENT_WITH_ID,  Map.of("studentId", id), request);
 
         log.info("Authorized");
 
@@ -59,8 +59,8 @@ public class StudentController {
             return ResponseEntity.ok(cachedStudent);
         }
 
-        // Fetch from service/db
         StudentDto student = studentService.getStudentById(id);
+
         if (student == null) {
             return ResponseEntity.notFound().build();
         }
