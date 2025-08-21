@@ -15,9 +15,9 @@ public enum AuthorizationLevel {
     
     INSTRUCTOR("INSTRUCTOR", 3),
     
-    STUDENT("STUDENT", 2),
+    STUDENT("STUDENT", 1),
     
-    STUDENT_ENROLLED("STUDENT", 1),
+    STUDENT_ENROLLED("STUDENT", 2),
     
     PUBLIC("PUBLIC", 0);
     
