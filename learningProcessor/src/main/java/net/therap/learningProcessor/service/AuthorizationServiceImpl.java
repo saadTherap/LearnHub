@@ -2,11 +2,13 @@ package net.therap.learningProcessor.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.therap.auth.lib.context.UserRequestCache;
 import net.therap.auth.lib.util.AuthDataUtil;
 import net.therap.learningProcessor.entity.Student;
 import net.therap.learningProcessor.eum.AccessLevel;
 import net.therap.learningProcessor.exception.ForbiddenException;
+import net.therap.learningProcessor.exception.ResourceNotFoundException;
 import net.therap.learningProcessor.exception.UnauthorizedException;
 import net.therap.learningProcessor.repository.CourseEnrollmentRepository;
 import net.therap.learningProcessor.repository.StudentRepository;
@@ -20,6 +22,7 @@ import java.util.Map;
  * @author avidewan
  * @since 8/13/25
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthorizationServiceImpl implements AuthorizationService {
@@ -40,6 +43,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
         UserRequestCache.UserInfo userInfo = getCurrentUserInfo(request);
 
+        log.info("userinfo: {}", userInfo);
+
         if (userInfo == null) {
             throwUnauthorized("error.auth.required");
         }
@@ -58,6 +63,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
             case STUDENT_ENROLLED_IN_COURSE -> checkStudentEnrolledInCourse(userInfo, params);
 
+            case TEACHER_AND_STUDENT_ENROLLED_IN_COURSE -> checkTeacherOrStudentEnrolledInCourse(userInfo, params);
+
             default -> throwForbidden("error.access.content.denied");
         }
     }
@@ -67,6 +74,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private UserRequestCache.UserInfo getCurrentUserInfo(HttpServletRequest request) {
 
         Long userId = (Long) request.getAttribute("userId");
+
+        log.info("User Id: {}", userId);
 
         if (userId == null) {
             throwUnauthorized("error.auth.required");
@@ -102,7 +111,14 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
         Student student = studentRepository.findByEmail(userInfo.email());
 
-        if (!(isStudent(userInfo) && student != null && student.getId() == studentId)) {
+        if(student == null) {
+            throw new ResourceNotFoundException("error.student.notFound", userInfo.email());
+        }
+
+        log.info("Email of the student from token: {}", student.getId());
+        log.info("Student Id trying to access: {}", studentId);
+
+        if (!(isStudent(userInfo) && student.getId() == studentId)) {
             throwForbidden("error.access.student.mismatch");
         }
     }
@@ -123,12 +139,21 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     private void checkTeacherOrStudentWithId(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
+        if (isTeacher(userInfo)) {
+            return;
+        }
+
         Long studentId = (Long) params.get("studentId");
 
-        if (isTeacher(userInfo)) {
-            return; // Teacher always allowed
-        }
         checkStudentWithId(userInfo, Map.of("studentId", studentId));
+    }
+
+    private void checkTeacherOrStudentEnrolledInCourse(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
+        if (isTeacher(userInfo)) {
+            return;
+        }
+
+        checkStudentEnrolledInCourse(userInfo, params);
     }
 
     private void throwUnauthorized(String messageKey) {

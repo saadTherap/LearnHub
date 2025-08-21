@@ -21,7 +21,7 @@ public class AuthLibConfig {
     @Bean
     public FilterRegistrationBean<JwtAuthFilter> jwtAuthFilter(TokenValidator tokenValidator) {
         List<String> excludedPaths = List.of("/swagger-ui/", "/swagger-resources/", "/v3/api-docs", "/webjars/",
-                "/public/");
+                "/public/", "/appStatus");
 
         System.out.println("Filter bean created");
 

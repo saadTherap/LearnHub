@@ -2,12 +2,14 @@ package net.therap.learningProcessor.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.therap.cache.support.HazelcastCacheService;
 import net.therap.learningProcessor.constants.CacheConstants;
 import net.therap.learningProcessor.dto.StudentDto;
 import net.therap.learningProcessor.eum.AccessLevel;
 import net.therap.learningProcessor.service.AuthorizationService;
 import net.therap.learningProcessor.service.StudentService;
+import net.therap.learningProcessor.util.StudentUtil;
 import net.therap.learningProcessor.validator.group.OnCreate;
 import net.therap.learningProcessor.validator.group.OnUpdate;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,7 @@ import java.util.Objects;
  * @author avidewan
  * @since 7/27/25
  */
+@Slf4j
 @RestController
 @RequestMapping("/students")
 @RequiredArgsConstructor
@@ -32,6 +35,7 @@ public class StudentController {
     private final StudentService studentService;
     private final HazelcastCacheService hazelcastCacheService;
     private final AuthorizationService authorizationService;
+    private final StudentUtil studentUtil;
 
     @GetMapping
     public ResponseEntity<List<StudentDto>> getAllStudents(HttpServletRequest request) {
@@ -44,7 +48,11 @@ public class StudentController {
     @GetMapping("/{id}")
     public ResponseEntity<StudentDto> getStudentById(@PathVariable Long id, HttpServletRequest request) {
 
+        log.info("[Get] Student, {}", id);
+
         authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID,  Map.of("studentId", id), request);
+
+        log.info("Authorized");
 
         StudentDto cachedStudent = hazelcastCacheService.get(CacheConstants.STUDENTS, id);
         if (cachedStudent != null) {
@@ -58,6 +66,8 @@ public class StudentController {
         }
 
         hazelcastCacheService.put(CacheConstants.STUDENTS, id, student);
+
+        log.info("Response: {}", student);
 
         return ResponseEntity.ok(student);
     }
@@ -86,7 +96,11 @@ public class StudentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteStudent(@PathVariable Long id,
+                                              HttpServletRequest request) {
+
+        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID,  Map.of("studentId", id), request);
+
         boolean deleted = studentService.deleteStudent(id);
 
         if (!deleted) {
@@ -95,4 +109,30 @@ public class StudentController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<StudentDto> getStudentById(@PathVariable String email, HttpServletRequest request) {
+
+        StudentDto student = studentService.getStudentByEmail(email);
+
+        if (student == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(student);
+    }
+
+    @GetMapping("/fromToken")
+    public ResponseEntity<StudentDto> getStudentFromToken(HttpServletRequest request) {
+
+        StudentDto student = studentUtil.getStudentFromRequest(request);
+
+        if (student == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(student);
+    }
+
+
 }

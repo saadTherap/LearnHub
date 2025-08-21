@@ -94,12 +94,15 @@ public class CourseStudentController {
         return ResponseEntity.ok(courseStudentService.getEnrolledCourseIdsByStudent(studentId));
     }
 
-    @PatchMapping("/student-contents/{studentId}/{contentId}/complete")
+    @PatchMapping("/student-contents/student/{studentId}/course/{courseId}/content/{contentId}/complete")
     public ResponseEntity<Void> markContentCompleted(@PathVariable Long studentId,
+                                                     @PathVariable Long courseId,
                                                      @PathVariable Long contentId,
                                                      HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID,  Map.of("studentId", studentId), request);
+        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_ENROLLED_IN_COURSE,
+                Map.of("studentId", studentId, "courseId", courseId),
+                request);
 
         boolean success = courseStudentService.completeContent(studentId, contentId);
 

@@ -24,22 +24,19 @@ public class UserService {
     private final UserRepository userRepository;
     
     public List<User> findAll() {
-        return userRepository.findAll();
+        return userRepository.findAllSorted();
     }
     
-    // @Transactional
     public User findById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new AuthServerException(MessageUtil.getMessage("err.user.not.found")));
     }
     
-    // @Transactional
     public User findByEmail(String email) {
         return Optional.ofNullable(userRepository.findByEmail(email))
                 .orElseThrow(() -> new AuthServerException(MessageUtil.getMessage("err.user.not.found")));
     }
     
-    // @Transactional
     public User saveUser(User user) {
         Optional<User> existingUserOptional = Optional.ofNullable(userRepository.findByEmail(user.getEmail()));
         
@@ -61,7 +58,6 @@ public class UserService {
         }
     }
     
-    // @Transactional
     public User updateUser(User user) {
         if (!userExistsById(user.getId())) {
             throw new AuthServerException(MessageUtil.getMessage("err.id.missing.update"));
@@ -70,17 +66,26 @@ public class UserService {
         return userRepository.save(user);
     }
     
-    // @Transactional
     public void deleteById(Long id) {
-        if (!userExistsById(id)) {
-            throw new AuthServerException(MessageUtil.getMessage("err.id.missing.delete"));
-        }
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new AuthServerException(
+                        MessageUtil.getMessage("err.id.missing.delete"))
+                );
         
-        userRepository.deleteById(id);
+        user.setDeleted(true);
+        
+        userRepository.save(user);
     }
+
     
-    // @Transactional
     public boolean userExistsById(Long userId) {
         return Objects.nonNull(userId) && userRepository.existsById(userId);
+    }
+    
+    public User toggleUserStatus(Long userId) {
+        User user = findById(userId);
+        user.setEnabled(!user.isEnabled());
+        
+        return userRepository.save(user);
     }
 }

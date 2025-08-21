@@ -70,6 +70,13 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    public StudentDto getStudentByEmail(String email) {
+        Student student = studentRepository.findByEmail(email);
+
+        return studentMapper.toDto(student);
+    }
+
+    @Override
     @Transactional
     public boolean deleteStudent(Long id) {
         Student student = studentRepository.findById(id).

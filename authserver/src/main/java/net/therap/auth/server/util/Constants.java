@@ -15,6 +15,7 @@ public class Constants {
             "/v3/api-docs",
             "/swagger-resources/",
             "/error",
-            "/public/"
+            "/public/",
+            "/appStatus"
     );
 }

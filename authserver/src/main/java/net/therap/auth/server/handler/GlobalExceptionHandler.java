@@ -12,10 +12,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-
-import static net.therap.auth.server.util.HandlerUtil.buildErrorResponse;
 
 /**
  * @author apurboturjo
@@ -38,10 +37,10 @@ public class GlobalExceptionHandler {
             fieldErrors.put(field, message);
         });
         
-        ErrorResponse response = buildErrorResponse(
-                MessageUtil.getMessage("msg.validation.failed"),
-                fieldErrors
-        );
+        ErrorResponse response = new ErrorResponse();
+        response.setTimestamp(LocalDateTime.now());
+        response.setMessage(MessageUtil.getMessage("msg.validation.failed"));
+        response.setFormErrors(fieldErrors);
         
         return ResponseEntity.badRequest().body(response);
     }
@@ -50,10 +49,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAuthServerException(AuthServerException ex) {
         log.error("Caught AuthServerException: {}", ex.getMessage());
         
-        ErrorResponse response = buildErrorResponse(
-                "Auth Server end error.",
-                Map.of(ERROR, ex.getMessage())
-        );
+        ErrorResponse response = new ErrorResponse();
+        response.setTimestamp(LocalDateTime.now());
+        response.setMessage(MessageUtil.getMessage("app.global.error"));
+        response.setError(ex.getMessage());
         
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
