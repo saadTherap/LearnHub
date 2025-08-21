@@ -5,6 +5,7 @@ import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.auth.lib.exception.AuthenticationException;
 import net.therap.auth.lib.provider.PublicKeyProvider;
@@ -23,15 +24,11 @@ import java.util.Objects;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class TokenValidator {
     
     private final HazelcastCacheService hazelcastCacheService;
     private final PublicKeyProvider keyProvider;
-    
-    public TokenValidator(HazelcastCacheService hazelcastCacheService, PublicKeyProvider keyProvider) {
-        this.hazelcastCacheService = hazelcastCacheService;
-        this.keyProvider = keyProvider;
-    }
     
     public JWTClaimsSet validate(String token) {
         try {
