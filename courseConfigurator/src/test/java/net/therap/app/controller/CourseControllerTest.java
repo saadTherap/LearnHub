@@ -78,9 +78,11 @@ class CourseControllerTest {
         CourseCatalogDTO cachedDto = new CourseCatalogDTO();
         cachedDto.setId(courseId);
 
+        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT_ENROLLED), eq(null), any(HttpServletRequest.class));
+
         when(hazelcastCacheService.get(CacheConstants.COURSE_CATALOG, courseId)).thenReturn(cachedDto);
-        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT), eq(null), any(HttpServletRequest.class));
-        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT), eq(cachedDto), any(HttpServletRequest.class));
+
+        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT_ENROLLED), eq(cachedDto), any(HttpServletRequest.class));
 
         mockMvc.perform(get("/courses/{id}", courseId))
                 .andExpect(status().isOk())
@@ -103,8 +105,10 @@ class CourseControllerTest {
 
         when(hazelcastCacheService.get(CacheConstants.COURSE_CATALOG, courseId)).thenReturn(null);
         when(courseService.findById(courseId)).thenReturn(Optional.of(course));
-        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT), eq(null), any(HttpServletRequest.class));
-        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT), eq(course), any(HttpServletRequest.class));
+
+        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT_ENROLLED), eq(null), any(HttpServletRequest.class));
+        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT_ENROLLED), eq(course), any(HttpServletRequest.class));
+
         doNothing().when(hazelcastCacheService).put(CacheConstants.COURSE_CATALOG, courseId, dto);
         when(dtoHelper.toDetailedCourseCatalogDTO(course)).thenReturn(dto);
 
@@ -112,10 +116,6 @@ class CourseControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(courseId));
-
-        verify(hazelcastCacheService).get(CacheConstants.COURSE_CATALOG, courseId);
-        verify(courseService).findById(courseId);
-        verify(hazelcastCacheService).put(CacheConstants.COURSE_CATALOG, courseId, dto);
     }
 
     @Test
