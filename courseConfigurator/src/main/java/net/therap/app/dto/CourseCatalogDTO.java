@@ -22,6 +22,7 @@ public class CourseCatalogDTO implements Serializable {
     private String name;
     private String description;
     private String instructorName;
+    private long instructorId;
     private long currentPublishedVersion;
     private List<ModuleCatalogDTO> modules;
 }

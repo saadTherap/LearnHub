@@ -36,5 +36,26 @@ public class CacheInvalidationUtil {
             }
         }
     }
+
+    /**
+     * Registers cache invalidation for keys with a given prefix after a transaction commits.
+     * If no transaction is active, it invalidates immediately.
+     */
+    public void invalidateCachesByPrefixAfterCommit(String prefix, String... mapNames) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    for (String mapName : mapNames) {
+                        hazelcastCacheService.removeKeysStartingWith(mapName, prefix);
+                    }
+                }
+            });
+        } else {
+            for (String mapName : mapNames) {
+                hazelcastCacheService.removeKeysStartingWith(mapName, prefix);
+            }
+        }
+    }
 }
 

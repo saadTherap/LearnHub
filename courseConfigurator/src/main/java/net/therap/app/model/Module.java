@@ -37,4 +37,10 @@ public class Module extends Persistent {
     
     @Column(name = "order_index")
     private long orderIndex;
+
+    public List<Content> getContents() {
+        return contents.stream()
+                .filter(content -> !content.isDeleted())
+                .toList();
+    }
 }

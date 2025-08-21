@@ -12,6 +12,7 @@ import net.therap.app.model.Instructor;
 import net.therap.app.model.Module;
 import net.therap.app.model.enums.AuthorizationLevel;
 import net.therap.app.model.enums.ReleaseStatus;
+import net.therap.app.service.ContentService;
 import net.therap.app.service.CourseService;
 import net.therap.app.service.InstructorService;
 import net.therap.app.validation.OnCreate;
@@ -45,19 +46,25 @@ public class CourseController {
     private final HazelcastCacheService hazelcastCacheService;
     private final AuthorizationService authorizationService;
     private final MessageSource messageSource;
+    private final InstructorService instructorService;
+    private final ContentService contentService;
     
     public CourseController(CourseMapper courseMapper, CourseService courseService, DtoHelper dtoHelper,
-                            HazelcastCacheService hazelcastCacheService, AuthorizationService authorizationService, MessageSource messageSource) {
+                            HazelcastCacheService hazelcastCacheService, AuthorizationService authorizationService, MessageSource messageSource, InstructorService instructorService, ContentService contentService) {
         this.courseMapper = courseMapper;
         this.courseService = courseService;
         this.dtoHelper = dtoHelper;
         this.hazelcastCacheService = hazelcastCacheService;
         this.authorizationService = authorizationService;
         this.messageSource = messageSource;
+        this.instructorService = instructorService;
+        this.contentService = contentService;
     }
     
     @GetMapping
-    public ResponseEntity<List<CourseCatalogDTO>> getAllCourses() {
+    public ResponseEntity<List<CourseCatalogDTO>> getAllCourses(HttpServletRequest request) throws BadRequestException {
+        log.info("[GET] /courses");
+        authorizationService.authorize(AuthorizationLevel.STUDENT, null, request);
         List<Course> courses = courseService.findAll();
         List<CourseCatalogDTO> courseDTOs =
                 courses.stream().map(dtoHelper::toDetailedCourseCatalogDTO).collect(Collectors.toList());
@@ -67,6 +74,7 @@ public class CourseController {
     @GetMapping("/{id}")
     public ResponseEntity<CourseCatalogDTO> getCourseById(@PathVariable long id, HttpServletRequest request) throws BadRequestException {
         log.info("[GET] /courses/{} ", id);
+        authorizationService.authorize(AuthorizationLevel.STUDENT, null, request);
         CourseCatalogDTO cached = hazelcastCacheService.get(CacheConstants.COURSE_CATALOG, id);
         if (cached != null) {
             authorizationService.authorize(AuthorizationLevel.STUDENT, cached, request);
@@ -90,7 +98,7 @@ public class CourseController {
     
     @GetMapping("/{id}/details")
     public ResponseEntity<CourseDTO> getCourseByIdDetails(@PathVariable long id, HttpServletRequest request) throws BadRequestException {
-        
+        log.info("[GET] /courses/{}/details", id);
         CourseDTO cached = hazelcastCacheService.get(CacheConstants.COURSES, id);
         if (cached != null) {
             authorizationService.authorize(AuthorizationLevel.OWNER, cached, request);
@@ -112,6 +120,7 @@ public class CourseController {
     
     @GetMapping("/{courseId}/versions")
     public ResponseEntity<CourseDTO> getAllCourseVersions(@PathVariable long courseId, HttpServletRequest request) throws BadRequestException {
+        log.info("[GET] /courses/{}/versions", courseId);
         Optional<Course> courseOptional = courseService.findById(courseId);
         
         if (courseOptional.isPresent()) {
@@ -140,7 +149,16 @@ public class CourseController {
     }
     
     @GetMapping("/byInstructor/{instructorId}")
-    public ResponseEntity<List<CourseDTO>> getCourseByInstructorId(@PathVariable long instructorId) {
+    public ResponseEntity<List<CourseDTO>> getCourseByInstructorId(@PathVariable long instructorId, HttpServletRequest request) throws BadRequestException {
+        log.info("[GET] /courses/byInstructor/{}", instructorId);
+        
+        Optional<Instructor> instructorOptional = instructorService.getInstructorById(instructorId);
+        
+        if (instructorOptional.isEmpty()) {
+            throw new NoSuchElementException(messageSource.getMessage("not.found.instructor", null, Locale.getDefault()));
+        }
+        
+        authorizationService.authorize(AuthorizationLevel.OWNER, instructorOptional.get(), request);
         List<Course> courseList = courseService.findByInstructor(instructorId);
         
         return new ResponseEntity<>(courseList.stream().map(dtoHelper::toCourseDTO).toList(), HttpStatus.OK);
@@ -148,6 +166,7 @@ public class CourseController {
     
     @GetMapping("/byInstructor")
     public ResponseEntity<List<CourseDTO>> getCourseByInstructor(HttpServletRequest request) throws BadRequestException {
+        log.info("[GET] /courses/byInstructor");
         authorizationService.authorize(AuthorizationLevel.INSTRUCTOR, null, request);
         long instructorId = authorizationService.getInstructorIdFromRequest(request);
         List<Course> courseList = courseService.findByInstructor(instructorId);
@@ -155,7 +174,6 @@ public class CourseController {
         return new ResponseEntity<>(courseList.stream().map(dtoHelper::toCourseDTO).toList(), HttpStatus.OK);
     }
     
-    // filter by instructor id after auth is done
     @GetMapping("/draft")
     public ResponseEntity<List<CourseDTO>> getAllDraftCourses(HttpServletRequest request) throws BadRequestException {
         log.info("[GET] /courses/draft");
@@ -168,7 +186,7 @@ public class CourseController {
     
     @GetMapping("/draft/{courseId}")
     public ResponseEntity<CourseDTO> getSpecificVersionOfCourse(@PathVariable long courseId, HttpServletRequest request) throws BadRequestException {
-        log.info("[GET] /courses/{}/draft", courseId);
+        log.info("[GET] /courses/draft/{}", courseId);
         Optional<Course> courseOptional = courseService.findDraftById(courseId);
         
         if (courseOptional.isPresent()) {
@@ -181,7 +199,7 @@ public class CourseController {
     
     @PostMapping("/draft")
     public ResponseEntity<CourseDTO> createCourse(@RequestBody @Validated(OnCreate.class) CourseDTO courseDTO, HttpServletRequest request) throws BadRequestException {
-        log.debug("Creating course {}", courseDTO);
+        log.info("[POST] /courses/draft\nBody: \n{}", courseDTO);
         authorizationService.authorize(AuthorizationLevel.INSTRUCTOR, null, request);
         Course course = courseMapper.toCourse(courseDTO);
         
@@ -194,6 +212,7 @@ public class CourseController {
     
     @PostMapping("/modules/reorder")
     public ResponseEntity<List<ModuleDTO>> reorderModules(@RequestBody @Validated(OnUpdate.class) List<ReorderDTO> modules, HttpServletRequest request) throws BadRequestException {
+        log.info("[POST] /courses/modules/reorder\nRequestBody:\n{}", modules);
         authorizationService.authorize(AuthorizationLevel.INSTRUCTOR, null, request);
         
         if (!isValidOrderedList(modules)) {
@@ -204,6 +223,7 @@ public class CourseController {
                 modules.stream().sorted(Comparator.comparingLong(ReorderDTO::getOrderIndex)).toList();
         
         long newOrderIndex = 1;
+        
         for (ReorderDTO module : sortedModules) {
             module.setOrderIndex(newOrderIndex++);
         }
@@ -217,6 +237,7 @@ public class CourseController {
     public ResponseEntity<CourseDTO> updateCoursePartial(@PathVariable long id,
                                                          @RequestBody @Validated(OnUpdate.class) CourseDTO courseDTO,
                                                          HttpServletRequest request) throws BadRequestException {
+        log.info("[PATCH] /courses/{}\nRequestBody:\n{}", id, courseDTO);
         Optional<Course> courseToUpdate = courseService.findById(id);
         
         if (courseToUpdate.isPresent()) {
@@ -231,13 +252,14 @@ public class CourseController {
             
             return new ResponseEntity<>(dtoHelper.toCourseDTO(updatedCourse), HttpStatus.OK);
             
-        } else {
-            return ResponseEntity.notFound().build();
         }
+        
+        throw new NoSuchElementException(messageSource.getMessage("not.found.course", null, Locale.getDefault()));
     }
     
     @PostMapping("/publish/{id}")
     public ResponseEntity<CourseDTO> publishCourse(@PathVariable long id, HttpServletRequest request) throws BadRequestException {
+        log.info("[POST] /courses/publish/{}", id);
         Optional<Course> courseOptional = courseService.findById(id);
         
         if (courseOptional.isPresent()) {
@@ -247,34 +269,40 @@ public class CourseController {
             if (course.getCurrentRelease() > ReleaseStatus.DRAFT.getReleaseNumber()) {
                 ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, messageSource.getMessage(
                         "error.course.republish", null, request.getLocale()), request.getRequestURI());
+                
                 return new ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST);
             }
             
             if (!isPublishable(course)) {
                 ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, messageSource.getMessage(
                         "error.course.not.publishable", null, request.getLocale()), request.getRequestURI());
+                
                 return new ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST);
             }
             
             course.setCurrentRelease(ReleaseStatus.INITIAL_PUBLISHED.getReleaseNumber());
+            contentService.publishContentsOfCourse(course);
             Course savedCourse = courseService.save(course);
             
             return new ResponseEntity<>(dtoHelper.toCourseDTO(savedCourse), HttpStatus.OK);
         }
         
-        return ResponseEntity.notFound().build();
+        throw new NoSuchElementException(messageSource.getMessage("not.found.course", null, Locale.getDefault()));
     }
     
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCourse(@PathVariable long id, HttpServletRequest request) throws BadRequestException {
+        log.info("[DELETE] /courses/{}", id);
         Optional<Course> courseOptional = courseService.findById(id);
+        
         if (courseOptional.isPresent()) {
             authorizationService.authorize(AuthorizationLevel.OWNER, courseOptional.get(), request);
             courseService.deleteById(id);
             
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.notFound().build();
+        
+        throw new NoSuchElementException(messageSource.getMessage("not.found.course", null, Locale.getDefault()));
     }
     
     private boolean isPublishable(Course course) {

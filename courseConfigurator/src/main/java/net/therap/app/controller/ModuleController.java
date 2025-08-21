@@ -1,13 +1,16 @@
 package net.therap.app.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.*;
+import net.therap.app.helper.AuthorizationService;
 import net.therap.app.helper.DtoHelper;
 import net.therap.app.mapper.ModuleMapper;
 import net.therap.app.model.Content;
 import net.therap.app.model.Course;
 import net.therap.app.model.Module;
+import net.therap.app.model.enums.AuthorizationLevel;
 import net.therap.app.service.CourseService;
 import net.therap.app.service.ModuleService;
 import net.therap.app.validation.OnUpdate;
@@ -37,9 +40,8 @@ import static net.therap.app.util.CollectionUtil.isValidOrderedList;
  */
 @RestController
 @RequestMapping("/modules")
+@Slf4j
 public class ModuleController {
-    
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     
     private final ModuleService moduleService;
     private final DtoHelper dtoHelper;
@@ -47,20 +49,23 @@ public class ModuleController {
     private final CourseService courseService;
     private final MessageSource messageSource;
     private final HazelcastCacheService hazelcastCacheService;
+    private final AuthorizationService authorizationService;
     
     @Autowired
     public ModuleController(CourseService courseService, ModuleMapper moduleMapper, DtoHelper dtoHelper,
-                            ModuleService moduleService, MessageSource messageSource, HazelcastCacheService hazelcastCacheService) {
+                            ModuleService moduleService, MessageSource messageSource, HazelcastCacheService hazelcastCacheService, AuthorizationService authorizationService) {
         this.courseService = courseService;
         this.moduleMapper = moduleMapper;
         this.dtoHelper = dtoHelper;
         this.moduleService = moduleService;
         this.messageSource = messageSource;
         this.hazelcastCacheService = hazelcastCacheService;
+        this.authorizationService = authorizationService;
     }
     
     @GetMapping
-    public ResponseEntity<List<ModuleDTO>> getAllModules() {
+    public ResponseEntity<List<ModuleDTO>> getAllModules(HttpServletRequest request) throws BadRequestException {
+        authorizationService.authorize(AuthorizationLevel.ADMIN, null, request);
         List<Module> modules = moduleService.findAll();
         List<ModuleDTO> moduleDTOs =
                 modules.stream().map(dtoHelper::toModuleDTO).collect(Collectors.toList());
@@ -69,9 +74,10 @@ public class ModuleController {
     }
     
     @GetMapping("/byCourse/{courseId}")
-    public ResponseEntity<List<ModuleDTO>> getModulesByCourse(@PathVariable long courseId) {
+    public ResponseEntity<List<ModuleDTO>> getModulesByCourse(@PathVariable long courseId, HttpServletRequest request) throws BadRequestException {
         List<ModuleDTO> cachedModules = hazelcastCacheService.get(CacheConstants.MODULES_BY_COURSE, courseId);
         if (cachedModules != null) {
+            authorizationService.authorize(AuthorizationLevel.OWNER, cachedModules, request);
             return ResponseEntity.ok(cachedModules);
         }
 
@@ -108,7 +114,7 @@ public class ModuleController {
     
     @PostMapping
     public ResponseEntity<ModuleDTO> createModule(@RequestBody @Validated ModuleDTO moduleDTO, HttpServletRequest request) {
-        logger.info("Creating new module {}", moduleDTO);
+        log.info("Creating new module {}", moduleDTO);
         
         if (moduleDTO.getId() != 0) {
             moduleDTO.setId(0);
@@ -123,9 +129,9 @@ public class ModuleController {
         }
         
         Module module = moduleMapper.toModule(moduleDTO);
-        module.setOrderIndex(moduleService.getMaxOrderIndexOfModules(module.getCourse().getId()));
+        module.setOrderIndex(moduleService.getMaxOrderIndexOfModules(module.getCourse().getId()) + 1);
         
-        logger.info("Module from DTO: {}", module);
+        log.info("Module from DTO: {}", module);
         Module savedModule = moduleService.save(module);
         
         return new ResponseEntity<>(moduleMapper.toModuleDTO(savedModule), HttpStatus.CREATED);
@@ -133,11 +139,13 @@ public class ModuleController {
     
     @PostMapping("/contents/reorder")
     public ResponseEntity<List<ContentCatalogueDTO>> reorderModules(@RequestBody @Validated(OnUpdate.class) List<ReorderDTO> contents) throws BadRequestException {
+        log.info("[POST] /modules/contents/reorder\n{}", contents);
         
         if (!isValidOrderedList(contents)) {
             throw new BadRequestException(messageSource.getMessage("invalid.reorder", null, Locale.getDefault()));
         }
         
+        log.info("passed validation");
         List<ReorderDTO> sortedContents = contents.stream()
                 .sorted(Comparator.comparingLong(ReorderDTO::getOrderIndex))
                 .toList();
@@ -148,6 +156,7 @@ public class ModuleController {
             module.setOrderIndex(newOrderIndex++);
         }
         
+        log.info("sort done!");
         List<Content> updatedContents = moduleService.reorderContents(sortedContents);
         
         return ResponseEntity.ok(updatedContents.stream().map(dtoHelper::toContentCatalogueDTO).toList());

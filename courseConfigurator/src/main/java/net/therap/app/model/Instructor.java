@@ -69,4 +69,10 @@ public class Instructor extends Persistent {
         
         return id == instructor.id;
     }
+
+    public List<Course> getCourses() {
+        return courses.stream()
+                .filter(course -> !course.isDeleted())
+                .toList();
+    }
 }
