@@ -1,5 +1,6 @@
 package net.therap.auth.server.controller;
 
+import feign.Response;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,13 +21,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class AdminController {
     
     private final UserService userService;
     
     private void checkAdmin(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
+        
         if (userId == null) {
             throw new AuthServerException("Authentication required");
         }
@@ -35,6 +36,13 @@ public class AdminController {
         if (!UserRole.ADMIN.equals(user.getRole())) {
             throw new AuthServerException("Admin access required");
         }
+    }
+    
+    @GetMapping("/me")
+    public ResponseEntity<User> getMe(HttpServletRequest request) {
+        checkAdmin(request);
+        
+        return ResponseEntity.ok(userService.findById((Long) request.getAttribute("userId")));
     }
     
     @GetMapping("/users")
@@ -52,6 +60,7 @@ public class AdminController {
     @PutMapping("/update-user")
     public ResponseEntity<User> updateUser(@Valid @RequestBody User user, HttpServletRequest request) {
         checkAdmin(request);
+        
         return ResponseEntity.ok(userService.updateUser(user));
     }
     
@@ -59,6 +68,7 @@ public class AdminController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id, HttpServletRequest request) {
         checkAdmin(request);
         userService.deleteById(id);
+        
         return ResponseEntity.ok().build();
     }
     
