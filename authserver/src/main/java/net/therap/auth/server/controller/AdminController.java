@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author apurboturjo
@@ -28,7 +30,7 @@ public class AdminController {
     private void checkAdmin(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         
-        if (userId == null) {
+        if (Objects.isNull(userId)) {
             throw new AuthServerException("Authentication required");
         }
         
@@ -48,6 +50,7 @@ public class AdminController {
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers(HttpServletRequest request) {
         checkAdmin(request);
+        
         return ResponseEntity.ok(userService.findAll());
     }
     
@@ -75,13 +78,19 @@ public class AdminController {
     @PutMapping("/user/{userId}/toggle-status")
     public ResponseEntity<User> toggleUserStatus(@PathVariable Long userId, HttpServletRequest request) {
         checkAdmin(request);
+        
         return ResponseEntity.ok(userService.toggleUserStatus(userId));
     }
     
     @PostMapping("/logout-force")
-    public ResponseEntity<JwtResponse> forceLogout(HttpServletRequest request) {
+    public ResponseEntity<JwtResponse> forceLogout(@RequestBody Map<String, Object> data,
+                                                   HttpServletRequest request) {
         checkAdmin(request);
-        // TODO: Implement force logout
+        
+        Long userId = ((Number) data.get("userId")).longValue();
+        
+        userService.forceLogout(userId);
+        
         return ResponseEntity.ok().build();
     }
 }

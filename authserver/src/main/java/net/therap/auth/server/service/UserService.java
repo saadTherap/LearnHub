@@ -6,6 +6,7 @@ import net.therap.auth.server.entity.User;
 import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.respository.UserRepository;
 import net.therap.auth.server.util.MessageUtil;
+import net.therap.cache.support.HazelcastCacheService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.Optional;
 public class UserService {
     
     private final UserRepository userRepository;
+    private final HazelcastCacheService hazelcastCacheService;
     
     public List<User> findAll() {
         return userRepository.findAllSorted();
@@ -87,5 +89,16 @@ public class UserService {
         user.setEnabled(!user.isEnabled());
         
         return userRepository.save(user);
+    }
+    
+    public void forceLogout(Long userId) {
+        User user = findById(userId);
+        
+        Long currentVer = hazelcastCacheService.get("userEpoch", user.getId());
+        if (Objects.isNull(currentVer)) {
+            currentVer = 1L;
+        }
+        
+        hazelcastCacheService.put("userEpoch", user.getId(), currentVer + 1);
     }
 }

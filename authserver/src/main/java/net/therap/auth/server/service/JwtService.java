@@ -16,6 +16,8 @@ import net.therap.auth.lib.provider.PublicKeyProvider;
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.util.JwtUtil;
+import net.therap.cache.support.HazelcastCacheService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +42,8 @@ public class JwtService {
     private static final long REFRESH_EXPIRATION_MINUTES = 60L * 24 * 7;
     
     private final UserService userService;
-    private final PublicKeyProvider publicKeyProvider; // Using your existing provider
+    private final PublicKeyProvider publicKeyProvider;
+    private final HazelcastCacheService hazelcastCacheService;
     
     @Value("${jwt.private-key-path}")
     private String privateKeyPath;
@@ -175,7 +178,22 @@ public class JwtService {
         return signedJWT.getJWTClaimsSet();
     }
     
+    private Long getTokenVersion(User user, String tokenType) {
+        Long version = null;
+        
+        if (StringUtils.equalsIgnoreCase("access", tokenType)) {
+            version = hazelcastCacheService.get("userEpoch", user.getId());
+            
+            if (Objects.isNull(version)) {
+                version = 1L;
+            }
+        }
+        
+        return version;
+    }
+    
     private String generateToken(User user, long expirationMinutes, String tokenType) {
+        
         try {
             Instant now = Instant.now();
             Instant expiration = now.plus(expirationMinutes, ChronoUnit.MINUTES);
@@ -185,6 +203,7 @@ public class JwtService {
                     .claim("userId", user.getId())
                     .claim("role", user.getRole().name())
                     .claim("tokenType", tokenType)
+                    .claim("ver", getTokenVersion(user, tokenType))
                     .issuer("learnhub-auth-server")
                     .audience("learnhub-clients")
                     .issueTime(Date.from(now))
