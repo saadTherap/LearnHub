@@ -37,6 +37,12 @@ public class QuizQuestion extends Persistent {
     
     @OneToMany(mappedBy = "quizQuestion", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<QuizOption> options;
+
+    public List<QuizOption> getOptions() {
+        return options.stream()
+                .filter(option -> !option.isDeleted())
+                .toList();
+    }
     
     @Override
     public boolean equals(Object o) {
