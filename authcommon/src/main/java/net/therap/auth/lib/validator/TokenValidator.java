@@ -8,6 +8,7 @@ import com.nimbusds.jwt.SignedJWT;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.auth.lib.exception.AuthenticationException;
 import net.therap.auth.lib.provider.PublicKeyProvider;
+import net.therap.cache.support.HazelcastCacheService;
 import org.springframework.stereotype.Service;
 
 import java.security.interfaces.RSAPublicKey;
@@ -24,9 +25,11 @@ import java.util.Objects;
 @Service
 public class TokenValidator {
     
+    private final HazelcastCacheService hazelcastCacheService;
     private final PublicKeyProvider keyProvider;
     
-    public TokenValidator(PublicKeyProvider keyProvider) {
+    public TokenValidator(HazelcastCacheService hazelcastCacheService, PublicKeyProvider keyProvider) {
+        this.hazelcastCacheService = hazelcastCacheService;
         this.keyProvider = keyProvider;
     }
     
@@ -82,6 +85,28 @@ public class TokenValidator {
         Date issuedAtTime = claims.getIssueTime();
         if (Objects.nonNull(issuedAtTime) && issuedAtTime.after(now)) {
             throw new AuthenticationException("Token issued in the future");
+        }
+        
+        if (isForceLoggedOut(claims)) {
+            throw new AuthenticationException("You have been logged out of the system forcefully.");
+        }
+    }
+    
+    private boolean isForceLoggedOut(JWTClaimsSet claims) {
+        try {
+            Long userId = (Long) claims.getClaim("userId");
+            Long tokenVer = (Long) claims.getClaim("ver");
+            
+            Long currentVer = hazelcastCacheService.get("userEpoch", userId);
+            
+            if (Objects.isNull(currentVer)) {
+                currentVer = 1L;
+            }
+            
+            return !Objects.equals(tokenVer, currentVer);
+            
+        } catch (Exception e) {
+            return true;
         }
     }
 }

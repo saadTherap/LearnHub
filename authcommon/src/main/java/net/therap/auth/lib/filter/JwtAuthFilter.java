@@ -1,6 +1,7 @@
 package net.therap.auth.lib.filter;
 
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,11 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 import net.therap.auth.lib.context.UserRequestCache;
 import net.therap.auth.lib.exception.AuthenticationException;
 import net.therap.auth.lib.validator.TokenValidator;
+import net.therap.cache.support.HazelcastCacheService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author apurboturjo
@@ -22,11 +26,12 @@ import java.util.List;
 @Slf4j
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+    private static final String PRE_FLIGHT_REQUEST_METHOD = "OPTIONS";
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
     private static final String CLAIM_USER_ID = "userId";
     private static final String CLAIM_USER_ROLE = "role";
-
+    
     private final List<String> excludedPaths;
     private final TokenValidator tokenValidator;
     
@@ -69,7 +74,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         log.debug("Context Path: " + request.getContextPath());
         log.debug("========================");
         
-        if ("OPTIONS".equals(request.getMethod())) {
+        if (PRE_FLIGHT_REQUEST_METHOD.equals(request.getMethod())) {
             log.debug("OPTIONS request detected, bypassing JWT validation");
             filterChain.doFilter(request, response);
             
@@ -110,7 +115,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         } catch (AuthenticationException e) {
             log.warn("Token validation failed: {}", e.getMessage());
             sendUnauthorizedError(response, "Invalid or expired token");
-
         }
     }
 
