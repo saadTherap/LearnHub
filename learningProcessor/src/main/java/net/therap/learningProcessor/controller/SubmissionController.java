@@ -36,6 +36,11 @@ public class SubmissionController {
     private final NotificationService notificationService;
     private final AuthorizationService authorizationService;
 
+    @PostMapping("/course/{id}/generateSignature")
+    public ResponseEntity<String> generateSignature(@RequestBody StudentSubmissionDto studentSubmissionDto, @PathVariable String courseId) {
+        return ResponseEntity.ok(submissionService.generateSignature(studentSubmissionDto));
+    }
+
     @PostMapping("/assignments")
     public ResponseEntity<StudentSubmissionDto> submitAssignment(
             @RequestParam Long studentId,

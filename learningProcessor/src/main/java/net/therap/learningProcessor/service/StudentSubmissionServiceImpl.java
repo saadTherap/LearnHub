@@ -11,6 +11,8 @@ import net.therap.learningProcessor.mapper.StudentSubmissionMapper;
 import net.therap.learningProcessor.repository.StudentSubmissionRepository;
 import net.therap.learningProcessor.service.StudentSubmissionService;
 import net.therap.learningProcessor.validator.StudentValidator;
+import net.therap.signaturegenerator.utils.GenerateSignature;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class StudentSubmissionServiceImpl implements StudentSubmissionService {
+
+    @Value("${file.hmac.secret}")
+    private String hmacSecret;
 
     private final StudentSubmissionRepository submissionRepository;
     private final StudentSubmissionMapper submissionMapper;
@@ -85,6 +90,18 @@ public class StudentSubmissionServiceImpl implements StudentSubmissionService {
 
         return submissionRepository.findFirstByStudentIdAndContentIdOrderBySubmittedAtDesc(studentId, contentId)
                 .map(submissionMapper::toDto);
+    }
+
+    @Override
+    public String generateSignature(StudentSubmissionDto studentSubmissionDto) {
+
+        return GenerateSignature.generateSignature(
+                studentSubmissionDto.getFormId(),
+                studentSubmissionDto.getUploaderEmail(),
+                studentSubmissionDto.getContentType(),
+                studentSubmissionDto.getOriginalFileName(),
+                hmacSecret
+                );
     }
 
     @Override

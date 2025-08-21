@@ -9,10 +9,10 @@ import net.therap.secureFileServer.dto.StoredFileDto;
 import net.therap.secureFileServer.entity.StoredFile;
 import net.therap.secureFileServer.exception.InvalidFileSignatureException;
 import net.therap.secureFileServer.mapper.StoredFileMapper;
-import net.therap.secureFileServer.service.FileSignatureService;
 import net.therap.secureFileServer.service.FileStorageService;
 import net.therap.secureFileServer.util.MessageUtil;
 import net.therap.secureFileServer.validator.FileValidator;
+import net.therap.signaturegenerator.utils.GenerateSignature;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -39,7 +39,6 @@ import java.util.Map;
 public class FileController {
 
     private final FileStorageService fileStorageService;
-    private final FileSignatureService fileSignatureService;
     private final StoredFileMapper fileMapper;
     private final FileValidator fileValidator;
     private final MessageUtil messageUtil;
@@ -87,7 +86,7 @@ public class FileController {
 
         StoredFile storedFile = fileStorageService.getByFormId(formId);
 
-        if (signature == null || !fileSignatureService.verifySignature(storedFile, signature)) {
+        if (signature == null || !GenerateSignature.verifySignature(storedFile.getFileSecret(), signature)) {
             log.warn("Download denied due to invalid/missing signature: formId={}", formId);
 
             throw new InvalidFileSignatureException(messageUtil.getMessage("error.invalid-signature.message"));
