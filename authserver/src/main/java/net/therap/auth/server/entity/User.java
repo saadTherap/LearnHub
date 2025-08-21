@@ -1,5 +1,6 @@
 package net.therap.auth.server.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,6 +30,7 @@ public class User extends Persistence {
     private String email;
     
     @Column(name = "password", nullable = false)
+    @JsonIgnore
     private String password;
     
     @Column(name = "role", nullable = false)

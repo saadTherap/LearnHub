@@ -1,5 +1,6 @@
 package net.therap.auth.server.controller;
 
+import feign.Response;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author apurboturjo
@@ -20,14 +23,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class AdminController {
     
     private final UserService userService;
     
     private void checkAdmin(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        if (userId == null) {
+        
+        if (Objects.isNull(userId)) {
             throw new AuthServerException("Authentication required");
         }
         
@@ -37,9 +40,17 @@ public class AdminController {
         }
     }
     
+    @GetMapping("/me")
+    public ResponseEntity<User> getMe(HttpServletRequest request) {
+        checkAdmin(request);
+        
+        return ResponseEntity.ok(userService.findById((Long) request.getAttribute("userId")));
+    }
+    
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers(HttpServletRequest request) {
         checkAdmin(request);
+        
         return ResponseEntity.ok(userService.findAll());
     }
     
@@ -52,6 +63,7 @@ public class AdminController {
     @PutMapping("/update-user")
     public ResponseEntity<User> updateUser(@Valid @RequestBody User user, HttpServletRequest request) {
         checkAdmin(request);
+        
         return ResponseEntity.ok(userService.updateUser(user));
     }
     
@@ -59,19 +71,26 @@ public class AdminController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id, HttpServletRequest request) {
         checkAdmin(request);
         userService.deleteById(id);
+        
         return ResponseEntity.ok().build();
     }
     
     @PutMapping("/user/{userId}/toggle-status")
     public ResponseEntity<User> toggleUserStatus(@PathVariable Long userId, HttpServletRequest request) {
         checkAdmin(request);
+        
         return ResponseEntity.ok(userService.toggleUserStatus(userId));
     }
     
     @PostMapping("/logout-force")
-    public ResponseEntity<JwtResponse> forceLogout(HttpServletRequest request) {
+    public ResponseEntity<JwtResponse> forceLogout(@RequestBody Map<String, Object> data,
+                                                   HttpServletRequest request) {
         checkAdmin(request);
-        // TODO: Implement force logout
+        
+        Long userId = ((Number) data.get("userId")).longValue();
+        
+        userService.forceLogout(userId);
+        
         return ResponseEntity.ok().build();
     }
 }

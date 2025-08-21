@@ -6,7 +6,7 @@ services:
     container_name: authkeyprovider
     ports:
       - "8091:8091"
-    restart: always
+    restart: unless-stopped
 
   auth-server:
     build:
@@ -15,6 +15,27 @@ services:
     container_name: authserver
     ports:
       - "8090:8090"
+    restart: unless-stopped
+
+  secure-file-server:
+    build:
+      context: ./secureFileServer
+      dockerfile: Dockerfile
+    container_name: secureFileServer
+    ports:
+      - "8026:8026"
+    depends_on:
+      - clamav
+    environment:
+      CLAMAV_HOST: clamav
+      CLAMAV_PORT: 3310
+
+  clamav:
+    image: mkodockx/docker-clamav:alpine
+    container_name: clamav
+    ports:
+      - "3310:3310"
+    restart: unless-stopped
 
   course-configurator:
     build:
@@ -23,7 +44,7 @@ services:
     container_name: courseConfigurator
     ports:
       - "8082:8082"
-    restart: always
+    restart: unless-stopped
 
   learning-processor:
     build:
@@ -32,17 +53,7 @@ services:
     container_name: learningProcessor
     ports:
       - "8028:8028"
-    restart: always
-
-  service-registry:
-    build:
-      context: ./service-registry
-      dockerfile: Dockerfile
-    container_name: service-registry
-    ports:
-      - "8761:8761"
-    restart: always
-
+    restart: unless-stopped
 
   kafka-ui:
     image: provectuslabs/kafka-ui

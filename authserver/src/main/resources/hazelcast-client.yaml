@@ -1,0 +1,34 @@
+hazelcast-client:
+  cluster-name: learnhub
+
+  connection-strategy:
+    async-start: true
+    reconnect-mode: ASYNC
+    connection-retry:
+      initial-backoff-millis: 1000
+      max-backoff-millis: 20000
+      multiplier: 2
+      cluster-connect-timeout-millis: 10000
+      jitter: 0.2
+
+  network:
+    cluster-members:
+      - 172.16.2.115:5701
+      - 172.16.2.115:5702
+      - 172.16.2.115:5703
+      - 192.168.0.215:5701
+      - 192.168.0.215:5702
+      - 192.168.0.215:5703
+    smart-routing: true
+    redo-operation: true
+    connection-timeout: 8000
+
+  near-cache:
+    userEpoch:
+      in-memory-format: OBJECT
+      time-to-live-seconds: 1800
+      invalidate-on-change: true
+      eviction:
+        eviction-policy: LRU
+        max-size-policy: ENTRY_COUNT
+        size: 1000
