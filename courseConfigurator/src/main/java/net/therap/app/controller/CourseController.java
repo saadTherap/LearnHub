@@ -77,7 +77,6 @@ public class CourseController {
     @GetMapping("/{id}")
     public ResponseEntity<CourseCatalogDTO> getCourseById(@PathVariable long id, HttpServletRequest request) throws BadRequestException {
         log.info("[GET] /courses/{} ", id);
-        authorizationService.authorize(AuthorizationLevel.STUDENT_ENROLLED, null, request);
         CourseCatalogDTO cached = hazelcastCacheService.get(CacheConstants.COURSE_CATALOG, id);
         
         if (cached != null) {
