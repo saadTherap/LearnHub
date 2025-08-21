@@ -1,5 +1,6 @@
 package net.therap.learningProcessor.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import net.therap.cache.support.HazelcastCacheService;
 import net.therap.learningProcessor.constants.CacheConstants;
@@ -33,17 +34,17 @@ public class StudentController {
     private final AuthorizationService authorizationService;
 
     @GetMapping
-    public ResponseEntity<List<StudentDto>> getAllStudents() {
-        authorizationService.authorize(AccessLevel.TEACHER_ONLY);
+    public ResponseEntity<List<StudentDto>> getAllStudents(HttpServletRequest request) {
+        authorizationService.authorize(AccessLevel.TEACHER_ONLY, request);
 
         List<StudentDto> students = studentService.getAllStudents();
         return ResponseEntity.ok(students);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<StudentDto> getStudentById(@PathVariable Long id) {
+    public ResponseEntity<StudentDto> getStudentById(@PathVariable Long id, HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID,  Map.of("studentId", id));
+        authorizationService.authorize(AccessLevel.TEACHER_AND_STUDENT_WITH_ID,  Map.of("studentId", id), request);
 
         StudentDto cachedStudent = hazelcastCacheService.get(CacheConstants.STUDENTS, id);
         if (cachedStudent != null) {
@@ -70,9 +71,10 @@ public class StudentController {
 
     @PutMapping("/{id}")
     public ResponseEntity<StudentDto> updateStudent(@PathVariable Long id,
-                                                    @Validated(OnUpdate.class) @RequestBody StudentDto studentDto) {
+                                                    @Validated(OnUpdate.class) @RequestBody StudentDto studentDto,
+                                                    HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID,  Map.of("studentId", id));
+        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID,  Map.of("studentId", id), request);
 
         studentDto.setId(id);
         StudentDto updatedStudent = studentService.updateStudent(studentDto);

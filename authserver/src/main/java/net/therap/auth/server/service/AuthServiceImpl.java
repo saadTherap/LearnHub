@@ -9,6 +9,7 @@ import net.therap.auth.server.dto.LoginRequest;
 import net.therap.auth.server.dto.RegisterRequest;
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.entity.VerificationToken;
+import net.therap.auth.server.enums.UserRole;
 import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.respository.VerificationTokenRepository;
 import net.therap.auth.server.service.interfaces.AuthService;
@@ -35,6 +36,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
     private final VerificationTokenRepository verificationTokenRepository;
+    private final RegistrationService registrationService;
     
     @Override
     public JwtResponse register(RegisterRequest request) {
@@ -101,7 +103,6 @@ public class AuthServiceImpl implements AuthService {
         
         if (verificationToken.isExpired()) {
             verificationTokenRepository.delete(verificationToken);
-            
             throw new AuthServerException(MessageUtil.getMessage("err.token.verify.expired"));
         }
         
@@ -110,6 +111,13 @@ public class AuthServiceImpl implements AuthService {
         userService.updateUser(userToVerify);
         
         verificationTokenRepository.delete(verificationToken);
+        
+        if (userToVerify.getRole() == UserRole.STUDENT) {
+            registrationService.sendStudentRegistrationInfo(userToVerify.getEmail());
+        
+        } else if (userToVerify.getRole() == UserRole.INSTRUCTOR) {
+            registrationService.sendInstructorRegistrationInfo(userToVerify.getEmail());
+        }
         
         return new JwtResponse(MessageUtil.getMessage("ok.email.verified"));
     }
