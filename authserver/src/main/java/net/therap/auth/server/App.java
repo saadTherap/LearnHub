@@ -12,7 +12,7 @@ import java.util.TimeZone;
 
 @EnableScheduling
 @SpringBootApplication(scanBasePackages = {"net.therap.auth.server", "net.therap.auth.lib", "net.therap.kafkaregistry" +
-        ".service", "net.therap.cache.support"})
+        ".service"})
 public class App {
     
     @Autowired
