@@ -35,6 +35,10 @@ public class EmailService {
         log.info("Verification email sent to: console");
     }
     
+    public String getLink(String token) {
+        return "https://app-rnd01.therapbd.net/auth/api/verify-email?token=" + token;
+    }
+    
     
     public void sendVerificationEmail(String to, String token) throws AuthServerException {
         MimeMessage message = mailSender.createMimeMessage();

@@ -51,11 +51,11 @@ public class AuthServiceImpl implements AuthService {
         log.info("User saved successfully with ID: {} for email: {}", savedUser.getId(), request.getEmail());
         
         log.info("Generating and sending verification token for user ID: {}", savedUser.getId());
-        verificationTokenService.generateAndSendVerificationToken(savedUser);
+        String link = verificationTokenService.generateAndSendVerificationToken(savedUser);
         
         log.info("REGISTRATION completed. Sent the verification mail for email: {}", request.getEmail());
         
-        return new JwtResponse(MessageUtil.getMessage("ok.user.registered.verify.pending"));
+        return new JwtResponse(MessageUtil.getMessage("ok.user.registered.verify.pending") + ", " + link);
     }
     
     @Override
