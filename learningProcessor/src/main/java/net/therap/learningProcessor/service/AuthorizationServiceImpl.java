@@ -60,7 +60,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
             case INSTRUCTOR_OR_STUDENT_ENROLLED_IN_COURSE -> checkInstructorOrStudentEnrolled(userInfo, params);
 
-            case INSTRUCTOR_OF_COURSE_OR_STUDENT_WITH_ID -> checkInstructorOfCourseOrStudentWithId(userInfo, params);
+            case INSTRUCTOR_OF_COURSE_OR_STUDENT_ENROLLED_IN_COURSE -> checkInstructorOfCourseOrStudentEnrolledInCourse(userInfo, params);
 
             default -> throwForbidden("error.access.content.denied");
         }
@@ -118,16 +118,16 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     private void checkStudentEnrolledInCourse(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
-        Long studentId = (Long) params.get("studentId");
         Long courseId = (Long) params.get("courseId");
 
-        if (studentId == null || courseId == null) {
+        Student student = studentRepository.findByEmail(userInfo.email())
+                .orElseThrow(() -> new ResourceNotFoundException("error.student.notFound", userInfo.email()));
+
+        if (courseId == null) {
             throwForbidden("error.access.enrollment.denied");
         }
 
-        checkStudentWithId(userInfo, Map.of("studentId", studentId));
-
-        if (!courseEnrollmentRepository.existsByStudentIdAndCourseId(studentId, courseId)) {
+        if (!courseEnrollmentRepository.existsByStudentIdAndCourseId(student.getId(), courseId)) {
             throwForbidden("error.access.not.enrolled");
         }
     }
@@ -158,12 +158,12 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         checkStudentEnrolledInCourse(userInfo, params);
     }
 
-    private void checkInstructorOfCourseOrStudentWithId(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
+    private void checkInstructorOfCourseOrStudentEnrolledInCourse(UserRequestCache.UserInfo userInfo, Map<String, Object> params) {
         if (isInstructor(userInfo)) {
             checkInstructorOfCourse(userInfo, params);
 
         } else {
-            checkStudentWithId(userInfo, params);
+            checkStudentEnrolledInCourse(userInfo, params);
         }
     }
 

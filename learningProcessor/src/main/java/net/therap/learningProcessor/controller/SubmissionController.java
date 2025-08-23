@@ -36,9 +36,22 @@ public class SubmissionController {
     private final NotificationService notificationService;
     private final AuthorizationService authorizationService;
 
-    @PostMapping("/course/{id}/generateSignature")
-    public ResponseEntity<String> generateSignature(@RequestBody StudentSubmissionDto studentSubmissionDto, @PathVariable String courseId) {
-        return ResponseEntity.ok(submissionService.generateSignature(studentSubmissionDto));
+    @PostMapping("/course/{courseId}/generateSignature")
+    public ResponseEntity<String> generateSignature(@PathVariable Long courseId,
+                                                    @RequestBody StudentSubmissionDto studentSubmissionDto,
+                                                    HttpServletRequest request) {
+
+        authorizationService.authorize(AccessLevel.INSTRUCTOR_OF_COURSE_OR_STUDENT_ENROLLED_IN_COURSE,
+                Map.of("courseId", courseId),
+                request);
+
+        log.info("[POST] Generate Signature of: Course - id: {} , File: \n {}", courseId, studentSubmissionDto );
+
+        String signature = submissionService.generateSignature(studentSubmissionDto);
+
+        log.info("Generated Signature: {}", signature);
+
+        return ResponseEntity.ok(signature);
     }
 
     @PostMapping("/assignments")
@@ -126,7 +139,7 @@ public class SubmissionController {
                                                                                        @PathVariable Long contentId,
                                                                                        HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.INSTRUCTOR_OF_COURSE_OR_STUDENT_WITH_ID,
+        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID,
                 Map.of("studentId", studentId, "courseId", courseId),
                 request);
 
@@ -141,7 +154,7 @@ public class SubmissionController {
                                                                                              @PathVariable Long contentId,
                                                                                              HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.INSTRUCTOR_OF_COURSE_OR_STUDENT_WITH_ID,
+        authorizationService.authorize(AccessLevel.INSTRUCTOR_OF_COURSE,
                 Map.of("courseId", courseId),
                 request);
 
