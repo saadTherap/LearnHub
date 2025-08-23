@@ -141,16 +141,9 @@ public class AuthorizationService {
                     throw new AccessDeniedException(messageSource.getMessage("access.denied.student.enrolled", null, Locale.getDefault()));
                 }
                 
-                if (resource instanceof Course course && !isEnrolled(course.getId(), userEmail)) {
-                    throw new AccessDeniedException(messageSource.getMessage("access.denied.student.enrolled", null, Locale.getDefault()));
-                    
-                } else if (resource instanceof Module module && !isModuleOwner(module.getCourse().getId(), userEmail)) {
-                    throw new AccessDeniedException(messageSource.getMessage("access.denied.student.enrolled", null, Locale.getDefault()));
-                    
-                } else if (resource instanceof Content content && !isContentOwner(content.getModule().getCourse().getId(), userEmail)) {
-                    throw new  AccessDeniedException(messageSource.getMessage("access.denied.student.enrolled", null, Locale.getDefault()));
-                    
-                } else if (resource instanceof ContentRelease release && !isEnrolled(release.getContent().getModule().getCourse().getId(), userEmail)) {
+                long courseId = getCourseIdFromResource(resource);
+                
+                if (courseId != -1 && !isEnrolled(courseId, userEmail)) {
                     throw new AccessDeniedException(messageSource.getMessage("access.denied.student.enrolled", null, Locale.getDefault()));
                 }
                 
@@ -174,7 +167,29 @@ public class AuthorizationService {
                 throw new RuntimeException();
         }
     }
-
+    
+    private static long getCourseIdFromResource(Object resource) {
+        long courseId = -1;
+        
+        switch (resource) {
+            case null -> {
+                return courseId;
+            }
+            
+            case Course course -> courseId = course.getId();
+            
+            case Module module -> courseId = module.getCourse().getId();
+            
+            case Content content -> courseId = content.getModule().getCourse().getId();
+            
+            case ContentRelease release -> courseId = release.getContent().getModule().getCourse().getId();
+            
+            default -> {}
+        }
+        
+        return courseId;
+    }
+    
     private boolean isCourseOwner(long courseId, String instructorEmail) {
         return courseRepository.existsByIdAndInstructorEmail(courseId, instructorEmail);
     }
