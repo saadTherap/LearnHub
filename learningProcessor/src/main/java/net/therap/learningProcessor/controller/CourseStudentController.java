@@ -100,7 +100,7 @@ public class CourseStudentController {
                                                      @PathVariable Long contentId,
                                                      HttpServletRequest request) {
 
-        authorizationService.authorize(AccessLevel.INSTRUCTOR_OF_COURSE_OR_STUDENT_WITH_ID,
+        authorizationService.authorize(AccessLevel.INSTRUCTOR_OF_COURSE_OR_STUDENT_ENROLLED_IN_COURSE,
                 Map.of("studentId", studentId, "courseId", courseId),
                 request);
 
