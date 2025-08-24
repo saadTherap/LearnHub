@@ -78,7 +78,7 @@ class CourseControllerTest {
         CourseCatalogDTO cachedDto = new CourseCatalogDTO();
         cachedDto.setId(courseId);
 
-        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT_ENROLLED), eq(null), any(HttpServletRequest.class));
+//        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT_ENROLLED), eq(null), any(HttpServletRequest.class));
 
         when(hazelcastCacheService.get(CacheConstants.COURSE_CATALOG, courseId)).thenReturn(cachedDto);
 
@@ -106,7 +106,7 @@ class CourseControllerTest {
         when(hazelcastCacheService.get(CacheConstants.COURSE_CATALOG, courseId)).thenReturn(null);
         when(courseService.findById(courseId)).thenReturn(Optional.of(course));
 
-        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT_ENROLLED), eq(null), any(HttpServletRequest.class));
+//        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT_ENROLLED), eq(null), any(HttpServletRequest.class));
         doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT_ENROLLED), eq(course), any(HttpServletRequest.class));
 
         doNothing().when(hazelcastCacheService).put(CacheConstants.COURSE_CATALOG, courseId, dto);
