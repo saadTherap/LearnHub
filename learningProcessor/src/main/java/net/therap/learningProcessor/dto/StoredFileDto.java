@@ -3,6 +3,7 @@ package net.therap.learningProcessor.dto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @Builder
-public class StoredFileDto {
+public class StoredFileDto implements Serializable {
 
     private String formId;
 
