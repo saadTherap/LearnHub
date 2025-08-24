@@ -234,7 +234,7 @@ public class ContentController {
         Optional<ContentRelease> contentReleaseOptional = contentReleaseService.findById(contentReleaseId);
         
         if (contentReleaseOptional.isEmpty()) {
-            throw new NoSuchElementException(messageSource.getMessage("now.found.contentRelease", null, Locale.getDefault()));
+            throw new NoSuchElementException(messageSource.getMessage("not.found.contentRelease", null, Locale.getDefault()));
         }
         
         authorizationService.authorize(AuthorizationLevel.OWNER, contentReleaseOptional.get(), request);

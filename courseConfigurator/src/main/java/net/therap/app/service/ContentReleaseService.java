@@ -66,11 +66,19 @@ public class ContentReleaseService {
     @Transactional
     public void save(ContentRelease contentReleaseToPublish) {
         ContentRelease savedContentRelease = contentReleaseRepository.save(contentReleaseToPublish);
+        long courseId = contentReleaseToPublish.getContent().getModule().getCourse().getId();
 
         cacheInvalidationUtil.invalidateCachesAfterCommit(
                 savedContentRelease.getId(),
                 CacheConstants.CONTENT_CATALOG,
                 CacheConstants.CONTENT_RELEASE_LIST
+        );
+        
+        cacheInvalidationUtil.invalidateCachesAfterCommit(
+                courseId,
+                CacheConstants.COURSES,
+                CacheConstants.COURSE_CATALOG,
+                CacheConstants.COURSE_CATALOG_PUBLIC
         );
 
         cacheInvalidationUtil.invalidateCachesByPrefixAfterCommit(
