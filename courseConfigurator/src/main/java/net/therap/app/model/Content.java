@@ -42,7 +42,6 @@ public class Content extends Persistent {
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "current_content_release_id", referencedColumnName = "id")
     private ContentRelease currentContentRelease;
-//    private long currentContentReleaseId;
     
     @OneToMany(mappedBy = "content", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ContentRelease> contentReleases;
