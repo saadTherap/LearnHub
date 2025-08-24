@@ -384,25 +384,54 @@ public class ContentController {
     @PostMapping("/delete/{contentReleaseId}")
     public ResponseEntity<ContentReleaseDTO> deleteContentRelease(@PathVariable long contentReleaseId, HttpServletRequest request) throws BadRequestException {
         log.info("[DELETE] /delete/{}", contentReleaseId);
-        Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentReleaseId);
         
-        if (contentOptional.isEmpty()) {
-            throw new NoSuchElementException(messageSource.getMessage("not.found.content", null, Locale.getDefault()));
+        Optional<ContentRelease> contentReleaseOptional = contentReleaseService.findById(contentReleaseId);
+        
+        if (contentReleaseOptional.isEmpty()) {
+            throw new NoSuchElementException(messageSource.getMessage("not.found.contentRelease", null, Locale.getDefault()));
         }
         
-        authorizationService.authorize(AuthorizationLevel.OWNER, contentOptional.get(), request);
-        ContentRelease contentRelease = contentOptional.get().getCurrentContentRelease();
+        ContentRelease contentRelease = contentReleaseOptional.get();
+        
+        authorizationService.authorize(AuthorizationLevel.OWNER, contentRelease, request);
+        
+        Content content = contentRelease.getContent();
+        Course course = content.getModule().getCourse();
+        
+        if (course.getCurrentRelease() == ReleaseStatus.DRAFT.getReleaseNumber()) {
+            content.setDeleted(true);
+            contentService.save(content);
+            
+            return ResponseEntity.ok(dtoHelper.toContentReleaseDTO(contentRelease));
+        }
         
         if (contentRelease.getRelease() == ReleaseStatus.DRAFT.getReleaseNumber()) {
-            contentReleaseService.delete(contentRelease.getId());
-            contentService.deleteById(contentOptional.get().getId());
+            if (content.getCurrentContentRelease().equals(contentRelease)) {
+                content.setDeleted(true);
+                contentService.save(content);
+                content.setCurrentContentRelease(null);
+                
+            } else {
+                contentRelease.setDeleted(true);
+                contentReleaseService.save(contentRelease);
+            }
             
-        } else {
-            contentReleaseService.delete(contentRelease.getId());
-            contentService.deleteById(contentOptional.get().getId());
+            return ResponseEntity.ok(dtoHelper.toContentReleaseDTO(contentRelease));
         }
         
-        return ResponseEntity.ok(dtoHelper.toContentReleaseDTO(contentRelease));
+        ContentRelease newContentRelease = deepCopyContentRelease(contentRelease);
+        newContentRelease.setRelease(course.getCurrentRelease() + 1);
+        newContentRelease.setDeleted(true);
+        newContentRelease.setContent(content);
+        course.setCurrentRelease(newContentRelease.getRelease());
+        
+        content.getContentReleases().add(newContentRelease);
+        content.setCurrentContentRelease(newContentRelease);
+        
+        contentService.save(content);
+        courseService.save(course);
+        
+        return ResponseEntity.ok(dtoHelper.toContentReleaseDTO(newContentRelease));
     }
     
     private ContentRelease createNewContentRelease(ContentRelease original,
@@ -469,6 +498,55 @@ public class ContentController {
             BeanUtils.copyProperties(original, newContentRelease, "id");
             submissionMapper.updateSubmissionFromSubmissionCatalogDto((SubmissionCatalogueDTO) contentCatalogueDTO, (Submission) newContentRelease);
         }
+        
+        return newContentRelease;
+    }
+    
+    private ContentRelease deepCopyContentRelease(ContentRelease original) {
+        if (original == null) {
+            return null;
+        }
+        
+        ContentRelease newContentRelease;
+        if (original instanceof Lecture) {
+            newContentRelease = new Lecture();
+            BeanUtils.copyProperties(original, newContentRelease, "id");
+            
+        } else if (original instanceof Quiz) {
+            newContentRelease = new Quiz();
+            BeanUtils.copyProperties(original, newContentRelease, "id", "questions");
+            
+            Quiz originalQuiz = (Quiz) original;
+            Quiz newQuiz = (Quiz) newContentRelease;
+            List<QuizQuestion> newQuestions = new ArrayList<>();
+            
+            for (QuizQuestion originalQuestion : originalQuiz.getQuestions()) {
+                QuizQuestion newQuestion = new QuizQuestion();
+                BeanUtils.copyProperties(originalQuestion, newQuestion, "id", "quiz", "options");
+                newQuestion.setId(0L);
+                newQuestion.setQuiz(newQuiz);
+                
+                List<QuizOption> newOptions = new ArrayList<>();
+                for (QuizOption originalOption : originalQuestion.getOptions()) {
+                    QuizOption newOption = new QuizOption();
+                    BeanUtils.copyProperties(originalOption, newOption, "id", "quizQuestion");
+                    newOption.setId(0L);
+                    newOption.setQuizQuestion(newQuestion);
+                    newOptions.add(newOption);
+                }
+                newQuestion.setOptions(newOptions);
+                newQuestions.add(newQuestion);
+            }
+            newQuiz.setQuestions(newQuestions);
+            
+        } else if (original instanceof Submission) {
+            newContentRelease = new Submission();
+            BeanUtils.copyProperties(original, newContentRelease, "id");
+        } else {
+            throw new IllegalArgumentException("Unsupported ContentRelease type for deep copy.");
+        }
+        
+        newContentRelease.setId(0L);
         
         return newContentRelease;
     }
