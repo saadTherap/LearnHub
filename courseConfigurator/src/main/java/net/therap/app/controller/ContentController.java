@@ -228,6 +228,20 @@ public class ContentController {
         return ResponseEntity.ok(contentReleases.stream().map(dtoHelper::toContentReleaseDTO).toList());
     }
     
+    @GetMapping("/getCourse/{contentReleaseId}")
+    public ResponseEntity<CourseCatalogDTO> getCourseContentReleases(@PathVariable long contentReleaseId, HttpServletRequest request) throws BadRequestException {
+        log.info("[GET] /contents/getCourse/{}",  contentReleaseId);
+        Optional<ContentRelease> contentReleaseOptional = contentReleaseService.findById(contentReleaseId);
+        
+        if (contentReleaseOptional.isEmpty()) {
+            throw new NoSuchElementException(messageSource.getMessage("now.found.contentRelease", null, Locale.getDefault()));
+        }
+        
+        authorizationService.authorize(AuthorizationLevel.OWNER, contentReleaseOptional.get(), request);
+        
+        return ResponseEntity.ok(dtoHelper.toCourseCatalogDTO(contentReleaseOptional.get().getContent().getModule().getCourse()));
+    }
+    
     @PostMapping("/draft")
     public ResponseEntity<ContentReleaseDTO> createContent(@RequestBody @Validated(OnCreate.class) ContentCatalogueDTO contentCatalogueDTO,
                                                            HttpServletRequest request) throws BadRequestException {

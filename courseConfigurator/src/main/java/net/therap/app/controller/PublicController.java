@@ -12,6 +12,7 @@ import net.therap.app.model.enums.ReleaseStatus;
 import net.therap.app.service.CourseService;
 import net.therap.app.service.InstructorService;
 import net.therap.cache.support.HazelcastCacheService;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -37,15 +40,17 @@ public class PublicController {
     private final DtoHelper dtoHelper;
     private final InstructorService instructorService;
     private final InstructorMapper instructorMapper;
+    private final MessageSource messageSource;
     
     public PublicController(HazelcastCacheService hazelcastCacheService, CourseService courseService,
                             DtoHelper dtoHelper, InstructorService instructorService,
-                            InstructorMapper instructorMapper) {
+                            InstructorMapper instructorMapper, MessageSource messageSource) {
         this.hazelcastCacheService = hazelcastCacheService;
         this.courseService = courseService;
         this.dtoHelper = dtoHelper;
         this.instructorService = instructorService;
         this.instructorMapper = instructorMapper;
+        this.messageSource = messageSource;
     }
     
     @GetMapping("/courses")
@@ -54,6 +59,7 @@ public class PublicController {
         List<Course> courses = courseService.findAll();
         List<CourseCatalogDTO> courseCatalogDTOs =
                 courses.stream().filter(course -> course.getCurrentRelease() > ReleaseStatus.DRAFT.getReleaseNumber()).map(dtoHelper::toCourseCatalogDTO).collect(Collectors.toList());
+        
         return ResponseEntity.ok(courseCatalogDTOs);
     }
     
@@ -73,7 +79,7 @@ public class PublicController {
             return ResponseEntity.ok(dto);
         }
         
-        return ResponseEntity.notFound().build();
+        throw new NoSuchElementException(messageSource.getMessage("not.found.course", null, Locale.getDefault()));
     }
     
     @GetMapping("/instructors")
@@ -100,7 +106,8 @@ public class PublicController {
             hazelcastCacheService.put(CacheConstants.INSTRUCTOR_CATALOG_PUBLIC, id, dto);
             
             return ResponseEntity.ok(dto);
-        }).orElseGet(() -> ResponseEntity.notFound().build());
+            
+        }).orElseThrow(() -> new NoSuchElementException(messageSource.getMessage("not.found.instructor", null, Locale.getDefault())));
     }
     
     @GetMapping("/courses/byInstructor/{instructorId}")
@@ -108,6 +115,8 @@ public class PublicController {
         log.info("[GET] /public/courses/byInstructor/{}", instructorId);
         List<Course> courseList = courseService.findByInstructor(instructorId);
         
-        return new ResponseEntity<>(courseList.stream().map(dtoHelper::toCourseCatalogDTO).toList(), HttpStatus.OK);
+        return new ResponseEntity<>(
+                courseList.stream().filter(course -> course.getCurrentRelease() > ReleaseStatus.DRAFT.getReleaseNumber())
+                        .map(dtoHelper::toCourseCatalogDTO).toList(), HttpStatus.OK);
     }
 }
