@@ -2,13 +2,11 @@ package net.therap.app.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import net.therap.app.dto.QuizOptionDTO;
 import net.therap.app.dto.QuizQuestionDTO;
-import net.therap.app.helper.AuthorizationService;
+import net.therap.app.service.AuthorizationService;
 import net.therap.app.helper.DtoHelper;
 import net.therap.app.mapper.QuizOptionMapper;
 import net.therap.app.mapper.QuizQuestionMapper;
-import net.therap.app.model.Quiz;
 import net.therap.app.model.QuizOption;
 import net.therap.app.model.QuizQuestion;
 import net.therap.app.model.enums.AuthorizationLevel;

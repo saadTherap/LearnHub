@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.CourseCatalogDTO;
 import net.therap.app.dto.CourseDTO;
-import net.therap.app.helper.AuthorizationService;
+import net.therap.app.service.AuthorizationService;
 import net.therap.app.helper.DtoHelper;
 import net.therap.app.mapper.CourseMapper;
 import net.therap.app.model.Course;
@@ -19,13 +19,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
