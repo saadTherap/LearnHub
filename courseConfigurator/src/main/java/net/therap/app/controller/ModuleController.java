@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.*;
-import net.therap.app.helper.AuthorizationService;
+import net.therap.app.service.AuthorizationService;
 import net.therap.app.helper.DtoHelper;
 import net.therap.app.mapper.ModuleMapper;
 import net.therap.app.model.Content;
