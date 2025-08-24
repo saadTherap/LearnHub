@@ -3,6 +3,7 @@ package net.therap.learningProcessor.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -12,7 +13,7 @@ import java.util.List;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CourseDetailWithProgressDto {
+public class CourseDetailWithProgressDto implements Serializable {
 
     private long id;
 

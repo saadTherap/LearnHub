@@ -2,6 +2,7 @@ package net.therap.learningProcessor.dto.content.quiz;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +11,7 @@ import java.util.Map;
  * @since 8/10/25
  */
 @Data
-public class QuizSubmissionRequestDto {
+public class QuizSubmissionRequestDto implements Serializable {
 
     private Long studentId;
 
