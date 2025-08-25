@@ -9,14 +9,12 @@ import net.therap.learningProcessor.entity.StudentSubmission;
 import net.therap.learningProcessor.mapper.StudentMapper;
 import net.therap.learningProcessor.mapper.StudentSubmissionMapper;
 import net.therap.learningProcessor.repository.StudentSubmissionRepository;
-import net.therap.learningProcessor.service.StudentSubmissionService;
 import net.therap.learningProcessor.validator.StudentValidator;
 import net.therap.signaturegenerator.utils.GenerateSignature;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;

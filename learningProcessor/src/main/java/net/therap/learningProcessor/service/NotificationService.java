@@ -19,7 +19,6 @@ public class NotificationService {
     @Autowired
     private ProducerConsumerTask producerConsumerTask;
 
-
     public void sendNotification(Notification notification) {
         producerConsumerTask.send(notificationTopic, notification);
         System.out.println("Here at send notification");
