@@ -184,7 +184,7 @@ public class ContentController {
     @GetMapping("/releases/{contentId}")
     public ResponseEntity<List<ContentReleaseDTO>> getContentReleases(@PathVariable long contentId, HttpServletRequest request) throws BadRequestException {
         log.info("[GET] /contents/releases/{}", contentId);
-        Optional<Content> contentOptional = contentService.findContentByContentReleaseId(contentId);
+        Optional<Content> contentOptional = contentService.findById(contentId);
         
         if (contentOptional.isEmpty()) {
             throw new NoSuchElementException(messageSource.getMessage("content.not.found", null, Locale.getDefault()));
