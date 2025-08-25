@@ -9,5 +9,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @since 8/21/25
  */
 public interface CourseRepository extends JpaRepository<Course, Long> {
-
 }

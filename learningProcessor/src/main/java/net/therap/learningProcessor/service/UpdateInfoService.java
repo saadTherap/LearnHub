@@ -1,16 +1,12 @@
 package net.therap.learningProcessor.service;
 
-import com.hazelcast.map.IMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.therap.cache.support.CacheInvalidationUtil;
 import net.therap.cache.support.HazelcastCacheService;
 import net.therap.learningProcessor.constants.CacheConstants;
 import net.therap.learningProcessor.entity.UpdateInfo;
-import net.therap.cache.support.CacheInvalidationUtil;
-
 import org.springframework.stereotype.Service;
-
-import java.util.Set;
 
 /**
  * @author tanvirhassan

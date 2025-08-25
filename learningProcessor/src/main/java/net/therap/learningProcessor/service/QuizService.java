@@ -1,6 +1,5 @@
 package net.therap.learningProcessor.service;
 
-import net.therap.learningProcessor.dto.content.quiz.QuizDto;
 import net.therap.learningProcessor.dto.content.quiz.QuizSubmissionRequestDto;
 import net.therap.learningProcessor.dto.content.quiz.QuizSubmissionResultDto;
 

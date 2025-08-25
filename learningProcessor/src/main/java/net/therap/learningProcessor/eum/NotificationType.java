@@ -10,5 +10,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 public enum NotificationType {
 
     ENROLLMENT,
+
     SUBMISSION
 }
