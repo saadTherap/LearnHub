@@ -7,6 +7,8 @@ package net.therap.learningProcessor.eum;
 public enum Gender {
 
     MALE,
+
     FEMALE,
+
     OTHERS
 }

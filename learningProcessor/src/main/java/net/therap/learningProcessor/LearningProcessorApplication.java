@@ -25,7 +25,7 @@ import java.util.TimeZone;
         HazelcastAutoConfiguration.class
 })
 @EnableJpaRepositories(basePackages = "net.therap.learningProcessor.repository")
-@EnableFeignClients(basePackages = {"net.therap.learningProcessor.client","net.therap.auth.lib.client"})
+@EnableFeignClients(basePackages = {"net.therap.auth.lib.client"})
 @EnableScheduling
 @ComponentScan(basePackages = {
         "net.therap.learningProcessor",

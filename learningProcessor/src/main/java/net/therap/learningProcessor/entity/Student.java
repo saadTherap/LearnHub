@@ -1,7 +1,6 @@
 package net.therap.learningProcessor.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import lombok.Getter;
 import lombok.Setter;
 import net.therap.learningProcessor.eum.Gender;

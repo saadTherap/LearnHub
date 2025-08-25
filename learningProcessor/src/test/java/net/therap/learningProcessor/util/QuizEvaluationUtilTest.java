@@ -1,6 +1,9 @@
 package net.therap.learningProcessor.util;
 
-import net.therap.learningProcessor.dto.content.quiz.*;
+import net.therap.learningProcessor.dto.content.quiz.QuizDto;
+import net.therap.learningProcessor.dto.content.quiz.QuizOptionDto;
+import net.therap.learningProcessor.dto.content.quiz.QuizQuestionDto;
+import net.therap.learningProcessor.dto.content.quiz.QuizSubmissionRequestDto;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

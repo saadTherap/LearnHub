@@ -2,7 +2,6 @@ package net.therap.learningProcessor.kafka_listener;
 
 import net.therap.kafkaregistry.service.ProducerConsumerTask;
 import net.therap.learningProcessor.dto.StudentDto;
-import net.therap.learningProcessor.entity.UpdateInfo;
 import net.therap.learningProcessor.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -33,8 +32,6 @@ public class KafkaRegistrationListener {
 
         StudentDto studentDto = new StudentDto();
         studentDto.setEmail(email);
-
-        System.out.println(email);
 
         studentService.createStudent(studentDto);
     }

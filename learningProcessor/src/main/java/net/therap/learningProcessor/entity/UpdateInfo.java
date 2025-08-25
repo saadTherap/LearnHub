@@ -12,6 +12,8 @@ import lombok.Setter;
 public class UpdateInfo {
 
     private long courseId;
+
     private long moduleId;
+
     private long contentId;
 }

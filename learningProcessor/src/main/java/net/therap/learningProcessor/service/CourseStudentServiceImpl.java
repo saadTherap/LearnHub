@@ -12,6 +12,7 @@ import net.therap.learningProcessor.entity.Student;
 import net.therap.learningProcessor.entity.StudentContentCompletion;
 import net.therap.learningProcessor.exception.ResourceAlreadyExistsException;
 import net.therap.learningProcessor.exception.ResourceNotFoundException;
+import net.therap.learningProcessor.mapper.StudentContentCompletionMapper;
 import net.therap.learningProcessor.mapper.StudentCourseProgressMapper;
 import net.therap.learningProcessor.mapper.StudentMapper;
 import net.therap.learningProcessor.repository.CourseEnrollmentRepository;
@@ -42,6 +43,7 @@ public class CourseStudentServiceImpl implements CourseStudentService {
 
     private final StudentMapper studentMapper;
     private final StudentCourseProgressMapper studentCourseProgressMapper;
+    private final StudentContentCompletionMapper studentContentCompletionMapper;
 
     @Override
     @Transactional
@@ -125,6 +127,15 @@ public class CourseStudentServiceImpl implements CourseStudentService {
         studentValidator.validateStudentExists(studentId);
 
         return studentContentCompletionRepository.getStudentContentStatusByStudentId(studentId);
+    }
+
+    @Override
+    public StudentContentCompletionDto getByStudentIdAndContentId(Long studentId, Long contentId) {
+        studentValidator.validateStudentExists(studentId);
+
+        StudentContentCompletion completion = studentContentCompletionRepository.findByStudentIdAndContentId(studentId, contentId).orElse(null);
+
+        return studentContentCompletionMapper.toDto(completion);
     }
 
     @Override

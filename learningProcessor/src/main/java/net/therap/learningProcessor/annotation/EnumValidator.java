@@ -14,6 +14,7 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = EnumValidatorImpl.class)
 @Documented
 public @interface EnumValidator {
+
     String message() default "Value is not valid";
 
     Class<?>[] groups() default {};

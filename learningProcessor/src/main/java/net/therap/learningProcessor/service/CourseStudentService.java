@@ -25,6 +25,8 @@ public interface CourseStudentService {
 
     List<StudentContentCompletionDto> getContentStatusByStudentId(Long studentId);
 
+    public StudentContentCompletionDto getByStudentIdAndContentId(Long studentId, Long contentId);
+
     public CourseDetailWithProgressDto getCourseDetailWithProgress(Long studentId, CourseDetailWithProgressDto courseDetailWithProgressDto);
 
     public StudentCourseProgressDto getStudentCourseProgress(Long studentId, CourseDetailWithProgressDto courseDetailWithProgressDto);

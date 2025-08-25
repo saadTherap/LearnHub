@@ -29,9 +29,6 @@ public class KafkaUpdateInfoListener {
     )
     void listen(String json) {
         UpdateInfo updateInfo = producerConsumerTask.deserialize(json, UpdateInfo.class);
-        System.out.println("Received update info: " + updateInfo);
         updateInfoService.invalidateCache(updateInfo);
     }
-
-
 }
