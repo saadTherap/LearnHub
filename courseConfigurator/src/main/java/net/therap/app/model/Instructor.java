@@ -37,7 +37,7 @@ public class Instructor extends Persistent {
     @Column(nullable = false)
     private String name;
     
-//    @UniqueEmail
+    @Email
     @Column(nullable = false)
     private String email;
 
