@@ -6,11 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.TimeZone;
 
 @EnableScheduling
+@ConfigurationPropertiesScan
 @SpringBootApplication(scanBasePackages = {"net.therap.auth.server", "net.therap.auth.lib", "net.therap.kafkaregistry" +
         ".service"})
 public class App {
