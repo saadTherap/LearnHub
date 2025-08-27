@@ -74,6 +74,7 @@ public class AuthorizationService {
     public long getInstructorIdFromRequest(HttpServletRequest request) throws BadRequestException {
         UserRequestCache.UserInfo userInfo = parseUserInfoFromRequest(request);
         String email = userInfo.email();
+//        String email = "instructor1@gmail.com";
         Optional<Instructor> instructorOptional = instructorRepository.findByEmail(email);
         
         if (instructorOptional.isEmpty()) {
@@ -88,8 +89,8 @@ public class AuthorizationService {
         String userRole = userInfo.role();
         String userEmail = userInfo.email();
         
-//        String userRole = "STUDENT";
-//        String userEmail = "student1@gmail.com";
+//        String userRole = "INSTRUCTOR";
+//        String userEmail = "instructor1@gmail.com";
         
         if (isNull(requiredLevel)) {
             throw new RuntimeException();
