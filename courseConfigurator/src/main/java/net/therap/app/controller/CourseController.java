@@ -203,11 +203,11 @@ public class CourseController {
     public ResponseEntity<CourseDTO> createCourse(@RequestBody @Validated(OnCreate.class) CourseDTO courseDTO, HttpServletRequest request) throws BadRequestException {
         log.info("[POST] /courses/draft\nBody: \n{}", courseDTO);
         authorizationService.authorize(AuthorizationLevel.INSTRUCTOR, null, request);
+        
+        courseDTO.setInstructorId(authorizationService.getInstructorIdFromRequest(request));
         Course course = courseMapper.toCourse(courseDTO);
         course.setModules(new ArrayList<>());
-        
         course.setCurrentRelease(0L);
-        
         Course savedCourse = courseService.save(course);
         
         return new ResponseEntity<>(dtoHelper.toCourseDTO(savedCourse), HttpStatus.CREATED);
