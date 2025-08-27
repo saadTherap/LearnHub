@@ -17,9 +17,7 @@ public class AuthDataUtil {
      */
     public static UserRequestCache.UserInfo getUserInfo(Long userId) {
         if (Objects.nonNull(userId)) {
-            UserRequestCache.UserInfo info = UserRequestCache.get(userId);
-            
-            return info;
+            return UserRequestCache.get(userId);
         }
         
         return null;

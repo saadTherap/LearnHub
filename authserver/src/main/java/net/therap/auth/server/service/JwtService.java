@@ -15,16 +15,16 @@ import lombok.extern.slf4j.Slf4j;
 import net.therap.auth.lib.provider.PublicKeyProvider;
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.exception.AuthServerException;
+import net.therap.auth.server.util.JwtProperties;
 import net.therap.auth.server.util.JwtUtil;
 import net.therap.cache.support.HazelcastCacheService;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
@@ -38,9 +38,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class JwtService {
     
-    private static final long ACCESS_EXPIRATION_MINUTES = 1440L;
-    private static final long REFRESH_EXPIRATION_MINUTES = 60L * 24 * 7;
-    
+    private final JwtProperties jwtProperties;
     private final UserService userService;
     private final PublicKeyProvider publicKeyProvider;
     private final HazelcastCacheService hazelcastCacheService;
@@ -71,11 +69,11 @@ public class JwtService {
     }
     
     public String generateAccessToken(User user) {
-        return generateToken(user, ACCESS_EXPIRATION_MINUTES, "access");
+        return generateToken(user, jwtProperties.getAccessTokenExpiration(), "access");
     }
     
     public String generateRefreshToken(User user) {
-        return generateToken(user, REFRESH_EXPIRATION_MINUTES, "refresh");
+        return generateToken(user, jwtProperties.getRefreshTokenExpiration(), "refresh");
     }
     
     public String extractEmail(String token) {
@@ -178,11 +176,10 @@ public class JwtService {
         return signedJWT.getJWTClaimsSet();
     }
     
-    private String generateToken(User user, long expirationMinutes, String tokenType) {
-        
+    private String generateToken(User user, Duration expiration, String tokenType) {
         try {
             Instant now = Instant.now();
-            Instant expiration = now.plus(expirationMinutes, ChronoUnit.MINUTES);
+            Instant expiry = now.plus(expiration);
             
             JWTClaimsSet claims = new JWTClaimsSet.Builder()
                     .subject(user.getEmail())
@@ -193,7 +190,7 @@ public class JwtService {
                     .audience("learnhub-clients")
                     .issueTime(Date.from(now))
                     .notBeforeTime(Date.from(now))
-                    .expirationTime(Date.from(expiration))
+                    .expirationTime(Date.from(expiry))
                     .jwtID(UUID.randomUUID().toString())
                     .build();
             

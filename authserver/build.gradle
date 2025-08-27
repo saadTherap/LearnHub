@@ -22,6 +22,7 @@ ext {
     set("jwtTokenVersion", "0.11.5")
     set("lombokVersion", "1.18.32")
     set("springdocVersion", "2.8.9")
+    set("mockitoVersion", "5.3.1")
 }
 
 dependencyManagement {
@@ -52,9 +53,11 @@ dependencies {
     implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.23'
 
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
-    annotationProcessor "org.projectlombok:lombok:"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.security:spring-security-test"
