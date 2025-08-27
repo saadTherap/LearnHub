@@ -84,7 +84,7 @@ pipeline {
 
 
                     // 2. Stop and remove old containers gracefully
-//                     sh 'docker compose down auth-server secure-file-server course-configurator learning-processor || true'
+                    sh 'docker compose down auth-server secure-file-server course-configurator learning-processor || true'
 
                     // 3. Build and start new containers
                     echo "Deploying services with Docker Compose..."
