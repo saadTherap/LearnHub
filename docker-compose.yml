@@ -29,6 +29,8 @@ services:
     environment:
       CLAMAV_HOST: clamav
       CLAMAV_PORT: 3310
+    volumes:
+      - secure_file_storage:/var/lib/secureFileStorage/uploads
 
   clamav:
     image: mkodockx/docker-clamav:alpine
@@ -165,3 +167,4 @@ volumes:
   broker1-data:
   broker2-data:
   broker3-data:
+  secure_file_storage:
