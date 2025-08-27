@@ -1,0 +1,21 @@
+plugins {
+    id 'java-library'
+    id 'org.springframework.boot' version '3.5.4'
+}
+
+group = 'net.therap'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}

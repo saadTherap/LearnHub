@@ -9,12 +9,11 @@
         <join>
             <tcp-ip enabled="true">
                 <member>192.168.0.215:5701</member>
-                <member>192.168.0.215:5702
-                </member>
+                <member>192.168.0.215:5702</member>
                 <member>192.168.0.215:5703</member>
-                <member>172.16.2.115:5701</member>
-                <member>172.16.2.115:5702</member>
-                <member>172.16.2.115:5703</member>
+                <member>172.16.2.80:5701</member>
+                <member>172.16.2.80:5702</member>
+                <member>172.16.2.80:5703</member>
             </tcp-ip>
             <multicast enabled="false"/>
         </join>
@@ -65,6 +64,14 @@
     </map>
 
     <map name="modules">
+        <backup-count>1</backup-count>
+        <time-to-live-seconds>900</time-to-live-seconds>
+        <eviction eviction-policy="LRU" max-size-policy="PER_NODE" size="5000"/>
+        <merge-policy batch-size="100">DiscardMergePolicy</merge-policy>
+        <split-brain-protection-ref>mapProtection</split-brain-protection-ref>
+    </map>
+
+    <map name="userEpoch">
         <backup-count>1</backup-count>
         <time-to-live-seconds>900</time-to-live-seconds>
         <eviction eviction-policy="LRU" max-size-policy="PER_NODE" size="5000"/>

@@ -76,10 +76,11 @@ class CourseControllerTest {
         CourseCatalogDTO cachedDto = new CourseCatalogDTO();
         cachedDto.setId(courseId);
 
+//        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT_ENROLLED), eq(null), any(HttpServletRequest.class));
+
         when(hazelcastCacheService.get(CacheConstants.COURSE_CATALOG, courseId)).thenReturn(cachedDto);
 
-        // Corrected line: Use any() to match the DTO being passed
-        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT), any(CourseCatalogDTO.class), any(HttpServletRequest.class));
+        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT_ENROLLED), eq(cachedDto), any(HttpServletRequest.class));
 
         mockMvc.perform(get("/courses/{id}", courseId))
                 .andExpect(status().isOk())
@@ -103,8 +104,8 @@ class CourseControllerTest {
         when(hazelcastCacheService.get(CacheConstants.COURSE_CATALOG, courseId)).thenReturn(null);
         when(courseService.findById(courseId)).thenReturn(Optional.of(course));
 
-        // Corrected line: Use any() to match the Course object
-        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT), any(Course.class), any(HttpServletRequest.class));
+//        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT_ENROLLED), eq(null), any(HttpServletRequest.class));
+        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT_ENROLLED), eq(course), any(HttpServletRequest.class));
 
         doNothing().when(hazelcastCacheService).put(CacheConstants.COURSE_CATALOG, courseId, dto);
         when(dtoHelper.toDetailedCourseCatalogDTO(course)).thenReturn(dto);

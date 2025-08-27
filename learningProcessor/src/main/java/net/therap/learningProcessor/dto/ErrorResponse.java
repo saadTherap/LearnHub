@@ -1,13 +1,14 @@
 package net.therap.learningProcessor.dto;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.http.HttpStatus;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Map;
-import org.springframework.http.HttpStatus;
 
 /**
  * @author avidewan
@@ -17,7 +18,7 @@ import org.springframework.http.HttpStatus;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ErrorResponse {
+public class ErrorResponse implements Serializable {
 
     private LocalDateTime timestamp;
 

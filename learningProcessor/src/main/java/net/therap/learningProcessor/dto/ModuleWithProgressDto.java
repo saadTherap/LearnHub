@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import net.therap.learningProcessor.dto.content.BaseContentDto;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -12,7 +13,7 @@ import java.util.List;
  */
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ModuleWithProgressDto {
+public class ModuleWithProgressDto implements Serializable {
 
     private long id;
 

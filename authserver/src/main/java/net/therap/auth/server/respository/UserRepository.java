@@ -17,7 +17,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
     User findByEmail(String email);
     
     boolean existsByEmail(String email);
-    
-    @Query("FROM User u ORDER BY u.role ASC")
-    List<User> findAllSorted();
 }

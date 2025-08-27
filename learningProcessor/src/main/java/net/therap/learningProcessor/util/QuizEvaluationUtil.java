@@ -1,11 +1,7 @@
 package net.therap.learningProcessor.util;
 
 
-import net.therap.learningProcessor.dto.content.quiz.QuizDto;
-import net.therap.learningProcessor.dto.content.quiz.QuizOptionDto;
-import net.therap.learningProcessor.dto.content.quiz.QuizQuestionDto;
-import net.therap.learningProcessor.dto.content.quiz.QuizSubmissionRequestDto;
-import net.therap.learningProcessor.dto.content.quiz.QuizSubmissionResultDto;
+import net.therap.learningProcessor.dto.content.quiz.*;
 
 import java.util.HashSet;
 import java.util.List;
