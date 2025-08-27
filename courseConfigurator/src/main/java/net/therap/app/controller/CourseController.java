@@ -204,6 +204,7 @@ public class CourseController {
         log.info("[POST] /courses/draft\nBody: \n{}", courseDTO);
         authorizationService.authorize(AuthorizationLevel.INSTRUCTOR, null, request);
         Course course = courseMapper.toCourse(courseDTO);
+        course.setModules(new ArrayList<>());
         
         course.setCurrentRelease(0L);
         
