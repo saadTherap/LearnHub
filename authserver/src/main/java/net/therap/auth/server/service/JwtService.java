@@ -18,7 +18,6 @@ import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.util.JwtProperties;
 import net.therap.auth.server.util.JwtUtil;
 import net.therap.cache.support.HazelcastCacheService;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +25,6 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
