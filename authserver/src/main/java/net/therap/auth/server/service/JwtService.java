@@ -178,20 +178,6 @@ public class JwtService {
         return signedJWT.getJWTClaimsSet();
     }
     
-    private Long getTokenVersion(User user, String tokenType) {
-        Long version = null;
-        
-        if (StringUtils.equalsIgnoreCase("access", tokenType)) {
-            version = hazelcastCacheService.get("userEpoch", user.getId());
-            
-            if (Objects.isNull(version)) {
-                version = 1L;
-            }
-        }
-        
-        return version;
-    }
-    
     private String generateToken(User user, long expirationMinutes, String tokenType) {
         
         try {
@@ -203,7 +189,6 @@ public class JwtService {
                     .claim("userId", user.getId())
                     .claim("role", user.getRole().name())
                     .claim("tokenType", tokenType)
-                    .claim("ver", getTokenVersion(user, tokenType))
                     .issuer("learnhub-auth-server")
                     .audience("learnhub-clients")
                     .issueTime(Date.from(now))
@@ -218,6 +203,8 @@ public class JwtService {
             
             SignedJWT signedJWT = new SignedJWT(header, claims);
             signedJWT.sign(signer);
+            
+            hazelcastCacheService.put("userEpoch", user.getId(), true);
             
             return signedJWT.serialize();
             
