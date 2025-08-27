@@ -29,8 +29,6 @@ services:
     environment:
       CLAMAV_HOST: clamav
       CLAMAV_PORT: 3310
-    volumes:
-      - /home/app-rnd01/FileStorage:/var/lib/secureFileStorage/uploads
 
   clamav:
     image: mkodockx/docker-clamav:alpine
