@@ -1,6 +1,7 @@
 package net.therap.app;
 
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import net.therap.kafkaregistry.service.KafkaTopicRegistrar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,7 +34,7 @@ import java.util.TimeZone;
         "net.therap.kafkaregistry.service"
 })
 //@ComponentScan(basePackages = {"net.therap.app", "net.therap.kafkaregistry.service"})
-
+@Slf4j
 public class AppApplication {
 
 	@Autowired
@@ -51,7 +52,11 @@ public class AppApplication {
     @PostConstruct
     public void init() {
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-		kafkaTopicRegistrar.registerTopic(updateInfoTopic, Integer.parseInt(updateInfoPartition), Short.parseShort(updateInfoReplication));
+        try {
+            kafkaTopicRegistrar.registerTopic(updateInfoTopic, Integer.parseInt(updateInfoPartition), Short.parseShort(updateInfoReplication));
+        } catch (Exception e) {
+            log.error("Kafka topic registration failed. Exception: {}", e);
+        }
     }
 	
 	public static void main(String[] args) {
