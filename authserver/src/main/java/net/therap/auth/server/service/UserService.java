@@ -116,11 +116,6 @@ public class UserService {
     public void forceLogout(Long userId) {
         User user = findById(userId);
         
-        Long currentVer = hazelcastCacheService.get("userEpoch", user.getId());
-        if (Objects.isNull(currentVer)) {
-            currentVer = 1L;
-        }
-        
-        hazelcastCacheService.put("userEpoch", user.getId(), currentVer + 1);
+        hazelcastCacheService.remove("userEpoch", user.getId());
     }
 }

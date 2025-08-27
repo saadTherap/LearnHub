@@ -92,15 +92,10 @@ public class TokenValidator {
     private boolean isForceLoggedOut(JWTClaimsSet claims) {
         try {
             Long userId = (Long) claims.getClaim("userId");
-            Long tokenVer = (Long) claims.getClaim("ver");
             
-            Long currentVer = hazelcastCacheService.get("userEpoch", userId);
+            Boolean isLoggedIn = hazelcastCacheService.get("userEpoch", userId);
             
-            if (Objects.isNull(currentVer)) {
-                currentVer = 1L;
-            }
-            
-            return !Objects.equals(tokenVer, currentVer);
+            return Objects.isNull(isLoggedIn);
             
         } catch (Exception e) {
             return true;
