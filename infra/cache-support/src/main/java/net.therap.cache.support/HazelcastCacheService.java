@@ -6,6 +6,7 @@ import com.hazelcast.map.IMap;
 import com.hazelcast.query.Predicates;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.Map;
@@ -17,6 +18,7 @@ import java.util.Set;
  */
 @Slf4j
 @Service
+@Slf4j
 public class HazelcastCacheService {
 
     private final HazelcastInstance hazelcastInstance;
