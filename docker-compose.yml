@@ -29,12 +29,19 @@ services:
     environment:
       CLAMAV_HOST: clamav
       CLAMAV_PORT: 3310
+    volumes:
+      - secure_file_storage:/var/lib/secureFileStorage/uploads
+    networks:
+      - app-network
 
   clamav:
     image: mkodockx/docker-clamav:alpine
     container_name: clamav
     ports:
       - "3310:3310"
+    restart: unless-stopped
+    networks:
+      - app-network
 
   course-configurator:
     build:
@@ -103,7 +110,7 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_NUM_PARTITIONS: 3
     volumes:
-      - ./kafka:/kafka 
+      - ./kafka:/kapp-networkafka 
       - broker1-data:/var/lib/kafka/data
     env_file:
       - ./kafka/cluster-id.env
@@ -164,3 +171,9 @@ volumes:
   broker1-data:
   broker2-data:
   broker3-data:
+  secure_file_storage:
+  
+
+networks:
+  app-network:
+    driver: bridge
