@@ -1,5 +1,6 @@
 package net.therap.app.util;
 
+import lombok.extern.slf4j.Slf4j;
 import net.therap.app.dto.ReorderDTO;
 
 import java.util.Collection;
@@ -14,6 +15,7 @@ import static java.util.Objects.nonNull;
  * @author gazizafor
  * @since 6/8/25
  */
+@Slf4j
 public class CollectionUtil {
     
     public static boolean isEmptyCollection(Collection collection) {

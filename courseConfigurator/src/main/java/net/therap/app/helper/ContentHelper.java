@@ -1,5 +1,6 @@
 package net.therap.app.helper;
 
+import jakarta.transaction.Transactional;
 import net.therap.app.dto.ContentCatalogueDTO;
 import net.therap.app.dto.LectureCatalogDTO;
 import net.therap.app.dto.SubmissionCatalogueDTO;
@@ -9,8 +10,11 @@ import net.therap.app.model.*;
 import net.therap.app.model.Module;
 import net.therap.app.model.enums.ContentType;
 import net.therap.app.model.enums.ReleaseStatus;
+import net.therap.app.repository.ContentRepository;
+import net.therap.app.repository.ModuleRepository;
 import net.therap.app.service.ContentService;
 import net.therap.app.service.ModuleService;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -34,14 +38,12 @@ public class ContentHelper {
     
     final LectureMapper lectureMapper;
     final SubmissionMapper submissionMapper;
-    private final ModuleService moduleService;
-    private final ContentService contentService;
+    private final ModuleRepository moduleRepository;
     
-    public ContentHelper(LectureMapper lectureMapper, SubmissionMapper submissionMapper, ModuleService moduleService, ContentService contentService) {
+    public ContentHelper(LectureMapper lectureMapper, SubmissionMapper submissionMapper, ModuleRepository moduleRepository) {
         this.lectureMapper = lectureMapper;
         this.submissionMapper = submissionMapper;
-        this.moduleService = moduleService;
-        this.contentService = contentService;
+        this.moduleRepository = moduleRepository;
     }
     
     public Content getContent(ContentCatalogueDTO contentCatalogueDTO) {
@@ -90,7 +92,7 @@ public class ContentHelper {
     }
     
     public Module getModule(long moduleId) {
-        Optional<Module> moduleOptional = moduleService.findById(moduleId);
+        Optional<Module> moduleOptional = moduleRepository.findById(moduleId);
         
         if (moduleOptional.isEmpty()) {
             throw new NoSuchElementException();
@@ -152,7 +154,7 @@ public class ContentHelper {
     }
     
     public boolean isSameQuiz(Quiz previousQuiz, Quiz newQuiz) {
-        contentService.loadQuestions(previousQuiz);
+        Hibernate.initialize(previousQuiz);
         
         if (isNull(newQuiz.getQuestions())) {
             newQuiz.setQuestions(new ArrayList<>());

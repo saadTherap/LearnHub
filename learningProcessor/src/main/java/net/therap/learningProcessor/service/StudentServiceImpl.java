@@ -71,7 +71,8 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public StudentDto getStudentByEmail(String email) {
-        Student student = studentRepository.findByEmail(email);
+        Student student = studentRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("error.student.notFound", email));
 
         return studentMapper.toDto(student);
     }

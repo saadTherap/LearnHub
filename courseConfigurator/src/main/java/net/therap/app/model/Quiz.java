@@ -24,4 +24,10 @@ public class Quiz extends ContentRelease {
     
     @OneToMany(mappedBy = "quiz", cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<QuizQuestion> questions;
+
+    public List<QuizQuestion> getQuestions() {
+        return questions.stream()
+                .filter(quizQuestion -> !quizQuestion.isDeleted())
+                .toList();
+    }
 }

@@ -2,7 +2,6 @@ package net.therap.app.service;
 
 import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.ReorderDTO;
-import net.therap.app.helper.AuthorizationService;
 import net.therap.app.model.Content;
 import net.therap.app.model.Module;
 import net.therap.app.repository.ModuleRepository;

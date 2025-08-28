@@ -2,11 +2,15 @@ package net.therap.app.service;
 
 import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.ContentCatalogueDTO;
+import net.therap.app.helper.ContentHelper;
 import net.therap.app.helper.DtoHelper;
 import net.therap.app.model.Content;
 import net.therap.app.model.ContentRelease;
+import net.therap.app.model.Course;
+import net.therap.app.model.Module;
 import net.therap.app.model.Quiz;
 import net.therap.app.model.enums.ReleaseStatus;
+import net.therap.app.repository.ContentReleaseRepository;
 import net.therap.app.repository.ContentRepository;
 import net.therap.cache.support.CacheInvalidationUtil;
 import org.hibernate.Hibernate;
@@ -32,12 +36,16 @@ public class ContentService {
     private final DtoHelper dtoHelper;
     private final CacheInvalidationUtil cacheInvalidationUtil;
     private final MessageSource messageSource;
+    private final ContentHelper contentHelper;
+    private final ContentReleaseService contentReleaseService;
     
-    public ContentService(ContentRepository contentRepository, DtoHelper dtoHelper, CacheInvalidationUtil cacheInvalidationUtil, MessageSource messageSource) {
+    public ContentService(ContentRepository contentRepository, DtoHelper dtoHelper, CacheInvalidationUtil cacheInvalidationUtil, MessageSource messageSource, ContentHelper contentHelper, ContentReleaseService contentReleaseService) {
         this.contentRepository = contentRepository;
         this.dtoHelper = dtoHelper;
         this.cacheInvalidationUtil = cacheInvalidationUtil;
         this.messageSource = messageSource;
+        this.contentHelper = contentHelper;
+        this.contentReleaseService = contentReleaseService;
     }
     
     public List<Content> findByModuleId(long moduleId) {
@@ -56,7 +64,7 @@ public class ContentService {
         return contentRepository.findById(contentId);
     }
     
-    public List<ContentRelease> findAllContents() {
+    public List<ContentRelease> findAllContentReleases() {
         List<Content> contents = contentRepository.findAll();
         
         return contents.stream().map(Content::getCurrentContentRelease).collect(Collectors.toList());
@@ -104,7 +112,7 @@ public class ContentService {
     }
     
     public boolean isPublishable(Content content) {
-        return content.getCurrentContentRelease().getRelease() != ReleaseStatus.DRAFT.getReleaseNumber();
+        return contentHelper.isValidForPublication(content.getCurrentContentRelease());
     }
     
     @Transactional(readOnly = true)
@@ -209,7 +217,16 @@ public class ContentService {
         return saved;
     }
     
-    public void loadQuestions(Quiz previousQuiz) {
-        Hibernate.initialize(previousQuiz.getQuestions());
+    @Transactional(readOnly = true)
+    public void publishContentsOfCourse(Course course) {
+        for (Module module : course.getModules()) {
+            for (Content content : module.getContents()) {
+                ContentRelease contentRelease = content.getCurrentContentRelease();
+                if (contentRelease.getRelease() == ReleaseStatus.DRAFT.getReleaseNumber()) {
+                    contentRelease.setRelease(ReleaseStatus.INITIAL_PUBLISHED.getReleaseNumber());
+                    contentReleaseService.save(contentRelease);
+                }
+            }
+        }
     }
 }

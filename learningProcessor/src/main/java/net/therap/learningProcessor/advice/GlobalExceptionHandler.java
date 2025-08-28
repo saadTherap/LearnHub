@@ -1,10 +1,8 @@
 package net.therap.learningProcessor.advice;
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import feign.FeignException;
 import feign.RetryableException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import net.therap.learningProcessor.dto.ErrorResponse;
 import net.therap.learningProcessor.exception.*;

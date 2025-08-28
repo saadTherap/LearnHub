@@ -25,13 +25,25 @@ repositories {
 	mavenCentral()
 }
 
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:2025.0.0"
+	}
+}
+
 dependencies {
+	implementation project(':signature-generator')
+	implementation project(':authcommon')
+
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
+
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 	implementation 'fi.solita.clamav:clamav-client:1.0.1'
+
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
 
 	compileOnly 'org.projectlombok:lombok'
 

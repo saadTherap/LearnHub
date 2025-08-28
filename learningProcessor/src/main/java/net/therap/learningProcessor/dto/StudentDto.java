@@ -2,7 +2,6 @@ package net.therap.learningProcessor.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import lombok.NonNull;
 import net.therap.learningProcessor.annotation.EnumValidator;
 import net.therap.learningProcessor.eum.Gender;
 import net.therap.learningProcessor.validator.group.OnCreate;

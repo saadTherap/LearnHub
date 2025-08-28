@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.InstructorDTO;
 import net.therap.app.dto.InstructorDtoCatalog;
-import net.therap.app.helper.AuthorizationService;
+import net.therap.app.service.AuthorizationService;
 import net.therap.app.mapper.InstructorMapper;
 import net.therap.app.model.Instructor;
 import net.therap.app.model.enums.AuthorizationLevel;
@@ -16,8 +16,6 @@ import net.therap.app.validation.OnCreate;
 import net.therap.app.validation.OnUpdate;
 import net.therap.cache.support.HazelcastCacheService;
 import org.apache.coyote.BadRequestException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -59,6 +57,7 @@ public class InstructorController {
     
     @GetMapping("/myProfile")
     public ResponseEntity<InstructorDTO> getMyProfile(HttpServletRequest request) throws BadRequestException {
+        log.info("[GET] /instructors/myProfile");
         long id = authorizationService.getInstructorIdFromRequest(request);
         Optional<Instructor> instructorOptional = instructorService.getInstructorById(id);
         
@@ -73,7 +72,7 @@ public class InstructorController {
     
     @GetMapping("/{id}")
     public ResponseEntity<InstructorDTO> getInstructorById(@PathVariable long id, HttpServletRequest request) throws BadRequestException {
-        log.debug("GET /instructors/{}", id);
+        log.info("GET /instructors/{}", id);
         InstructorDTO cached = hazelcastCacheService.get(CacheConstants.INSTRUCTORS, id);
         
         if (cached != null) {
@@ -101,8 +100,9 @@ public class InstructorController {
     
     @GetMapping
     public ResponseEntity<List<InstructorDTO>> getAllInstructors(HttpServletRequest request) throws BadRequestException {
-        authorizationService.authorize(AuthorizationLevel.INSTRUCTOR, null, request);
         log.info("[GET] /instructors");
+        authorizationService.authorize(AuthorizationLevel.STUDENT, null, request);
+        
         List<Instructor> instructors = instructorService.getAllInstructors();
         List<InstructorDTO> instructorDTOs = instructors.stream()
                 .map(dtoHelper::toInstructorDTO) 
@@ -112,11 +112,12 @@ public class InstructorController {
     }
     
     @GetMapping("/byEmail/{email}")
-    public ResponseEntity<InstructorDtoCatalog> getInstructorByEmail(@PathVariable String email) {
+    public ResponseEntity<InstructorDtoCatalog> getInstructorByEmail(@PathVariable String email, HttpServletRequest request) throws BadRequestException {
         log.info("[GET] /instructors/byEmail/{}", email);
         Optional<Instructor> instructorOptional = instructorService.getByEmail(email);
         
         if (instructorOptional.isPresent()) {
+            authorizationService.authorize(AuthorizationLevel.OWNER, instructorOptional.get(), request);
             return ResponseEntity.ok(instructorMapper.toInstructorDtoCatalog(instructorOptional.get()));
         }
         
@@ -127,6 +128,7 @@ public class InstructorController {
     public ResponseEntity<InstructorDTO> createInstructor(@RequestBody @Validated(OnCreate.class) InstructorDTO instructorDTO, HttpServletRequest request) throws BadRequestException {
         log.info("[POST] /instructors. Req Body: {}", instructorDTO);
         authorizationService.authorize(AuthorizationLevel.ADMIN, new Instructor(), request);
+        
         Instructor instructorToCreate = instructorMapper.toInstructor(instructorDTO);
         instructorToCreate.setId(0);
         Instructor createdInstructor = instructorService.createInstructor(instructorToCreate);
@@ -152,22 +154,23 @@ public class InstructorController {
             
             return new ResponseEntity<>(dtoHelper.toInstructorDTO(updatedInstructor), HttpStatus.OK);
             
-        } else {
-            return ResponseEntity.notFound().build();
         }
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> softDeleteInstructor(@PathVariable long id) {
-        log.info("[DELETE] /instructors/{}", id);
         
-        try {
+        throw new NoSuchElementException(messageSource.getMessage("not.found.instructor", null, Locale.getDefault()));
+    }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> softDeleteInstructor(@PathVariable long id, HttpServletRequest request) throws BadRequestException {
+        log.info("[DELETE] /instructors/{}", id);
+        Optional<Instructor> instructorOptional = instructorService.getInstructorById(id);
+        
+        if (instructorOptional.isPresent()) {
+            authorizationService.authorize(AuthorizationLevel.OWNER, instructorOptional.get(), request);
             instructorService.deleteById(id);
             
             return ResponseEntity.noContent().build();
-            
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.notFound().build();
         }
+        
+        throw new NoSuchElementException(messageSource.getMessage("not.found.instructor", null, Locale.getDefault()));
     }
 }
