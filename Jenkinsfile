@@ -76,22 +76,18 @@ pipeline {
                     ]
 
                     // 1. Kill old processes to prevent port conflicts
-//                     for (svc in services) {
-//                         sh "lsof -t -i:${svc.port} | xargs -r kill -9"
-//                     }
+                    for (svc in services) {
+                        sh "lsof -t -i:${svc.port} | xargs -r kill -9"
+                    }
 
                     echo "Deploying services with Docker Compose..."
 
 
                     // 2. Stop and remove old containers gracefully
-                    sh 'sudo docker compose down auth-server secure-file-server course-configurator
-                    learning-processor || true'
+                    sh 'docker compose down auth-server secure-file-server course-configurator learning-processor || true'
 
                     // 3. Build and start new containers
-                    echo "Deploying services with Docker Compose..."
-                    sh 'sudo docker compose up -d --build auth-server secure-file-server course-configurator
-                    learning-processor'
-
+                    sh 'docker compose up -d --build auth-server secure-file-server course-configurator learning-processor'
                 }
             }
         }
