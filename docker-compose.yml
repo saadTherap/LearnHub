@@ -29,8 +29,8 @@ services:
     environment:
       CLAMAV_HOST: clamav
       CLAMAV_PORT: 3310
-    volumes:
-      - secure_file_storage:/var/lib/secureFileStorage/uploads
+   volumes:
+      - /home/app-rnd01/storage/FileStorage:/var/lib/secureFileStorage/uploads
     networks:
       - app-network
 
@@ -171,7 +171,6 @@ volumes:
   broker1-data:
   broker2-data:
   broker3-data:
-  secure_file_storage:
   
 
 networks:
