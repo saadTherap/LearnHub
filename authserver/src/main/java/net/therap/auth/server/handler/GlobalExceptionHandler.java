@@ -57,18 +57,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
     
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
-        log.error("Caught IllegalArgumentException: {}", ex.getMessage());
-        
-        ErrorResponse response = new ErrorResponse();
-        response.setTimestamp(LocalDateTime.now());
-        response.setMessage(MessageUtil.getMessage("app.global.error"));
-        response.setError(ex.getMessage());
-        
-        return ResponseEntity.badRequest().body(response);
-    }
-    
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleAllExceptions(Exception ex) {
         

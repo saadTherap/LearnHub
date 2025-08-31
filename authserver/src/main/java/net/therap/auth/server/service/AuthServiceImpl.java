@@ -214,11 +214,6 @@ public class AuthServiceImpl implements AuthService {
     private User getUser(String email) {
         log.info("Fetching user by email: {}", email);
         
-        if (Objects.isNull(email) || StringUtils.isBlank(email)) {
-            log.warn("Email is null or blank, cannot fetch user");
-            throw new IllegalArgumentException("Email must not be null or empty");
-        }
-        
         return userService.findByEmail(email);
     }
     
