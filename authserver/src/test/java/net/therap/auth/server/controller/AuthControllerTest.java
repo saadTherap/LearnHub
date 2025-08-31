@@ -244,18 +244,16 @@ class AuthControllerTest {
 
     @Test
     void refreshToken_ShouldReturnUnauthorized_WhenInvalidRefreshToken() throws Exception {
-        // Arrange
         RefreshRequest refreshRequest = new RefreshRequest();
         refreshRequest.setRefreshToken("invalid-refresh-token");
 
-        when(authService.refreshToken(anyString()))
-                .thenThrow(new RuntimeException("Invalid refresh token"));
+        when(authService.refreshToken(anyString())).thenThrow(new AuthServerException("Invalid refresh token"));
 
-        // Act & Assert
         mockMvc.perform(post("/api/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(refreshRequest)))
-                .andExpect(status().isInternalServerError()); // Assuming your GlobalExceptionHandler maps RuntimeException to 500
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Invalid refresh token"));
     }
 
 //    @Test
