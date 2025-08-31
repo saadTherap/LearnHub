@@ -21,8 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -184,46 +183,40 @@ class AdminControllerTest {
         adminUser.setRole(UserRole.ADMIN);
 
         when(userService.findById(1L)).thenReturn(adminUser);
-        when(userService.deleteById(99L)).thenThrow(new AuthServerException("User not found"));
-
+        doThrow(new AuthServerException("User not found")).when(userService).deleteById(999L);
+        
         mockMvc.perform(delete("/admin/delete-user/999")
                         .requestAttr("userId", 1L))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error").value("User not found"));
     }
 
-//    @Test
-//    void forceLogout_ShouldReturnBadRequest_WhenMissingUserId() throws Exception {
-//        User adminUser = new User();
-//        adminUser.setId(1L);
-//        adminUser.setRole(UserRole.ADMIN);
-//
-//        Map<String, Object> requestData = new HashMap<>();
-//
-//        when(userService.findById(1L)).thenReturn(adminUser);
-//
-//        mockMvc.perform(post("/admin/logout-force")
-//                        .requestAttr("userId", 1L)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(requestData)))
-//                .andExpect(status().isInternalServerError());
-//    }
-//
-//    @Test
-//    void getMe_ShouldReturnMethodNotAllowed_WhenUsingPostMethod() throws Exception {
-//        mockMvc.perform(post("/admin/me"))
-//                .andExpect(status().isMethodNotAllowed());
-//    }
-//
-//    @Test
-//    void updateUser_ShouldReturnMethodNotAllowed_WhenUsingGetMethod() throws Exception {
-//        mockMvc.perform(get("/admin/update-user"))
-//                .andExpect(status().isMethodNotAllowed());
-//    }
-//
-//    @Test
-//    void deleteUser_ShouldReturnMethodNotAllowed_WhenUsingPostMethod() throws Exception {
-//        mockMvc.perform(post("/admin/delete-user/1"))
-//                .andExpect(status().isMethodNotAllowed());
-//    }
+    @Test
+    void forceLogout_ShouldReturnBadRequest_WhenMissingUserId() throws Exception {
+        User adminUser = new User();
+        adminUser.setId(1L);
+        adminUser.setRole(UserRole.ADMIN);
+
+        Map<String, Object> requestData = new HashMap<>();
+
+        when(userService.findById(1L)).thenReturn(adminUser);
+
+        mockMvc.perform(post("/admin/logout-force")
+                        .requestAttr("userId", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestData)))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void getMe_ShouldReturnMethodNotAllowed_WhenUsingPostMethod() throws Exception {
+        mockMvc.perform(post("/admin/me"))
+                .andExpect(status().isMethodNotAllowed());
+    }
+
+    @Test
+    void deleteUser_ShouldReturnMethodNotAllowed_WhenUsingPostMethod() throws Exception {
+        mockMvc.perform(post("/admin/delete-user/1"))
+                .andExpect(status().isMethodNotAllowed());
+    }
 }
