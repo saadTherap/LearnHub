@@ -5,41 +5,35 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.http.HttpServletRequest;
-import net.minidev.json.JSONObject;
-import net.therap.app.config.JacksonConfig;
 import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.InstructorDTO;
 import net.therap.app.dto.InstructorDtoCatalog;
-import net.therap.app.service.AuthorizationService;
+import net.therap.app.exception.GlobalExceptionHandler;
 import net.therap.app.helper.DtoHelper;
 import net.therap.app.mapper.InstructorMapper;
 import net.therap.app.model.Instructor;
 import net.therap.app.model.enums.AuthorizationLevel;
+import net.therap.app.service.AuthorizationService;
 import net.therap.app.service.InstructorService;
 import net.therap.cache.support.HazelcastCacheService;
-import org.apache.coyote.BadRequestException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -51,39 +45,38 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author gazizafor
  * @since 28/8/25
  */
-@ExtendWith(MockitoExtension.class)
-@Import(JacksonConfig.class)
+@WebMvcTest
+@AutoConfigureMockMvc
+@ContextConfiguration(classes = {InstructorController.class, GlobalExceptionHandler.class})
 class InstructorControllerIntegrationTest {
     
+    @Autowired
     private MockMvc mockMvc;
     Logger log = LoggerFactory.getLogger(InstructorControllerIntegrationTest.class);
-    @Mock
+    @MockitoBean
     private InstructorService instructorService;
-    @Mock private DtoHelper dtoHelper;
-    @Mock private InstructorMapper instructorMapper;
-    @Mock private HazelcastCacheService hazelcastCacheService;
-    @Mock private AuthorizationService authorizationService;
-    @Mock private MessageSource messageSource;
-    @Mock private HttpServletRequest httpServletRequest; // Mock HttpServletRequest
+    @MockitoBean
+    private DtoHelper dtoHelper;
+    @MockitoBean
+    private InstructorMapper instructorMapper;
+    @MockitoBean
+    private HazelcastCacheService hazelcastCacheService;
+    @MockitoBean
+    private AuthorizationService authorizationService;
+    @MockitoBean
+    private MessageSource messageSource;
+    @MockitoBean
+    private HttpServletRequest httpServletRequest; // Mock HttpServletRequest
     
-    // ObjectMapper is often needed for converting DTOs to JSON strings for request bodies
-    // You might need to mock this if your controller directly uses it, or if it's part of your DtoHelper
-    @Mock private ObjectMapper objectMapper;
-    
-    @InjectMocks
-    private InstructorController instructorController;
+    @Mock
+    private ObjectMapper objectMapper;
     
     @BeforeEach
     void setUp() {
-        
         this.objectMapper = new ObjectMapper();
-        this.objectMapper.registerModule(new JavaTimeModule()); // Crucial for Java 8 Dates
+        this.objectMapper.registerModule(new JavaTimeModule());
         this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         this.objectMapper.disable(MapperFeature.REQUIRE_HANDLERS_FOR_JAVA8_TIMES);
-        
-        this.mockMvc = MockMvcBuilders.standaloneSetup(instructorController)
-                .setControllerAdvice(new net.therap.app.exception.GlobalExceptionHandler(messageSource))
-                .build();
     }
     
     @Test
@@ -97,18 +90,17 @@ class InstructorControllerIntegrationTest {
         
         when(authorizationService.getInstructorIdFromRequest(any(HttpServletRequest.class))).thenReturn(instructorId);
         when(instructorService.getInstructorById(instructorId)).thenReturn(Optional.of(instructor));
-        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(instructor), any(HttpServletRequest.class));
+        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(instructor),
+                                                         any(HttpServletRequest.class));
         when(instructorMapper.toInstructorDTO(any(Instructor.class))).thenReturn(dto);
         
         // Act & Assert
-        mockMvc.perform(get("/instructors/myProfile"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(instructorId));
+        mockMvc.perform(get("/instructors/myProfile")).andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andExpect(jsonPath("$.id").value(instructorId));
         
         verify(authorizationService).getInstructorIdFromRequest(any(HttpServletRequest.class));
         verify(instructorService).getInstructorById(instructorId);
-        verify(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(instructor), any(HttpServletRequest.class));
+        verify(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(instructor),
+                                               any(HttpServletRequest.class));
         verify(instructorMapper).toInstructorDTO(any(Instructor.class));
     }
     
@@ -120,13 +112,11 @@ class InstructorControllerIntegrationTest {
         cachedDto.setId(instructorId);
         
         when(hazelcastCacheService.get(eq(CacheConstants.INSTRUCTORS), eq(instructorId))).thenReturn(cachedDto);
-        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(cachedDto), any(HttpServletRequest.class));
+        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(cachedDto),
+                                                         any(HttpServletRequest.class));
         
         // Act & Assert
-        mockMvc.perform(get("/instructors/{id}", instructorId))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(instructorId));
+        mockMvc.perform(get("/instructors/{id}", instructorId)).andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andExpect(jsonPath("$.id").value(instructorId));
         
         verify(hazelcastCacheService).get(CacheConstants.INSTRUCTORS, instructorId);
         verify(instructorService, never()).getInstructorById(anyLong());
@@ -140,15 +130,13 @@ class InstructorControllerIntegrationTest {
         List<Instructor> instructors = Collections.singletonList(instructor);
         List<InstructorDTO> dtoList = Collections.singletonList(dto);
         
-        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT), isNull(), any(HttpServletRequest.class));
+        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.STUDENT), isNull(),
+                                                         any(HttpServletRequest.class));
         when(instructorService.getAllInstructors()).thenReturn(instructors);
         when(dtoHelper.toInstructorDTO(any(Instructor.class))).thenReturn(dto);
         
         // Act & Assert
-        mockMvc.perform(get("/instructors"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0]").exists()); // Just check if at least one DTO is returned
+        mockMvc.perform(get("/instructors")).andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andExpect(jsonPath("$[0]").exists()); // Just check if at least one DTO is returned
         
         verify(authorizationService).authorize(eq(AuthorizationLevel.STUDENT), isNull(), any(HttpServletRequest.class));
         verify(instructorService).getAllInstructors();
@@ -169,7 +157,8 @@ class InstructorControllerIntegrationTest {
         createdInstructor.setId(1L);
         createdInstructor.setName("New Instructor");
         
-        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.ADMIN), any(Instructor.class), any(HttpServletRequest.class));
+        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.ADMIN), any(Instructor.class),
+                                                         any(HttpServletRequest.class));
         when(instructorMapper.toInstructor(any(InstructorDTO.class))).thenReturn(instructorToCreate);
         when(instructorService.createInstructor(any(Instructor.class))).thenReturn(createdInstructor);
         when(dtoHelper.toInstructorDTO(any(Instructor.class))).thenReturn(instructorDTO);
@@ -180,14 +169,10 @@ class InstructorControllerIntegrationTest {
         log.info("--------------------------------------");
         log.info("{}", instructorDTO);
         // Act & Assert
-        mockMvc.perform(post("/instructors")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(reqBody))
-                .andExpect(status().isCreated())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.name").value("New Instructor"));
+        mockMvc.perform(post("/instructors").contentType(MediaType.APPLICATION_JSON).content(reqBody)).andExpect(status().isCreated()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andExpect(jsonPath("$.name").value("New Instructor"));
         
-        verify(authorizationService).authorize(eq(AuthorizationLevel.ADMIN), any(Instructor.class), any(HttpServletRequest.class));
+        verify(authorizationService).authorize(eq(AuthorizationLevel.ADMIN), any(Instructor.class),
+                                               any(HttpServletRequest.class));
         verify(instructorMapper).toInstructor(any(InstructorDTO.class));
         verify(instructorService).createInstructor(any(Instructor.class));
         verify(dtoHelper).toInstructorDTO(any(Instructor.class));
@@ -208,22 +193,20 @@ class InstructorControllerIntegrationTest {
         existingInstructor.setEmail("old@example.com");
         
         when(instructorService.getInstructorById(instructorId)).thenReturn(Optional.of(existingInstructor));
-        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(existingInstructor), any(HttpServletRequest.class));
+        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(existingInstructor),
+                                                         any(HttpServletRequest.class));
         doNothing().when(instructorMapper).updateInstructorFromDto(any(InstructorDTO.class), any(Instructor.class));
-        when(instructorService.updateInstructor(any(Instructor.class))).thenReturn(existingInstructor); // Return the updated existingInstructor
-        when(dtoHelper.toInstructorDTO(any(Instructor.class))).thenReturn(instructorDTO); // Return the DTO reflecting updates
+        when(instructorService.updateInstructor(any(Instructor.class))).thenReturn(existingInstructor); // Return the
+        // updated existingInstructor
+        when(dtoHelper.toInstructorDTO(any(Instructor.class))).thenReturn(instructorDTO); // Return the DTO
+        // reflecting updates
         
         // Act & Assert
-        mockMvc.perform(patch("/instructors/{id}", instructorId)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(new ObjectMapper().writeValueAsString(instructorDTO)))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(instructorId))
-                .andExpect(jsonPath("$.name").value("Updated Name")); // Assert updated name
+        mockMvc.perform(patch("/instructors/{id}", instructorId).contentType(MediaType.APPLICATION_JSON).content(new ObjectMapper().writeValueAsString(instructorDTO))).andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andExpect(jsonPath("$.id").value(instructorId)).andExpect(jsonPath("$.name").value("Updated Name")); // Assert updated name
         
         verify(instructorService).getInstructorById(instructorId);
-        verify(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(existingInstructor), any(HttpServletRequest.class));
+        verify(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(existingInstructor),
+                                               any(HttpServletRequest.class));
         verify(instructorMapper).updateInstructorFromDto(any(InstructorDTO.class), eq(existingInstructor));
         verify(instructorService).updateInstructor(eq(existingInstructor));
         verify(dtoHelper).toInstructorDTO(eq(existingInstructor));
@@ -238,16 +221,17 @@ class InstructorControllerIntegrationTest {
         instructor.setDeleted(true); // Assuming the service sets this
         
         when(instructorService.getInstructorById(instructorId)).thenReturn(Optional.of(instructor));
-        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(instructor), any(HttpServletRequest.class));
+        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(instructor),
+                                                         any(HttpServletRequest.class));
         // Mock the return value of deleteById
         when(instructorService.deleteById(instructorId)).thenReturn(instructor);
         
         // Act & Assert
-        mockMvc.perform(delete("/instructors/{id}", instructorId))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/instructors/{id}", instructorId)).andExpect(status().isNoContent());
         
         verify(instructorService).getInstructorById(instructorId);
-        verify(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(instructor), any(HttpServletRequest.class));
+        verify(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(instructor),
+                                               any(HttpServletRequest.class));
         verify(instructorService).deleteById(instructorId);
     }
     
@@ -259,8 +243,7 @@ class InstructorControllerIntegrationTest {
         when(instructorService.getInstructorById(instructorId)).thenReturn(Optional.empty());
         
         // Act & Assert
-        mockMvc.perform(get("/instructors/{id}", instructorId))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/instructors/{id}", instructorId)).andExpect(status().isNotFound());
     }
     
     @Test
@@ -273,17 +256,16 @@ class InstructorControllerIntegrationTest {
         dto.setEmail(email);
         
         when(instructorService.getByEmail(email)).thenReturn(Optional.of(instructor));
-        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(instructor), any(HttpServletRequest.class));
+        doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(instructor),
+                                                         any(HttpServletRequest.class));
         when(instructorMapper.toInstructorDtoCatalog(any(Instructor.class))).thenReturn(dto);
         
         // Act & Assert
-        mockMvc.perform(get("/instructors/byEmail/{email}", email))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.email").value(email));
+        mockMvc.perform(get("/instructors/byEmail/{email}", email)).andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andExpect(jsonPath("$.email").value(email));
         
         verify(instructorService).getByEmail(email);
-        verify(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(instructor), any(HttpServletRequest.class));
+        verify(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(instructor),
+                                               any(HttpServletRequest.class));
         verify(instructorMapper).toInstructorDtoCatalog(any(Instructor.class));
     }
     
@@ -295,9 +277,7 @@ class InstructorControllerIntegrationTest {
         when(messageSource.getMessage(eq("not.found.instructor"), any(), any(Locale.class))).thenReturn("Instructor not found");
         
         // Act & Assert
-        mockMvc.perform(get("/instructors/byEmail/{email}", email))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Instructor not found"));
+        mockMvc.perform(get("/instructors/byEmail/{email}", email)).andExpect(status().isNotFound()).andExpect(jsonPath("$.message").value("Instructor not found"));
         
         verify(instructorService).getByEmail(email);
         verify(messageSource).getMessage(eq("not.found.instructor"), any(), any(Locale.class));

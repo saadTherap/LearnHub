@@ -14,6 +14,7 @@ import net.therap.app.model.enums.AuthorizationLevel;
 import net.therap.app.service.ContentService;
 import net.therap.app.service.CourseService;
 import net.therap.app.service.ModuleService;
+import net.therap.app.validation.OnCreate;
 import net.therap.app.validation.OnUpdate;
 import net.therap.cache.support.HazelcastCacheService;
 import org.apache.coyote.BadRequestException;
@@ -117,7 +118,7 @@ public class ModuleController {
     }
     
     @PostMapping
-    public ResponseEntity<ModuleDTO> createModule(@RequestBody @Validated ModuleDTO moduleDTO,
+    public ResponseEntity<ModuleDTO> createModule(@RequestBody @Validated(OnCreate.class) ModuleDTO moduleDTO,
                                                   HttpServletRequest request) throws BadRequestException {
         
         log.info("[POST] /modules\nRequestBody:\n{}", moduleDTO);
