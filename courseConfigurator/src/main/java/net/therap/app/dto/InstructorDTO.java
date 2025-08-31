@@ -4,7 +4,6 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 import net.therap.app.validation.OnCreate;
 import net.therap.app.validation.OnUpdate;
-import net.therap.app.validation.annotations.UniqueEmail;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -25,7 +24,6 @@ public class InstructorDTO implements Serializable {
     @Email(message = "{validation.email.format}",  groups = {OnCreate.class})
     @NotBlank(message = "{validation.email.notblank}", groups = {OnCreate.class})
     @Size(max = 255, message = "{validation.email.size}", groups = {OnCreate.class})
-    @UniqueEmail(groups = {OnCreate.class, OnUpdate.class})
     private String email;
     
     @NotNull(message = "{validation.dateOfBirth.notnull}",  groups = {OnCreate.class})
