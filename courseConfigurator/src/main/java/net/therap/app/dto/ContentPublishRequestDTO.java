@@ -1,9 +1,9 @@
 package net.therap.app.dto;
 
-import lombok.Data;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Map;

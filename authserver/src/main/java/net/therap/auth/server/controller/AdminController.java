@@ -56,6 +56,7 @@ public class AdminController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<User> getUserById(@PathVariable Long userId, HttpServletRequest request) {
         checkAdmin(request);
+        
         return ResponseEntity.ok(userService.findById(userId));
     }
     
@@ -69,6 +70,7 @@ public class AdminController {
     @DeleteMapping("/delete-user/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id, HttpServletRequest request) {
         checkAdmin(request);
+        
         userService.deleteById(id);
         
         return ResponseEntity.ok().build();

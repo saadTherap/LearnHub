@@ -2,8 +2,6 @@ package net.therap.app.validation.annotations;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import net.therap.app.validation.OnCreate;
-import net.therap.app.validation.OnUpdate;
 import net.therap.app.validation.validator.UniqueEmailValidator;
 
 import java.lang.annotation.Documented;

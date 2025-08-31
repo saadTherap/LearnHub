@@ -11,6 +11,7 @@ import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.respository.VerificationTokenRepository;
 import net.therap.auth.server.service.interfaces.AuthService;
 import net.therap.auth.server.util.MessageUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -119,7 +120,6 @@ public class AuthServiceImpl implements AuthService {
             throw new AuthServerException(MessageUtil.getMessage("err.token.refresh.invalid"));
         }
         
-        log.info("Fetching user details for email: {}", email);
         User user = getUser(email);
         
         if (!user.isEnabled()) {
@@ -179,8 +179,7 @@ public class AuthServiceImpl implements AuthService {
     private User authenticateUser(String email, String password) {
         log.info("Starting authentication process for email: {}", email);
         
-        log.info("Fetching user by email: {}", email);
-        User user = userService.findByEmail(email);
+        User user = getUser(email);
         
         if (Objects.isNull(user)) {
             log.warn("User not found for email: {}", email);
@@ -214,11 +213,18 @@ public class AuthServiceImpl implements AuthService {
     
     private User getUser(String email) {
         log.info("Fetching user by email: {}", email);
+        
+        if (Objects.isNull(email) || StringUtils.isBlank(email)) {
+            log.warn("Email is null or blank, cannot fetch user");
+            throw new IllegalArgumentException("Email must not be null or empty");
+        }
+        
         return userService.findByEmail(email);
     }
     
     private User getUser(Long userId) {
         log.info("Fetching user by ID: {}", userId);
+        
         return userService.findById(userId);
     }
 }

@@ -1,12 +1,12 @@
 package net.therap.app.helper;
 
 import net.therap.app.dto.*;
-import net.therap.app.model.*; // Import all your entity classes
+import net.therap.app.model.*;
+import net.therap.app.model.Module;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
-import net.therap.app.model.Module;
 
 import java.util.Collections;
 import java.util.Optional;
