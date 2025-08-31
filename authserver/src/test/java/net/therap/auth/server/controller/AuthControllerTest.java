@@ -15,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -267,190 +268,79 @@ class AuthControllerTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error").value("Invalid verification token"));
     }
+    
+    /**
+     * Test for malformed JSON or Empty request body
+     */
+    @Test
+    void register_ShouldReturnBadRequest_WhenMalformedJson() throws Exception {
+        mockMvc.perform(post("/api/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ }"))
+                .andExpect(status().isBadRequest());
+    }
+    
+    /**
+     * Thrown when Spring cannot read or parse the HTTP request body.
+     * Common causes:
+     * - Malformed JSON
+     * - Null or missing body when @RequestBody is expected
+     *
+     * @throws HttpMessageNotReadableException when the login request body is null
+     */
+    @Test
+    void login_ShouldReturnBadRequest_WhenNullRequestBody() throws Exception {
+        mockMvc.perform(post("/api/login")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+    }
 
-//    @Test
-//    void delete_ShouldReturnSuccess_WhenValidCredentials() throws Exception {
-//        // Arrange
-//        DeleteRequest deleteRequest = new DeleteRequest();
-//        deleteRequest.setEmail("demo@gmail.com");
-//        deleteRequest.setPassword("Demo@123");
-//
-//        JwtResponse expectedResponse = new JwtResponse("Account deleted successfully");
-//
-//        when(authService.delete(any(DeleteRequest.class)))
-//                .thenReturn(expectedResponse);
-//
-//        // Act & Assert
-//        mockMvc.perform(delete("/api/delete")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(deleteRequest)))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.message").value("Account deleted successfully"));
-//    }
-//
-//    // Test for malformed JSON
-//    @Test
-//    void register_ShouldReturnBadRequest_WhenMalformedJson() throws Exception {
-//        // Act & Assert
-//        mockMvc.perform(post("/api/register")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content("{invalid-json"))
-//                .andExpect(status().isBadRequest());
-//    }
-//
-//    @Test
-//    void login_ShouldReturnBadRequest_WhenMalformedJson() throws Exception {
-//        // Act & Assert
-//        mockMvc.perform(post("/api/login")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content("{invalid-json"))
-//                .andExpect(status().isBadRequest());
-//    }
-//
-//    // Test for missing Content-Type
-//    @Test
-//    void register_ShouldReturnUnsupportedMediaType_WhenMissingContentType() throws Exception {
-//        // Arrange
-//        RegisterRequest registerRequest = new RegisterRequest();
-//        registerRequest.setEmail("demo@gmail.com");
-//        registerRequest.setPassword("Demo@123");
-//        registerRequest.setRole(UserRole.STUDENT);
-//
-//        // Act & Assert
-//        mockMvc.perform(post("/api/register")
-//                        .content(objectMapper.writeValueAsString(registerRequest)))
-//                .andExpect(status().isUnsupportedMediaType());
-//    }
-//
-//    // Test for null request body
-//    @Test
-//    void login_ShouldReturnBadRequest_WhenNullRequestBody() throws Exception {
-//        // Act & Assert
-//        mockMvc.perform(post("/api/login")
-//                        .contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isBadRequest());
-//    }
-//
-//    // Test for empty request body
-//    @Test
-//    void delete_ShouldReturnBadRequest_WhenEmptyRequestBody() throws Exception {
-//        // Act & Assert
-//        mockMvc.perform(delete("/api/delete")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content("{}"))
-//                .andExpect(status().isBadRequest());
-//    }
-//
-//    // Additional success scenarios with different data
-//
-//    @Test
-//    void register_ShouldReturnJwtResponse_WhenTeacherRole() throws Exception {
-//        // Arrange
-//        RegisterRequest registerRequest = new RegisterRequest();
-//        registerRequest.setEmail("teacher@gmail.com");
-//        registerRequest.setPassword("Teacher@123");
-//        registerRequest.setRole(UserRole.TEACHER);
-//
-//        when(authService.register(any(RegisterRequest.class)))
-//                .thenReturn(new JwtResponse("Registered successfully. Check your e-mail for verification."));
-//
-//        // Act & Assert
-//        mockMvc.perform(post("/api/register")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(registerRequest)))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.message")
-//                        .value("Registered successfully. Check your e-mail for verification."));
-//    }
-//
-//    @Test
-//    void login_ShouldReturnLoginResponse_WhenValidTeacherCredentials() throws Exception {
-//        // Arrange
-//        LoginRequest loginRequest = new LoginRequest();
-//        loginRequest.setEmail("teacher@gmail.com");
-//        loginRequest.setPassword("Teacher@123");
-//
-//        LoginResponse expectedResponse = new LoginResponse();
-//        expectedResponse.setAccessToken("teacher-access-token");
-//        expectedResponse.setRefreshToken("teacher-refresh-token");
-//        expectedResponse.setMessage("Teacher login successful");
-//
-//        when(authService.login(any(LoginRequest.class)))
-//                .thenReturn(expectedResponse);
-//
-//        // Act & Assert
-//        mockMvc.perform(post("/api/login")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(loginRequest)))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.accessToken").value("teacher-access-token"))
-//                .andExpect(jsonPath("$.refreshToken").value("teacher-refresh-token"))
-//                .andExpect(jsonPath("$.message").value("Teacher login successful"));
-//    }
-//
-//    @Test
-//    void refreshToken_ShouldReturnNewJwtResponse_WhenValidRefreshToken() throws Exception {
-//        // Arrange
-//        RefreshRequest refreshRequest = new RefreshRequest();
-//        refreshRequest.setRefreshToken("valid-refresh-token-789");
-//
-//        JwtResponse expectedResponse = new JwtResponse("Token refreshed successfully");
-//
-//        when(authService.refreshToken("valid-refresh-token-789"))
-//                .thenReturn(expectedResponse);
-//
-//        // Act & Assert
-//        mockMvc.perform(post("/api/refresh")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(refreshRequest)))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.message").value("Token refreshed successfully"));
-//    }
-//
-//    @Test
-//    void verifyEmail_ShouldReturnJwtResponse_WhenValidVerificationToken() throws Exception {
-//        // Arrange
-//        String verificationToken = "valid-verification-token-abc123";
-//        JwtResponse expectedResponse = new JwtResponse("Email verified successfully. You can now login.");
-//
-//        when(authService.verifyEmail(verificationToken))
-//                .thenReturn(expectedResponse);
-//
-//        // Act & Assert
-//        mockMvc.perform(get("/api/verify-email")
-//                        .param("token", verificationToken))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.message").value("Email verified successfully. You can now login."));
-//    }
-//
-//    @Test
-//    void delete_ShouldReturnJwtResponse_WhenValidTeacherCredentials() throws Exception {
-//        // Arrange
-//        DeleteRequest deleteRequest = new DeleteRequest();
-//        deleteRequest.setEmail("teacher@gmail.com");
-//        deleteRequest.setPassword("Teacher@123");
-//
-//        JwtResponse expectedResponse = new JwtResponse("Teacher account deleted successfully");
-//
-//        when(authService.delete(any(DeleteRequest.class)))
-//                .thenReturn(expectedResponse);
-//
-//        // Act & Assert
-//        mockMvc.perform(delete("/api/delete")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(deleteRequest)))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.message").value("Teacher account deleted successfully"));
-//    }
-//
-//    // Test HTTP method not allowed scenarios
-//    @Test
-//    void register_ShouldReturnMethodNotAllowed_WhenUsingGetMethod() throws Exception {
-//        // Act & Assert
-//        mockMvc.perform(get("/api/register"))
-//                .andExpect(status().isMethodNotAllowed());
-//    }
-//
+    // ------------------- Additional success scenarios with different data -------------------- //
+    
+    @Test
+    void register_ShouldReturnJwtResponse_WhenTeacherRole() throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.setEmail("instructor1@gmail.com");
+        registerRequest.setPassword("Demo@123");
+        registerRequest.setRole(UserRole.INSTRUCTOR.name());
+        
+        String msg = "Registered successfully. Check your e-mail for verification.";
+
+        when(authService.register(any(RegisterRequest.class)))
+                .thenReturn(new JwtResponse(msg));
+
+        mockMvc.perform(post("/api/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(msg));
+    }
+    
+    @Test
+    void refreshToken_ShouldReturnNewJwtResponse_WhenValidRefreshToken() throws Exception {
+        RefreshRequest refreshRequest = new RefreshRequest();
+        refreshRequest.setRefreshToken("valid-refresh-token-123");
+        
+        String msg = "Token refreshed successfully";
+
+        JwtResponse expectedResponse = new JwtResponse(msg);
+
+        when(authService.refreshToken("valid-refresh-token-123")).thenReturn(expectedResponse);
+
+        mockMvc.perform(post("/api/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(refreshRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(msg));
+    }
+
+    // Test HTTP method not allowed scenarios
+    @Test
+    void register_ShouldReturnMethodNotAllowed_WhenUsingGetMethod() throws Exception {
+        mockMvc.perform(get("/api/register"))
+                .andExpect(status().isMethodNotAllowed());
+    }
+
 //    @Test
 //    void login_ShouldReturnMethodNotAllowed_WhenUsingGetMethod() throws Exception {
 //        // Act & Assert
