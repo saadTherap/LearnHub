@@ -85,6 +85,12 @@ public class GlobalExceptionHandler {
                 ex.getMessage());
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> handleIllegalArgument(IllegalArgumentException ex) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST,
+                messageUtil.getMessage("error.invalid-argument.title"),
+                ex.getMessage());
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGenericException(Exception ex) {

@@ -3,7 +3,9 @@ package net.therap.learningProcessor.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.therap.cache.support.HazelcastCacheService;
 import net.therap.learningProcessor.constants.CacheConstants;
-import net.therap.learningProcessor.dto.*;
+import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
+import net.therap.learningProcessor.dto.StudentCourseProgressDto;
+import net.therap.learningProcessor.dto.StudentDto;
 import net.therap.learningProcessor.eum.AccessLevel;
 import net.therap.learningProcessor.service.AuthorizationService;
 import net.therap.learningProcessor.service.CourseStudentService;
@@ -22,19 +24,16 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * @author avidewan
  * @since 8/31/25
  */
-
-
 @WebMvcTest
 @ContextConfiguration(classes = {CourseStudentController.class})
 @AutoConfigureMockMvc
