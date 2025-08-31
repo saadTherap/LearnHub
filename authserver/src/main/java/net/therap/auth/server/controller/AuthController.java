@@ -1,6 +1,7 @@
 package net.therap.auth.server.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import net.therap.auth.server.dto.*;
 import net.therap.auth.server.service.interfaces.AuthService;
@@ -47,7 +48,7 @@ public class AuthController {
     }
     
     @GetMapping("/verify-email")
-    public ResponseEntity<JwtResponse> verifyEmail(@RequestParam String token) {
+    public ResponseEntity<JwtResponse> verifyEmail(@NotBlank @RequestParam String token) {
         JwtResponse response = authService.verifyEmail(token);
         
         return ResponseEntity.ok( response);

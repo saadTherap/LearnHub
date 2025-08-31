@@ -1,5 +1,6 @@
 package net.therap.auth.server.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -11,5 +12,6 @@ import java.io.Serializable;
 @Data
 public class RefreshRequest implements Serializable {
     
+    @NotBlank
     private String refreshToken;
 }

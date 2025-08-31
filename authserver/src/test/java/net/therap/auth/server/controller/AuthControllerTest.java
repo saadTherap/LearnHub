@@ -5,14 +5,22 @@ import net.therap.auth.server.dto.*;
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.enums.UserRole;
 import net.therap.auth.server.exception.AuthServerException;
+import net.therap.auth.server.handler.GlobalExceptionHandler;
 import net.therap.auth.server.service.interfaces.AuthService;
+import net.therap.auth.server.util.MessageUtil;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+
+import java.util.Locale;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -27,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @WebMvcTest
 @ContextConfiguration(classes = {AuthController.class})
+@Import({GlobalExceptionHandler.class, MessageUtil.class})
 class AuthControllerTest {
     
     @Autowired
@@ -37,6 +46,9 @@ class AuthControllerTest {
     
     @MockitoBean
     private AuthService authService;
+    
+    @Autowired
+    private MessageUtil messageUtil;
     
     @Test
     void register_ShouldReturnJwtResponse_Success() throws Exception {
@@ -84,7 +96,6 @@ class AuthControllerTest {
     
     /**
      * Tests login API when no email is provided.
-     *
      * Expectation:
      * - Controller should return HTTP 401 Bad Request.
      *
@@ -117,147 +128,136 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Account deleted successfully"));
     }
-//
-//    @Test
-//    void delete_ShouldReturnBadRequest_WhenInvalidInput() throws Exception {
-//        // Arrange - Invalid delete request (null email)
-//        DeleteRequest deleteRequest = new DeleteRequest();
-//        deleteRequest.setPassword("Demo@123");
-//
-//        // Act & Assert
-//        mockMvc.perform(delete("/api/delete")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(deleteRequest)))
-//                .andExpect(status().isBadRequest());
-//    }
-//
-//    @Test
-//    void refreshToken_ShouldReturnJwtResponse_Success() throws Exception {
-//        // Arrange
-//        RefreshRequest refreshRequest = new RefreshRequest();
-//        refreshRequest.setRefreshToken("valid-refresh-token-123");
-//
-//        JwtResponse expectedResponse = new JwtResponse("Token refreshed successfully");
-//
-//        when(authService.refreshToken(anyString()))
-//                .thenReturn(expectedResponse);
-//
-//        // Act & Assert
-//        mockMvc.perform(post("/api/refresh")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(refreshRequest)))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.message").value("Token refreshed successfully"));
-//    }
-//
-//    @Test
-//    void refreshToken_ShouldReturnBadRequest_WhenInvalidInput() throws Exception {
-//        // Arrange - Invalid refresh request (null token)
-//        RefreshRequest refreshRequest = new RefreshRequest();
-//
-//        // Act & Assert
-//        mockMvc.perform(post("/api/refresh")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(refreshRequest)))
-//                .andExpect(status().isBadRequest());
-//    }
-//
-//    @Test
-//    void verifyEmail_ShouldReturnJwtResponse_Success() throws Exception {
-//        // Arrange
-//        String verificationToken = "valid-verification-token-123";
-//        JwtResponse expectedResponse = new JwtResponse("Email verified successfully");
-//
-//        when(authService.verifyEmail(anyString()))
-//                .thenReturn(expectedResponse);
-//
-//        // Act & Assert
-//        mockMvc.perform(get("/api/verify-email")
-//                        .param("token", verificationToken))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.message").value("Email verified successfully"));
-//    }
-//
-//    @Test
-//    void verifyEmail_ShouldReturnBadRequest_WhenTokenMissing() throws Exception {
-//        // Act & Assert - Missing token parameter
-//        mockMvc.perform(get("/api/verify-email"))
-//                .andExpect(status().isBadRequest());
-//    }
-//
-//    @Test
-//    void verifyEmail_ShouldReturnBadRequest_WhenTokenEmpty() throws Exception {
-//        // Act & Assert - Empty token parameter
-//        mockMvc.perform(get("/api/verify-email")
-//                        .param("token", ""))
-//                .andExpect(status().isBadRequest());
-//    }
-//
-//    // Additional edge case tests
-//
-//    @Test
-//    void register_ShouldReturnBadRequest_WhenInvalidEmail() throws Exception {
-//        // Arrange
-//        RegisterRequest registerRequest = new RegisterRequest();
-//        registerRequest.setEmail("invalid-email");
-//        registerRequest.setPassword("Demo@123");
-//        registerRequest.setRole(UserRole.STUDENT);
-//
-//        // Act & Assert
-//        mockMvc.perform(post("/api/register")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(registerRequest)))
-//                .andExpect(status().isBadRequest());
-//    }
-//
-//    @Test
-//    void register_ShouldReturnBadRequest_WhenPasswordTooWeak() throws Exception {
-//        // Arrange
-//        RegisterRequest registerRequest = new RegisterRequest();
-//        registerRequest.setEmail("demo@gmail.com");
-//        registerRequest.setPassword("123"); // Weak password
-//        registerRequest.setRole(UserRole.STUDENT);
-//
-//        // Act & Assert
-//        mockMvc.perform(post("/api/register")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(registerRequest)))
-//                .andExpect(status().isBadRequest());
-//    }
-//
-//    @Test
-//    void login_ShouldReturnUnauthorized_WhenInvalidCredentials() throws Exception {
-//        // Arrange
-//        LoginRequest loginRequest = new LoginRequest();
-//        loginRequest.setEmail("demo@gmail.com");
-//        loginRequest.setPassword("WrongPassword");
-//
-//        when(authService.login(any(LoginRequest.class)))
-//                .thenThrow(new RuntimeException("Invalid credentials"));
-//
-//        // Act & Assert
-//        mockMvc.perform(post("/api/login")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(loginRequest)))
-//                .andExpect(status().isInternalServerError()); // Assuming your GlobalExceptionHandler maps RuntimeException to 500
-//    }
-//
-//    @Test
-//    void refreshToken_ShouldReturnUnauthorized_WhenInvalidRefreshToken() throws Exception {
-//        // Arrange
-//        RefreshRequest refreshRequest = new RefreshRequest();
-//        refreshRequest.setRefreshToken("invalid-refresh-token");
-//
-//        when(authService.refreshToken(anyString()))
-//                .thenThrow(new RuntimeException("Invalid refresh token"));
-//
-//        // Act & Assert
-//        mockMvc.perform(post("/api/refresh")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(refreshRequest)))
-//                .andExpect(status().isInternalServerError()); // Assuming your GlobalExceptionHandler maps RuntimeException to 500
-//    }
-//
+    
+    /**
+     * Tests login API when no AT is provided.
+     * Expectation:
+     * - Controller should return HTTP 400 Not Authorized.
+     *
+     * @throws MethodArgumentNotValidException if the mock request fails
+     */
+    @Test
+    void delete_ShouldReturnBadRequest_WhenNoAccessToken() throws Exception {
+        DeleteRequest deleteRequest = new DeleteRequest();
+        
+        mockMvc.perform(delete("/api/delete")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deleteRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void refreshToken_ShouldReturnJwtResponse_Success() throws Exception {
+        RefreshRequest refreshRequest = new RefreshRequest();
+        refreshRequest.setRefreshToken("valid-refresh-token-123");
+
+        JwtResponse expectedResponse = new JwtResponse("Token refreshed successfully");
+
+        when(authService.refreshToken(anyString())).thenReturn(expectedResponse);
+
+        mockMvc.perform(post("/api/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(refreshRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Token refreshed successfully"));
+    }
+
+    @Test
+    void refreshToken_ShouldReturnBadRequest_WhenInvalidInput() throws Exception {
+        RefreshRequest refreshRequest = new RefreshRequest();
+
+        mockMvc.perform(post("/api/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(refreshRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void verifyEmail_ShouldReturnJwtResponse_Success() throws Exception {
+        String verificationToken = "valid-verification-token-123";
+        
+        JwtResponse expectedResponse = new JwtResponse("Email verified successfully");
+
+        when(authService.verifyEmail(anyString())).thenReturn(expectedResponse);
+
+        mockMvc.perform(get("/api/verify-email")
+                        .param("token", verificationToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Email verified successfully"));
+    }
+
+    @Test
+    void verifyEmail_ShouldReturnBadRequest_WhenTokenMissing() throws Exception {
+        mockMvc.perform(get("/api/verify-email"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void verifyEmail_ShouldReturnBadRequest_WhenTokenEmpty() throws Exception {
+        mockMvc.perform(get("/api/verify-email")
+                        .param("token", ""))
+                .andExpect(status().isBadRequest());
+    }
+
+    // --------------------- Additional edge case tests ---------------------------- //
+
+    @Test
+    void register_ShouldReturnBadRequest_WhenInvalidEmail() throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.setEmail("invalid-email");
+        registerRequest.setPassword("Demo@123");
+        registerRequest.setRole(UserRole.STUDENT.name());
+
+        mockMvc.perform(post("/api/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void register_ShouldReturnBadRequest_WhenPasswordTooWeak() throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.setEmail("demo@gmail.com");
+        registerRequest.setPassword("123");
+        registerRequest.setRole(UserRole.STUDENT.name());
+
+        mockMvc.perform(post("/api/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void login_ShouldReturnUnauthorized_WhenInvalidCredentials() throws Exception {
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail("demo@gmail.com");
+        loginRequest.setPassword("WrongPassword");
+
+        when(authService.login(any(LoginRequest.class))).thenThrow(new AuthServerException("Invalid credentials"));
+
+        mockMvc.perform(post("/api/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Invalid credentials"));
+    }
+
+    @Test
+    void refreshToken_ShouldReturnUnauthorized_WhenInvalidRefreshToken() throws Exception {
+        // Arrange
+        RefreshRequest refreshRequest = new RefreshRequest();
+        refreshRequest.setRefreshToken("invalid-refresh-token");
+
+        when(authService.refreshToken(anyString()))
+                .thenThrow(new RuntimeException("Invalid refresh token"));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(refreshRequest)))
+                .andExpect(status().isInternalServerError()); // Assuming your GlobalExceptionHandler maps RuntimeException to 500
+    }
+
 //    @Test
 //    void verifyEmail_ShouldReturnBadRequest_WhenInvalidToken() throws Exception {
 //        // Arrange
