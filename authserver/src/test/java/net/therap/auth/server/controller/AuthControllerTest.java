@@ -256,20 +256,18 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.error").value("Invalid refresh token"));
     }
 
-//    @Test
-//    void verifyEmail_ShouldReturnBadRequest_WhenInvalidToken() throws Exception {
-//        // Arrange
-//        String invalidToken = "invalid-verification-token";
-//
-//        when(authService.verifyEmail(anyString()))
-//                .thenThrow(new RuntimeException("Invalid verification token"));
-//
-//        // Act & Assert
-//        mockMvc.perform(get("/api/verify-email")
-//                        .param("token", invalidToken))
-//                .andExpect(status().isInternalServerError()); // Assuming your GlobalExceptionHandler maps RuntimeException to 500
-//    }
-//
+    @Test
+    void verifyEmail_ShouldReturnBadRequest_WhenInvalidToken() throws Exception {
+        String invalidToken = "invalid-verification-token";
+
+        when(authService.verifyEmail(anyString())).thenThrow(new AuthServerException("Invalid verification token"));
+
+        mockMvc.perform(get("/api/verify-email")
+                        .param("token", invalidToken))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Invalid verification token"));
+    }
+
 //    @Test
 //    void delete_ShouldReturnSuccess_WhenValidCredentials() throws Exception {
 //        // Arrange
