@@ -145,6 +145,25 @@ class AuthControllerTest {
     }
     
     @Test
+    void updateUser_ShouldReturnUpdatedUser_Success() throws Exception {
+        UpdateUserRequest userToUpdate = new UpdateUserRequest();
+        userToUpdate.setId(2L);
+        userToUpdate.setPassword("Demo@123");
+        userToUpdate.setEmail("updated@gmail.com");
+        userToUpdate.setRole(UserRole.INSTRUCTOR.name());
+        
+        JwtResponse response = new JwtResponse(MessageUtil.getMessage("ok.user.updated"));
+        
+        when(authService.updateUser(any(UpdateUserRequest.class))).thenReturn(response);
+        
+        mockMvc.perform(put("/api/update-user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userToUpdate)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(MessageUtil.getMessage("ok.user.updated")));
+    }
+    
+    @Test
     void refreshToken_ShouldReturnJwtResponse_Success() throws Exception {
         RefreshRequest refreshRequest = new RefreshRequest();
         refreshRequest.setRefreshToken("valid-refresh-token-123");
@@ -192,6 +211,7 @@ class AuthControllerTest {
     
     /**
      * Provided token is Blank
+     *
      * @throws HandlerMethodValidationException if the provided token is Blank
      */
     @Test

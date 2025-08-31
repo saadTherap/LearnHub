@@ -12,6 +12,6 @@ import java.io.Serializable;
 @Data
 public class RefreshRequest implements Serializable {
     
-    @NotBlank
+    @NotBlank(message = "{token.refresh.notBlank}")
     private String refreshToken;
 }

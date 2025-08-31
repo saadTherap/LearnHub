@@ -12,6 +12,6 @@ import java.io.Serializable;
 @Data
 public class DeleteRequest implements Serializable {
     
-    @NotBlank
+    @NotBlank(message = "{token.delete.notBlank}")
     private String accessToken;
 }

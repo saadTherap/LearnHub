@@ -107,6 +107,19 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Override
+    public JwtResponse updateUser(UpdateUserRequest request) {
+        User user = userService.findById(request.getId());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword());
+        user.setRole(toSystemFormatUserRole(request.getRole()));
+        user.setEnabled(request.isEnabled());
+        
+        userService.updateUser(user);
+        
+        return new JwtResponse(MessageUtil.getMessage("ok.user.updated"));
+    }
+    
+    @Override
     public JwtResponse refreshToken(String refreshToken) {
         log.info("REFRESH TOKEN request received");
         

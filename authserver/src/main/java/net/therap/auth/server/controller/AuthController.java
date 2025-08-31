@@ -1,9 +1,11 @@
 package net.therap.auth.server.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import net.therap.auth.server.dto.*;
+import net.therap.auth.server.entity.User;
 import net.therap.auth.server.service.interfaces.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,5 +54,11 @@ public class AuthController {
         JwtResponse response = authService.verifyEmail(token);
         
         return ResponseEntity.ok( response);
+    }
+    
+    @PutMapping("/update-user")
+    public ResponseEntity<JwtResponse> updateUser(@Valid @RequestBody UpdateUserRequest updateUserRequest,
+                                        HttpServletRequest request) {
+        return ResponseEntity.ok(authService.updateUser(updateUserRequest));
     }
 }
