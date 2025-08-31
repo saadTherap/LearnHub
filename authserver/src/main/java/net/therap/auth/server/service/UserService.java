@@ -100,11 +100,6 @@ public class UserService {
             deletionService.sendInstructorDeletionInfo(user.getEmail());
         }
     }
-
-    
-    public boolean userExistsById(Long userId) {
-        return Objects.nonNull(userId) && userRepository.existsById(userId);
-    }
     
     public User toggleUserStatus(Long userId) {
         User user = findById(userId);

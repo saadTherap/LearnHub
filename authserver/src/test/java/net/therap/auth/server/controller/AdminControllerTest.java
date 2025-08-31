@@ -178,39 +178,20 @@ class AdminControllerTest {
     }
 
     @Test
-    void updateUser_ShouldReturnBadRequest_WhenInvalidUserData() throws Exception {
+    void deleteUser_ShouldReturnNotFound_WhenUserNotExists() throws Exception {
         User adminUser = new User();
         adminUser.setId(1L);
         adminUser.setRole(UserRole.ADMIN);
 
-        User invalidUser = new User();
-        invalidUser.setEmail("invalid-email");
-        invalidUser.setPassword("123");
-
         when(userService.findById(1L)).thenReturn(adminUser);
+        when(userService.deleteById(99L)).thenThrow(new AuthServerException("User not found"));
 
-        mockMvc.perform(put("/admin/update-user")
-                        .requestAttr("userId", 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidUser)))
-                .andExpect(status().isBadRequest());
+        mockMvc.perform(delete("/admin/delete-user/999")
+                        .requestAttr("userId", 1L))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("User not found"));
     }
 
-//    @Test
-//    void deleteUser_ShouldReturnNotFound_WhenUserNotExists() throws Exception {
-//        User adminUser = new User();
-//        adminUser.setId(1L);
-//        adminUser.setRole(UserRole.ADMIN);
-//
-//        when(userService.findById(1L)).thenReturn(adminUser);
-//        when(userService.deleteById(999L)).thenThrow(new AuthServerException("User not found"));
-//
-//        mockMvc.perform(delete("/admin/delete-user/999")
-//                        .requestAttr("userId", 1L))
-//                .andExpect(status().isUnauthorized())
-//                .andExpect(jsonPath("$.error").value("User not found"));
-//    }
-//
 //    @Test
 //    void forceLogout_ShouldReturnBadRequest_WhenMissingUserId() throws Exception {
 //        User adminUser = new User();
