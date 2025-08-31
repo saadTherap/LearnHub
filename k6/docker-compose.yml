@@ -33,6 +33,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - prometheus
+    user: "984"
 
 volumes:
   grafana_data:
