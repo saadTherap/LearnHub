@@ -8,4 +8,4 @@ scrape_configs:
 
 # Prometheus remote_write configuration to accept data from Telegraf
 remote_write:
-  - url: "http://prometheus:9090/api/v1/write"   # Ensure this points to your Prometheus service's URL
+  - url: "http://localhost:9080/api/v1/write"   # Ensure this points to your Prometheus service's URL
