@@ -17,6 +17,7 @@ import net.therap.auth.server.entity.User;
 import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.util.JwtProperties;
 import net.therap.auth.server.util.JwtUtil;
+import net.therap.auth.server.util.MessageUtil;
 import net.therap.cache.support.HazelcastCacheService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -83,7 +84,8 @@ public class JwtService {
             
         } catch (Exception e) {
             log.error("Failed to extract email from token", e);
-            throw new RuntimeException("Invalid token", e);
+            
+            throw new AuthServerException(MessageUtil.getMessage("err.token.refresh.invalid"));
         }
     }
     
