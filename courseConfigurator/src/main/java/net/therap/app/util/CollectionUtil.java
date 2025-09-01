@@ -38,7 +38,7 @@ public class CollectionUtil {
                 return false;
             }
             
-            if (!uniqueOrderIndexes.add(item.getId())) {
+            if (!uniqueOrderIndexes.add(item.getOrderIndex())) {
                 return false;
             }
         }

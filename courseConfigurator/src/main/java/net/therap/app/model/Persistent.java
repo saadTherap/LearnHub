@@ -27,7 +27,11 @@ public abstract class Persistent implements Serializable {
     @Column(name = "updated_at", nullable = false)
     private Date updated;
     
-    @Column(name = "is_deleted", columnDefinition = "NUMBER(1) DEFAULT 0", nullable = false)
+    @Column(
+            name = "is_deleted",
+//            columnDefinition = "NUMBER(1) DEFAULT 0",
+            nullable = false
+    )
     private boolean isDeleted;
     
     @PrePersist
