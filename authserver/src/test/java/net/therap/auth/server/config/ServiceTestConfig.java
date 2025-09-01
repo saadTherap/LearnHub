@@ -1,5 +1,6 @@
 package net.therap.auth.server.config;
 
+import com.hazelcast.core.HazelcastInstance;
 import net.therap.kafkaregistry.service.ProducerConsumerTask;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -12,10 +13,10 @@ import org.springframework.context.annotation.Bean;
 @TestConfiguration
 public class ServiceTestConfig {
 
-//    @Bean
-//    public HazelcastInstance hazelcastInstance() {
-//        return Mockito.mock(HazelcastInstance.class);
-//    }
+    @Bean
+    public HazelcastInstance hazelcastInstance() {
+        return Mockito.mock(HazelcastInstance.class);
+    }
     
     @Bean
     public ProducerConsumerTask producerConsumerTask() {

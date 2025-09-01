@@ -10,6 +10,7 @@ import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.respository.UserRepository;
 import net.therap.auth.server.respository.VerificationTokenRepository;
 import net.therap.auth.server.service.interfaces.AuthService;
+import net.therap.cache.support.HazelcastCacheService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,9 @@ class AuthServiceImplIntegrationTest {
     
     @MockitoBean
     private RegistrationService registrationService;
+    
+    @MockitoBean
+    private HazelcastCacheService hazelcastCacheService;
     
     @Autowired
     private AuthService authService;
