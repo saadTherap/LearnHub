@@ -21,7 +21,7 @@ CREATE SEQUENCE users_seq
 -- Create sequence for verification_tokens table
 CREATE SEQUENCE token_seq
     START WITH 1
-    INCREMENT BY 1
+    INCREMENT BY 5
     CACHE 20;
 
 -- Create users table
