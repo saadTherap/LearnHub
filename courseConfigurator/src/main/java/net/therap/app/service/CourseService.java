@@ -60,12 +60,12 @@ public class CourseService {
 
     public boolean isPublishable(Course course) {
         for (Module module : course.getModules()) {
-            if (moduleService.isPublishable(module)) {
-                return true;
+            if (!moduleService.isPublishable(module)) {
+                return false;
             }
         }
         
-        return false;
+        return true;
     }
     
     public List<Course> findByInstructor(long instructorId) {
