@@ -1,6 +1,7 @@
 package net.therap.learningProcessor;
 
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import net.therap.kafkaregistry.service.KafkaTopicRegistrar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +11,7 @@ import org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration;
 import org.springframework.boot.autoconfigure.hazelcast.HazelcastAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
@@ -33,6 +35,7 @@ import java.util.TimeZone;
         "net.therap.auth.lib"
 }
 )
+@Slf4j
 public class LearningProcessorApplication {
 
     @Autowired
@@ -50,7 +53,13 @@ public class LearningProcessorApplication {
     @PostConstruct
     public void init() {
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-        kafkaTopicRegistrar.registerTopic(notificationTopic, Integer.parseInt(notificationPartition), Short.parseShort(notificationReplication));
+
+        try {
+            kafkaTopicRegistrar.registerTopic(notificationTopic, Integer.parseInt(notificationPartition), Short.parseShort(notificationReplication));
+
+        } catch (Exception e) {
+            log.debug("[Kafka Error] : {}", String.valueOf(e));
+        }
     }
 
     public static void main(String[] args) {

@@ -1,7 +1,6 @@
 package net.therap.app.mapper;
 
 import net.therap.app.dto.LectureCatalogDTO;
-import net.therap.app.helper.InstructorMappingHelper;
 import net.therap.app.model.Lecture;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

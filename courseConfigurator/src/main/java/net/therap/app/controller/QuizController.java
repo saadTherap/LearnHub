@@ -3,7 +3,6 @@ package net.therap.app.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.app.dto.QuizQuestionDTO;
-import net.therap.app.service.AuthorizationService;
 import net.therap.app.helper.DtoHelper;
 import net.therap.app.mapper.QuizOptionMapper;
 import net.therap.app.mapper.QuizQuestionMapper;
@@ -13,6 +12,7 @@ import net.therap.app.model.enums.AuthorizationLevel;
 import net.therap.app.repository.QuizOptionRepository;
 import net.therap.app.repository.QuizQuestionRepository;
 import net.therap.app.repository.QuizRepository;
+import net.therap.app.service.AuthorizationService;
 import net.therap.app.service.QuizOptionService;
 import net.therap.app.service.QuizQuestionService;
 import org.apache.coyote.BadRequestException;
@@ -20,7 +20,10 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * @author gazizafor

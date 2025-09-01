@@ -72,12 +72,12 @@ public class UserService {
         }
     }
     
-    public User updateUser(User user) {
-        if (!userExistsById(user.getId())) {
-            throw new AuthServerException(MessageUtil.getMessage("err.id.missing.update"));
-        }
+    public void updateUser(User user) {
+        User existingUser = userRepository.findById(user.getId()).orElseThrow(
+                () -> new AuthServerException(MessageUtil.getMessage("err.id.missing.update"))
+        );
         
-        return userRepository.save(user);
+        userRepository.save(existingUser);
     }
     
     public void deleteById(Long id) {
@@ -99,11 +99,6 @@ public class UserService {
             log.info("Sending instructor registration info for email: {}", user.getEmail());
             deletionService.sendInstructorDeletionInfo(user.getEmail());
         }
-    }
-
-    
-    public boolean userExistsById(Long userId) {
-        return Objects.nonNull(userId) && userRepository.existsById(userId);
     }
     
     public User toggleUserStatus(Long userId) {

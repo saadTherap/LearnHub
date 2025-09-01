@@ -32,4 +32,3 @@ class HazelcastServerAppTest {
         hz.shutdown();
     }
 }
-

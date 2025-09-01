@@ -12,6 +12,7 @@ ext {
     lombokVersion = '1.18.32'
     nimbusVersion = '9.23'
     junitVersion = '5.10.0'
+    hazelcastVersion = '5.5.0'
 }
 
 group = 'net.therap'
@@ -20,14 +21,14 @@ version = '0.1-SNAPSHOT'
 dependencyManagement {
     imports {
         mavenBom "org.springframework.boot:spring-boot-dependencies:$springBootVersion"
-        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion"
     }
 }
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
+    toolchain { languageVersion = JavaLanguageVersion.of(21) }
+    withSourcesJar()
+    withJavadocJar()
 }
 
 repositories {
@@ -39,16 +40,23 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    api 'org.springframework.boot:spring-boot-starter-cache'
 
-    implementation "com.nimbusds:nimbus-jose-jwt:$nimbusVersion"
+    api "com.hazelcast:hazelcast:$hazelcastVersion"
+    compileOnly "com.hazelcast:hazelcast-spring:$hazelcastVersion"
 
-    implementation "io.jsonwebtoken:jjwt-api:$jjwtVersion"
+    compileOnly 'org.springframework.boot:spring-boot-autoconfigure'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    api "com.nimbusds:nimbus-jose-jwt:$nimbusVersion"
+    api "io.jsonwebtoken:jjwt-api:$jjwtVersion"
     runtimeOnly "io.jsonwebtoken:jjwt-impl:$jjwtVersion"
     runtimeOnly "io.jsonwebtoken:jjwt-jackson:$jjwtVersion"
 
     compileOnly "org.projectlombok:lombok:$lombokVersion"
     annotationProcessor "org.projectlombok:lombok:$lombokVersion"
 
+    // Test
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 }

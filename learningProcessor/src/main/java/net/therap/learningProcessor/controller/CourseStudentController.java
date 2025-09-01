@@ -177,13 +177,14 @@ public class CourseStudentController {
     public ResponseEntity<CourseDetailWithProgressDto> getStudentCourseProgressDetail(@PathVariable Long studentId,
                                                                                       @RequestBody CourseDetailWithProgressDto courseDetailWithProgressDto,
                                                                                       HttpServletRequest request) {
-
-        log.info("[CourseStudentController] Fetch detailed course progress for studentId={}, courseId={}", studentId, courseDetailWithProgressDto.getId());
+        Long courseId = courseDetailWithProgressDto.getId();
+        log.info("[CourseStudentController] Fetch detailed course progress for studentId={}, courseId={}", studentId, courseId);
 
         authorizationService.authorize(AccessLevel.STUDENT_WITH_ID, Map.of("studentId", studentId), request);
+        authorizationService.authorize(AccessLevel.STUDENT_ENROLLED_IN_COURSE, Map.of("courseId", courseId), request);
 
         CourseDetailWithProgressDto dto = courseStudentService.getCourseDetailWithProgress(studentId, courseDetailWithProgressDto);
-        log.info("[CourseStudentController] Detailed progress fetched for studentId={}, courseId={}", studentId, courseDetailWithProgressDto.getId());
+        log.info("[CourseStudentController] Detailed progress fetched for studentId={}, courseId={}", studentId, courseId);
 
         return ResponseEntity.ok(dto);
     }
@@ -198,6 +199,7 @@ public class CourseStudentController {
         log.info("[CourseStudentController] Fetch course progress for studentId={}, courseId={}", studentId, courseId);
 
         authorizationService.authorize(AccessLevel.STUDENT_WITH_ID, Map.of("studentId", studentId), request);
+        authorizationService.authorize(AccessLevel.STUDENT_ENROLLED_IN_COURSE, Map.of("courseId", courseId), request);
 
         String cacheKey = studentId + ":" + courseId;
         StudentCourseProgressDto cached = hazelcastCacheService.get(CacheConstants.STUDENT_COURSE_PROGRESS, cacheKey);

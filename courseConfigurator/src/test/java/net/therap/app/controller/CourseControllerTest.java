@@ -4,12 +4,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.CourseCatalogDTO;
 import net.therap.app.dto.CourseDTO;
-import net.therap.app.service.AuthorizationService;
 import net.therap.app.helper.DtoHelper;
 import net.therap.app.mapper.CourseMapper;
 import net.therap.app.model.Course;
 import net.therap.app.model.Instructor;
 import net.therap.app.model.enums.AuthorizationLevel;
+import net.therap.app.service.AuthorizationService;
 import net.therap.app.service.CourseService;
 import net.therap.cache.support.HazelcastCacheService;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +29,8 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**

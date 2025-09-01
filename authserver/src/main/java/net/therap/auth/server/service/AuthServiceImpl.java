@@ -28,7 +28,6 @@ import static net.therap.auth.server.util.JwtUtil.toSystemFormatUserRole;
 public class AuthServiceImpl implements AuthService {
     
     private final JwtService jwtService;
-    private final EmailService emailService;
     private final VerificationTokenService verificationTokenService;
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
@@ -106,6 +105,19 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Override
+    public JwtResponse updateUser(UpdateUserRequest request) {
+        User user = userService.findById(request.getId());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword());
+        user.setRole(toSystemFormatUserRole(request.getRole()));
+        user.setEnabled(request.isEnabled());
+        
+        userService.updateUser(user);
+        
+        return new JwtResponse(MessageUtil.getMessage("ok.user.updated"));
+    }
+    
+    @Override
     public JwtResponse refreshToken(String refreshToken) {
         log.info("REFRESH TOKEN request received");
         
@@ -119,7 +131,6 @@ public class AuthServiceImpl implements AuthService {
             throw new AuthServerException(MessageUtil.getMessage("err.token.refresh.invalid"));
         }
         
-        log.info("Fetching user details for email: {}", email);
         User user = getUser(email);
         
         if (!user.isEnabled()) {
@@ -179,8 +190,7 @@ public class AuthServiceImpl implements AuthService {
     private User authenticateUser(String email, String password) {
         log.info("Starting authentication process for email: {}", email);
         
-        log.info("Fetching user by email: {}", email);
-        User user = userService.findByEmail(email);
+        User user = getUser(email);
         
         if (Objects.isNull(user)) {
             log.warn("User not found for email: {}", email);
@@ -214,11 +224,13 @@ public class AuthServiceImpl implements AuthService {
     
     private User getUser(String email) {
         log.info("Fetching user by email: {}", email);
+        
         return userService.findByEmail(email);
     }
     
     private User getUser(Long userId) {
         log.info("Fetching user by ID: {}", userId);
+        
         return userService.findById(userId);
     }
 }
