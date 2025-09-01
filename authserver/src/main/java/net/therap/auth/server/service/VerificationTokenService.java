@@ -22,13 +22,10 @@ public class VerificationTokenService {
     
     @Transactional
     public String generateAndSendVerificationToken(User user) {
-        System.out.println("Before deleting user");
         verificationTokenRepository.deleteByUser(user);
         verificationTokenRepository.flush();
-        System.out.println("After deleting user");
         
         String token = UUID.randomUUID().toString();
-        System.out.println("In token generation: " + token);
         VerificationToken verificationToken = new VerificationToken(token, user);
         verificationTokenRepository.save(verificationToken);
         
