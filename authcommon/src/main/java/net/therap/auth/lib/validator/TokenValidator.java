@@ -46,13 +46,13 @@ public class TokenValidator {
             if (!signedJWT.verify(verifier)) {
                 throw new AuthenticationException("Token signature verification failed");
             }
-            System.out.println("Signature verified successfully");
+            log.info("Signature verified successfully");
             
             JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
             validateClaims(claims);
-            System.out.println("Token & Claims validated successfully =>" + claims);
-
-            System.out.println("---------------------------------------------------------------------------------------------");
+            
+            log.info("Token & Claims validated successfully =>{}", claims);
+            log.info("---------------------------------------------------------------------------------------------");
             
             return claims;
             
@@ -71,20 +71,24 @@ public class TokenValidator {
         
         Date expirationTime = claims.getExpirationTime();
         if (Objects.nonNull(expirationTime) && expirationTime.before(now)) {
+            log.error("Token has expired");
             throw new AuthenticationException("Token has expired");
         }
         
         Date notBeforeTime = claims.getNotBeforeTime();
         if (Objects.nonNull(notBeforeTime) && notBeforeTime.after(now)) {
+            log.error("Token not yet valid");
             throw new AuthenticationException("Token not yet valid");
         }
         
         Date issuedAtTime = claims.getIssueTime();
         if (Objects.nonNull(issuedAtTime) && issuedAtTime.after(now)) {
+            log.error("Token issued in the future");
             throw new AuthenticationException("Token issued in the future");
         }
         
         if (isForceLoggedOut(claims)) {
+            log.error("User have been forced logged out");
             throw new AuthenticationException("You have been logged out of the system forcefully.");
         }
     }
