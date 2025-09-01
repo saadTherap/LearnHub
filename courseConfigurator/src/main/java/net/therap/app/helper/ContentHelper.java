@@ -1,5 +1,8 @@
 package net.therap.app.helper;
 
+import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+import net.therap.app.dto.*;
 import net.therap.app.dto.ContentCatalogueDTO;
 import net.therap.app.dto.LectureCatalogDTO;
 import net.therap.app.dto.SubmissionCatalogueDTO;
@@ -16,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -26,6 +30,7 @@ import static net.therap.app.util.CollectionUtil.isEmptyCollection;
  * @author gazizafor
  * @since 31/7/25
  */
+@Slf4j
 @Component
 public class ContentHelper {
     
@@ -58,7 +63,7 @@ public class ContentHelper {
             case QUIZ:
                 Quiz quiz = new Quiz();
                 quiz.setRelease(ReleaseStatus.DRAFT.getReleaseNumber());
-                quiz.setQuestions(new ArrayList<>());
+                populateQuestions(quiz, contentCatalogueDTO);
                 quiz.setContent(content);
                 
                 return quiz;
@@ -166,5 +171,33 @@ public class ContentHelper {
         }
         
         return true;
+    }
+    
+    private void populateQuestions(Quiz quiz, ContentCatalogueDTO contentCatalogueDTO) {
+        QuizCatalogDTO quizCatalogDTO = (QuizCatalogDTO) contentCatalogueDTO;
+        
+        List<QuizQuestion> newQuestions = new ArrayList<>();
+        
+        for (QuizQuestionDTO originalQuestionDTO : quizCatalogDTO.getQuestions()) {
+            QuizQuestion newQuestion = new QuizQuestion();
+            newQuestion.setQuestionText(originalQuestionDTO.getQuestionText());
+            newQuestion.setQuiz(quiz);
+            
+            List<QuizOption> newOptions = new ArrayList<>();
+            
+            for (QuizOptionDTO originalOptionDTO : originalQuestionDTO.getOptions()) {
+                QuizOption newOption = new QuizOption();
+                newOption.setOptionText(originalOptionDTO.getOptionText());
+                newOption.setCorrect(originalOptionDTO.isCorrect());
+                newOption.setQuizQuestion(newQuestion);
+                newOptions.add(newOption);
+            }
+            
+            newQuestion.setOptions(newOptions);
+            newQuestions.add(newQuestion);
+        }
+        
+        log.info("{} quiz questions created", newQuestions.size());
+        quiz.setQuestions(newQuestions);
     }
 }
