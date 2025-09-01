@@ -51,6 +51,7 @@ public class AuthServiceImpl implements AuthService {
         
         log.info("Generating and sending verification token for user ID: {}", savedUser.getId());
         String token = verificationTokenService.generateAndSendVerificationToken(savedUser);
+        System.out.println("Found token (DEV): " + token);
         
         log.info("REGISTRATION completed. Sent the verification mail for email: {}", request.getEmail());
         

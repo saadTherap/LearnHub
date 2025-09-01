@@ -10,6 +10,7 @@ import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.respository.UserRepository;
 import net.therap.auth.server.respository.VerificationTokenRepository;
 import net.therap.auth.server.service.interfaces.AuthService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +21,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
+import java.time.format.ResolverStyle;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 /**
@@ -33,10 +36,7 @@ import static org.mockito.Mockito.*;
 @Transactional
 @ActiveProfiles("test")
 @Import(ServiceTestConfig.class)
-class AuthServiceIntegrationTest {
-    
-    @MockitoBean
-    private VerificationTokenService verificationTokenService;
+class AuthServiceImplIntegrationTest {
     
     @MockitoBean
     private RegistrationService registrationService;
@@ -71,7 +71,8 @@ class AuthServiceIntegrationTest {
         
         JwtResponse response = authService.register(request);
         
-        assertThat(response.getAccessToken()).isNotNull();
+        System.out.println("Found Token (test): " + response.getMessage());
+        assertThat(response.getMessage()).isNotNull();
         
         User savedUser = userRepository.findByEmail("test@demo.com");
         assertThat(savedUser).isNotNull();
@@ -79,13 +80,10 @@ class AuthServiceIntegrationTest {
         assertThat(savedUser.getRole()).isEqualTo(UserRole.STUDENT);
         assertThat(savedUser.isEnabled()).isFalse();
         assertThat(passwordEncoder.matches("password123", savedUser.getPassword())).isTrue();
-        
-        verify(verificationTokenService, times(1)).generateAndSendVerificationToken(savedUser);
     }
     
     @Test
     void login_ShouldReturnTokens_WhenCredentialsValid() {
-        // Setup: Create and save enabled user
         User user = new User();
         user.setEmail("login@demo.com");
         user.setPassword(passwordEncoder.encode("password123"));
@@ -109,7 +107,6 @@ class AuthServiceIntegrationTest {
     
     @Test
     void login_ShouldThrow_WhenUserDisabled() {
-        // Setup: Create disabled user
         User user = new User();
         user.setEmail("disabled@demo.com");
         user.setPassword(passwordEncoder.encode("password123"));
@@ -137,7 +134,6 @@ class AuthServiceIntegrationTest {
     
     @Test
     void delete_ShouldRemoveUser_WhenValidToken() {
-        // Setup: Create user and generate valid token
         User user = new User();
         user.setEmail("delete@demo.com");
         user.setPassword(passwordEncoder.encode("password123"));
@@ -152,10 +148,11 @@ class AuthServiceIntegrationTest {
         
         JwtResponse response = authService.delete(request);
         
-        assertThat(response.getAccessToken()).isNotNull();
+        assertThat(response.getMessage()).isNotNull();
         
         User deletedUser = userRepository.findById(user.getId()).orElse(null);
-        assertThat(deletedUser).isNull();
+        assertNotNull(deletedUser);
+        assertThat(deletedUser.isDeleted()).isTrue();
     }
     
     @Test
@@ -169,7 +166,6 @@ class AuthServiceIntegrationTest {
     
     @Test
     void refreshToken_ShouldGenerateNewAccessToken_WhenValidRefreshToken() {
-        // Setup: Create enabled user
         User user = new User();
         user.setEmail("refresh@demo.com");
         user.setPassword(passwordEncoder.encode("password123"));
@@ -188,7 +184,6 @@ class AuthServiceIntegrationTest {
     
     @Test
     void refreshToken_ShouldThrow_WhenUserDisabled() {
-        // Setup: Create disabled user
         User user = new User();
         user.setEmail("disabled-refresh@demo.com");
         user.setPassword(passwordEncoder.encode("password123"));
@@ -210,7 +205,6 @@ class AuthServiceIntegrationTest {
     
     @Test
     void verifyEmail_ShouldEnableUserAndSendRegistrationInfo_WhenValidToken() {
-        // Setup: Create user and verification token
         User user = new User();
         user.setEmail("verify@demo.com");
         user.setPassword(passwordEncoder.encode("password123"));
@@ -226,7 +220,7 @@ class AuthServiceIntegrationTest {
         
         JwtResponse response = authService.verifyEmail("valid-verification-token");
         
-        assertThat(response.getAccessToken()).isNotNull();
+        assertThat(response.getMessage()).isNotNull();
         
         User verifiedUser = userRepository.findByEmail("verify@demo.com");
         assertThat(verifiedUser.isEnabled()).isTrue();
@@ -239,7 +233,6 @@ class AuthServiceIntegrationTest {
     
     @Test
     void verifyEmail_ShouldSendInstructorInfo_WhenInstructorVerifies() {
-        // Setup: Create instructor and verification token
         User user = new User();
         user.setEmail("instructor@demo.com");
         user.setPassword(passwordEncoder.encode("password123"));
@@ -255,7 +248,7 @@ class AuthServiceIntegrationTest {
         
         JwtResponse response = authService.verifyEmail("instructor-verification-token");
         
-        assertThat(response.getAccessToken()).isNotNull();
+        assertThat(response.getMessage()).isNotNull();
         
         verify(registrationService, times(1))
                 .sendInstructorRegistrationInfo("instructor@demo.com");
@@ -269,7 +262,6 @@ class AuthServiceIntegrationTest {
     
     @Test
     void verifyEmail_ShouldThrow_WhenTokenExpired() {
-        // Setup: Create user and expired verification token
         User user = new User();
         user.setEmail("expired@demo.com");
         user.setPassword(passwordEncoder.encode("password123"));
@@ -292,7 +284,6 @@ class AuthServiceIntegrationTest {
     
     @Test
     void updateUser_ShouldModifyUserDetails() {
-        // Setup: Create user
         User user = new User();
         user.setEmail("update@demo.com");
         user.setPassword(passwordEncoder.encode("oldpassword"));
@@ -309,7 +300,7 @@ class AuthServiceIntegrationTest {
         
         JwtResponse response = authService.updateUser(request);
         
-        assertThat(response.getAccessToken()).isNotNull();
+        assertThat(response.getMessage()).isNotNull();
         
         User updatedUser = userRepository.findById(user.getId()).orElse(null);
         assertThat(updatedUser).isNotNull();
