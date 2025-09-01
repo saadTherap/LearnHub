@@ -22,7 +22,6 @@ ext {
     set("jwtTokenVersion", "0.11.5")
     set("lombokVersion", "1.18.32")
     set("springdocVersion", "2.8.9")
-    set("mockitoVersion", "5.3.1")
 }
 
 dependencyManagement {
@@ -60,10 +59,8 @@ dependencies {
     testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
-    testImplementation "org.springframework.boot:spring-boot-starter-test"       // JUnit 5, MockMvc, AssertJ
-    testImplementation "org.springframework.security:spring-security-test"       // Spring Security testing helpers
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"              // Mockito for unit tests
-    testImplementation 'com.fasterxml.jackson.core:jackson-databind'            // JSON serialization for tests
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.security:spring-security-test"
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:oracle-xe'
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
