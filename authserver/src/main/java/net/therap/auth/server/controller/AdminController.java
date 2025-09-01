@@ -4,10 +4,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.therap.auth.server.dto.JwtResponse;
+import net.therap.auth.server.dto.UpdateUserRequest;
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.enums.UserRole;
 import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.service.UserService;
+import net.therap.auth.server.util.MessageUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,12 +32,12 @@ public class AdminController {
         Long userId = (Long) request.getAttribute("userId");
         
         if (Objects.isNull(userId)) {
-            throw new AuthServerException("Authentication required");
+            throw new AuthServerException(MessageUtil.getMessage("err.admin.auth"));
         }
         
         User user = userService.findById(userId);
         if (!UserRole.ADMIN.equals(user.getRole())) {
-            throw new AuthServerException("Admin access required");
+            throw new AuthServerException(MessageUtil.getMessage("err.admin.access"));
         }
     }
     
@@ -56,19 +58,14 @@ public class AdminController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<User> getUserById(@PathVariable Long userId, HttpServletRequest request) {
         checkAdmin(request);
-        return ResponseEntity.ok(userService.findById(userId));
-    }
-    
-    @PutMapping("/update-user")
-    public ResponseEntity<User> updateUser(@Valid @RequestBody User user, HttpServletRequest request) {
-        checkAdmin(request);
         
-        return ResponseEntity.ok(userService.updateUser(user));
+        return ResponseEntity.ok(userService.findById(userId));
     }
     
     @DeleteMapping("/delete-user/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id, HttpServletRequest request) {
         checkAdmin(request);
+        
         userService.deleteById(id);
         
         return ResponseEntity.ok().build();

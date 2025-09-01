@@ -8,9 +8,7 @@ import net.therap.app.model.Content;
 import net.therap.app.model.ContentRelease;
 import net.therap.app.model.Course;
 import net.therap.app.model.Module;
-import net.therap.app.model.Quiz;
 import net.therap.app.model.enums.ReleaseStatus;
-import net.therap.app.repository.ContentReleaseRepository;
 import net.therap.app.repository.ContentRepository;
 import net.therap.cache.support.CacheInvalidationUtil;
 import org.hibernate.Hibernate;
@@ -20,7 +18,10 @@ import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**

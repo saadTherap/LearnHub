@@ -1,7 +1,6 @@
 package net.therap.auth.lib.filter;
 
 import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,14 +9,11 @@ import lombok.extern.slf4j.Slf4j;
 import net.therap.auth.lib.context.UserRequestCache;
 import net.therap.auth.lib.exception.AuthenticationException;
 import net.therap.auth.lib.validator.TokenValidator;
-import net.therap.cache.support.HazelcastCacheService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author apurboturjo

@@ -1,5 +1,6 @@
 package net.therap.auth.server.service;
 
+import lombok.RequiredArgsConstructor;
 import net.therap.kafkaregistry.service.ProducerConsumerTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,10 +11,10 @@ import org.springframework.stereotype.Service;
  * @since 8/21/25
  */
 @Service
+@RequiredArgsConstructor
 public class DeletionService {
     
-    @Autowired
-    private ProducerConsumerTask producerConsumerTask;
+    private final ProducerConsumerTask producerConsumerTask;
     
     @Value("${kafka.topics.student.deletion}")
     private String studentDeletionTopic;

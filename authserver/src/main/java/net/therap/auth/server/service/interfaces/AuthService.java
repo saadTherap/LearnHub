@@ -12,6 +12,8 @@ public interface AuthService {
     
     LoginResponse login(LoginRequest request);
     
+    JwtResponse updateUser(UpdateUserRequest request);
+    
     JwtResponse refreshToken(String refreshToken);
     
     JwtResponse verifyEmail(String token);

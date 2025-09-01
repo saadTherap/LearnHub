@@ -1,7 +1,6 @@
 package net.therap.app.helper;
 
 import net.therap.app.model.Course;
-import net.therap.app.model.Instructor;
 import net.therap.app.service.CourseService;
 import org.springframework.stereotype.Component;
 

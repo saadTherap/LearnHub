@@ -1,5 +1,5 @@
  package net.therap.app.service;
-
+ 
  import net.therap.app.constants.CacheConstants;
  import net.therap.app.helper.DtoHelper;
  import net.therap.app.model.Course;
@@ -15,16 +15,15 @@
  import org.springframework.context.MessageSource;
  import org.springframework.transaction.support.TransactionSynchronization;
  import org.springframework.transaction.support.TransactionSynchronizationManager;
-
+ 
  import java.util.List;
  import java.util.NoSuchElementException;
  import java.util.Optional;
-
+ 
  import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
  import static org.junit.jupiter.api.Assertions.*;
  import static org.mockito.ArgumentMatchers.any;
  import static org.mockito.Mockito.*;
- import static org.mockito.ArgumentMatchers.anyLong;
 
  /**
   * @author riadanonto

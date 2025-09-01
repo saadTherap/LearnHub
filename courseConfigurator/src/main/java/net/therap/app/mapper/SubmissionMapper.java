@@ -1,7 +1,6 @@
 package net.therap.app.mapper;
 
 import net.therap.app.dto.SubmissionCatalogueDTO;
-import net.therap.app.dto.SubmissionDTO;
 import net.therap.app.model.Submission;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

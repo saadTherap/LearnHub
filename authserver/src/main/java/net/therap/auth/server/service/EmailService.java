@@ -35,10 +35,6 @@ public class EmailService {
         log.info("Verification email sent to: console");
     }
     
-    public String getToken(String token) {
-        return token;
-    }
-    
     
     public void sendVerificationEmail(String to, String token) throws AuthServerException {
         MimeMessage message = mailSender.createMimeMessage();

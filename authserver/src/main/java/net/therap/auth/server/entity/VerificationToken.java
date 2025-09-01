@@ -21,7 +21,8 @@ public class VerificationToken {
     private static final int EXPIRATION_MINUTES = 15;
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "token_generator")
+    @SequenceGenerator(name = "token_generator", sequenceName = "token_seq", initialValue = 1, allocationSize = 5)
     private Long id;
     
     @Column(nullable = false, unique = true)

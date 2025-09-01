@@ -1,6 +1,5 @@
 package net.therap.app.helper;
 
-import jakarta.transaction.Transactional;
 import net.therap.app.dto.ContentCatalogueDTO;
 import net.therap.app.dto.LectureCatalogDTO;
 import net.therap.app.dto.SubmissionCatalogueDTO;
@@ -10,14 +9,10 @@ import net.therap.app.model.*;
 import net.therap.app.model.Module;
 import net.therap.app.model.enums.ContentType;
 import net.therap.app.model.enums.ReleaseStatus;
-import net.therap.app.repository.ContentRepository;
 import net.therap.app.repository.ModuleRepository;
-import net.therap.app.service.ContentService;
-import net.therap.app.service.ModuleService;
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

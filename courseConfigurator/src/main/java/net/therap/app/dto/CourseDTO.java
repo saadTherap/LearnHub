@@ -1,11 +1,8 @@
 package net.therap.app.dto;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.NonNull;
 import net.therap.app.validation.OnCreate;
 import net.therap.app.validation.OnUpdate;
 import net.therap.app.validation.htmlSanitization.SanitizeHtml;
