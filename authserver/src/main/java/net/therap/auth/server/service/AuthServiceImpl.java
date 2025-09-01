@@ -11,7 +11,6 @@ import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.respository.VerificationTokenRepository;
 import net.therap.auth.server.service.interfaces.AuthService;
 import net.therap.auth.server.util.MessageUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +28,6 @@ import static net.therap.auth.server.util.JwtUtil.toSystemFormatUserRole;
 public class AuthServiceImpl implements AuthService {
     
     private final JwtService jwtService;
-    private final EmailService emailService;
     private final VerificationTokenService verificationTokenService;
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;

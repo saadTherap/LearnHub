@@ -31,6 +31,7 @@ public class VerificationTokenService {
         
 //        emailService.sendVerificationEmail(user.getEmail(), token);
         emailService.sendLinkToConsole(token);
-        return emailService.getToken(token);
+        
+        return token;
     }
 }
