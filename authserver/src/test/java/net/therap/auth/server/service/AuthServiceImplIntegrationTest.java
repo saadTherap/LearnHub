@@ -1,7 +1,7 @@
 package net.therap.auth.server.service;
 
 import jakarta.transaction.Transactional;
-import net.therap.auth.server.config.ServiceTestConfig;
+import net.therap.auth.server.config.TestServiceConfig;
 import net.therap.auth.server.dto.*;
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.entity.VerificationToken;
@@ -11,7 +11,6 @@ import net.therap.auth.server.respository.UserRepository;
 import net.therap.auth.server.respository.VerificationTokenRepository;
 import net.therap.auth.server.service.interfaces.AuthService;
 import net.therap.cache.support.HazelcastCacheService;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +21,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
-import java.time.format.ResolverStyle;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * @author apurboturjo
@@ -36,11 +35,14 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @Transactional
 @ActiveProfiles("test")
-@Import(ServiceTestConfig.class)
+@Import(TestServiceConfig.class)
 class AuthServiceImplIntegrationTest {
     
     @MockitoBean
     private RegistrationService registrationService;
+    
+    @Autowired
+    private JwtService jwtService;
     
     @MockitoBean
     private HazelcastCacheService hazelcastCacheService;
@@ -57,11 +59,8 @@ class AuthServiceImplIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
     
-    @Autowired
-    private JwtService jwtService;
-    
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         userRepository.deleteAll();
         verificationTokenRepository.deleteAll();
     }
@@ -75,7 +74,6 @@ class AuthServiceImplIntegrationTest {
         
         JwtResponse response = authService.register(request);
         
-        System.out.println("Found Token (test): " + response.getMessage());
         assertThat(response.getMessage()).isNotNull();
         
         User savedUser = userRepository.findByEmail("test@demo.com");
@@ -276,13 +274,12 @@ class AuthServiceImplIntegrationTest {
         VerificationToken expiredToken = new VerificationToken();
         expiredToken.setToken("expired-token");
         expiredToken.setUser(user);
-        expiredToken.setExpiryDate(LocalDateTime.now().minusHours(1)); // Expired
+        expiredToken.setExpiryDate(LocalDateTime.now().minusHours(1));
         verificationTokenRepository.save(expiredToken);
         
         assertThatThrownBy(() -> authService.verifyEmail("expired-token"))
                 .isInstanceOf(AuthServerException.class);
         
-        // Verify expired token is deleted
         assertThat(verificationTokenRepository.findByToken("expired-token")).isEmpty();
     }
     

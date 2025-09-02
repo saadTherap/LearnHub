@@ -1,7 +1,7 @@
 package net.therap.auth.server.service;
 
 import jakarta.transaction.Transactional;
-import net.therap.auth.server.config.ServiceTestConfig;
+import net.therap.auth.server.config.TestServiceConfig;
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.enums.UserRole;
 import net.therap.auth.server.exception.AuthServerException;
@@ -24,10 +24,10 @@ import static org.mockito.Mockito.verify;
  * @author apurboturjo
  * @since 8/31/25
  */
-@SpringBootTest(properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration")
+@SpringBootTest
 @Transactional
 @ActiveProfiles("test")
-@Import(ServiceTestConfig.class)
+@Import(TestServiceConfig.class)
 class UserServiceIntegrationTest {
     
     @MockitoBean
