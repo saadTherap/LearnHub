@@ -24,12 +24,19 @@ public class JwtUtil {
     
     public static UserRole toSystemFormatUserRole(String role) {
         try {
-            return UserRole.valueOf(role.toUpperCase());
+            UserRole userRole = UserRole.valueOf(role.toUpperCase());
+            
+            if (userRole == UserRole.ADMIN) {
+                throw new AuthServerException(MessageUtil.getMessage("err.role.invalid"));
+            }
+            
+            return userRole;
             
         } catch (IllegalArgumentException e) {
             throw new AuthServerException(MessageUtil.getMessage("err.role.invalid"));
         }
     }
+
 
     public static RSAPrivateKey getPrivateKey(String classpathPath) throws Exception {
         String key = readKeyFromClasspath(classpathPath, "PRIVATE KEY");
