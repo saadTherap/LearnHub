@@ -107,7 +107,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public JwtResponse updateUser(UpdateUserRequest request) {
         User user = userService.findById(request.getId());
-        user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
         user.setRole(toSystemFormatUserRole(request.getRole()));
         user.setEnabled(request.isEnabled());
@@ -139,10 +138,10 @@ public class AuthServiceImpl implements AuthService {
         }
         
         log.info("Generating new access token for user: {}", email);
-        String access = jwtService.generateAccessToken(user);
+        String accessToken = jwtService.generateAccessToken(user);
         log.info("New access token generated successfully for user: {}", email);
         
-        return new JwtResponse(access, refreshToken);
+        return new JwtResponse(accessToken, refreshToken);
     }
     
     @Transactional

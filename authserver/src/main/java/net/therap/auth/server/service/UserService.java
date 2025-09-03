@@ -76,7 +76,7 @@ public class UserService {
                 () -> new AuthServerException(MessageUtil.getMessage("err.id.missing.update"))
         );
         
-        saveUser(existingUser);
+        userRepository.save(existingUser);
     }
     
     public void deleteById(Long id) {
