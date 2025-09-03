@@ -1,5 +1,6 @@
 package net.therap.auth.lib.provider;
 
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
 import jakarta.annotation.Nullable;
 import lombok.Getter;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.security.interfaces.RSAPublicKey;
+import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
@@ -33,10 +35,10 @@ public class PublicKeyProvider {
     public PublicKeyProvider(@Nullable PublicKeyClient publicKeyClient) {
         this.publicKeyClient = publicKeyClient;
         log.info("PublicKeyProvider initialized with client: {}",
-                publicKeyClient != null ? "present" : "not configured");
+                Objects.nonNull(publicKeyClient) ? "present" : "not configured");
     }
     
-    public RSAPublicKey getPublicKey(String kid) {
+    public RSAPublicKey getPublicKey(String kid) throws ParseException, JOSEException {
         log.debug("Fetching public key for kid: {}", kid);
         
         CachedKey cachedKey = keyCache.get(kid);
@@ -52,28 +54,23 @@ public class PublicKeyProvider {
         return fetchedKey;
     }
     
-    private RSAPublicKey fetchFromServer(String kid) {
+    private RSAPublicKey fetchFromServer(String kid) throws JOSEException, ParseException {
         if (Objects.isNull(publicKeyClient)) {
             throw new AuthenticationException("PublicKeyClient is not configured. Cannot fetch public key for kid: " + kid);
         }
         
-        try {
-            log.debug("Fetching public key from server for kid: {}", kid);
-            ResponseEntity<String> response = publicKeyClient.getPublicKey(kid);
-            
-            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-                throw new AuthenticationException("Failed to fetch public key for kid: " + kid +
-                        ". Status: " + response.getStatusCode());
-            }
-            
-            String jwkJson = response.getBody();
-            RSAKey rsaKey = RSAKey.parse(jwkJson);
-            return rsaKey.toRSAPublicKey();
-            
-        } catch (Exception e) {
-            log.error("Failed to fetch or parse public key for kid: {}", kid, e);
-            throw new AuthenticationException("Failed to fetch public key for kid: " + kid, e);
+        log.debug("Fetching public key from server for kid: {}", kid);
+        ResponseEntity<String> response = publicKeyClient.getPublicKey(kid);
+        
+        if (!response.getStatusCode().is2xxSuccessful() || Objects.isNull(response.getBody())) {
+            throw new AuthenticationException("Failed to fetch public key for kid: " + kid +
+                    ". Status: " + response.getStatusCode());
         }
+        
+        String jwkJson = response.getBody();
+        RSAKey rsaKey = RSAKey.parse(jwkJson);
+        
+        return rsaKey.toRSAPublicKey();
     }
     
     private void cacheKey(String kid, RSAPublicKey publicKey) {

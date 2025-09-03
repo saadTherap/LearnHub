@@ -57,8 +57,9 @@ public class AuthController {
     }
     
     @PutMapping("/update-user")
-    public ResponseEntity<JwtResponse> updateUser(@Valid @RequestBody UpdateUserRequest updateUserRequest,
-                                        HttpServletRequest request) {
-        return ResponseEntity.ok(authService.updateUser(updateUserRequest));
+    public ResponseEntity<JwtResponse> updateUser(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
+        JwtResponse response = authService.updateUser(updateUserRequest);
+        
+        return ResponseEntity.ok(response);
     }
 }
