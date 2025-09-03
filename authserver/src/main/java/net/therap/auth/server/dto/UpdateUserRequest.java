@@ -16,10 +16,6 @@ public class UpdateUserRequest {
     @NotNull(message = "{user.id.notNull}")
     private Long id;
     
-    @Email(message = "{user.email.invalid}")
-    @NotBlank(message = "{user.email.notblank}")
-    private String email;
-    
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*#?&]).{8,}$", message = "{user.password.strong}")
     private String password;
     
