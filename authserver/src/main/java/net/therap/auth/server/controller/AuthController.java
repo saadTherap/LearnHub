@@ -1,11 +1,9 @@
 package net.therap.auth.server.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import net.therap.auth.server.dto.*;
-import net.therap.auth.server.entity.User;
 import net.therap.auth.server.service.interfaces.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
