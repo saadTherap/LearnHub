@@ -1,10 +1,8 @@
 package net.therap.auth.server.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.therap.auth.server.dto.JwtResponse;
-import net.therap.auth.server.dto.UpdateUserRequest;
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.enums.UserRole;
 import net.therap.auth.server.exception.AuthServerException;

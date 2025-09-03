@@ -2,7 +2,6 @@ package net.therap.auth.server.service;
 
 import lombok.RequiredArgsConstructor;
 import net.therap.kafkaregistry.service.ProducerConsumerTask;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
