@@ -33,7 +33,7 @@ public class kafkaDeletionListener {
     void listen(String json) {
         String  email = producerConsumerTask.deserialize(json, String.class);
 
-        Optional<Instructor> instructorOptional = instructorService.getByEmail(email);
+        Optional<Instructor> instructorOptional = instructorService.getByEmailNonDeleted(email);
 
         if (instructorOptional.isEmpty()) {
             throw new NoSuchElementException("instructor with email " + email + " not found");

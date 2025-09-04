@@ -29,7 +29,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Locale;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -100,7 +99,7 @@ class InstructorFullStackIntegrationTest {
         
         mockMvc.perform(post("/instructors").contentType(MediaType.APPLICATION_JSON).content(reqBody)).andExpect(status().isCreated()).andExpect(jsonPath("$.name").value("Full Stack Tester")).andExpect(jsonPath("$.email").value("fullstack@example.com"));
         
-        Optional<Instructor> savedInstructorOptional = instructorRepository.findByEmail("fullstack@example.com");
+        Optional<Instructor> savedInstructorOptional = instructorRepository.findByEmailNonDeleted("fullstack@example.com");
         assertThat(savedInstructorOptional).isPresent();
         Instructor savedInstructor = savedInstructorOptional.get();
         

@@ -39,6 +39,10 @@ public class InstructorService {
         return instructorRepository.findAll();
     }
     
+    public Optional<Instructor> getByEmailNonDeleted(String email) {
+        return instructorRepository.findByEmailNonDeleted(email);
+    }
+    
     public Optional<Instructor> getByEmail(String email) {
         return instructorRepository.findByEmail(email);
     }
