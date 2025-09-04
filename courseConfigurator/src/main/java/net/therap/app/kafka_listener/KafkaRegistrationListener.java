@@ -41,6 +41,8 @@ public class KafkaRegistrationListener {
             log.info("[Kafka Registration Listener] Instructor already exists for {}", email);
             instructorOptional.get().setDeleted(false);
             instructorService.updateInstructor(instructorOptional.get());
+            
+            return;
         }
         
         Instructor instructor = new Instructor();
