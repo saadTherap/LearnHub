@@ -286,7 +286,7 @@ class AuthServiceImplIntegrationTest {
     @Test
     void updateUser_ShouldModifyUserDetails() {
         User user = new User();
-        user.setEmail("update@demo.com");
+        user.setEmail("updated@demo.com");
         user.setPassword(passwordEncoder.encode("oldpassword"));
         user.setRole(UserRole.STUDENT);
         user.setEnabled(false);
@@ -294,7 +294,6 @@ class AuthServiceImplIntegrationTest {
         
         UpdateUserRequest request = new UpdateUserRequest();
         request.setId(user.getId());
-        request.setEmail("updated@demo.com");
         request.setPassword("newpassword");
         request.setRole("INSTRUCTOR");
         request.setEnabled(true);
