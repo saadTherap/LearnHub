@@ -105,13 +105,13 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Override
-    public JwtResponse verifyResetPassword(String email) {
+    public JwtResponse acquireUpdateAccessToken(String email) {
          User user = userService.findByEmail(email);
         
-        log.info("Generating and sending reset password token for user ID: {}", user.getId());
+        log.info("Generating and sending update access token token for user ID: {}", user.getId());
         String token = verificationTokenService.generateAndSendVerificationToken(user);
         
-        log.info("VERIFICATION completed. Sent the reset-password mail for email: {}", email);
+        log.info("VERIFICATION completed. Sent the update access token for email: {}", email);
         
         return new JwtResponse(token);
     }
@@ -162,9 +162,9 @@ public class AuthServiceImpl implements AuthService {
             userToUpdate.setPassword(passwordEncoder.encode(request.getPassword()));
         }
         
-        if (Objects.nonNull(request.getRole())) {
-            log.info("Updating role for user ID: {}", userToUpdate.getId());
-            userToUpdate.setRole(toSystemFormatUserRole(request.getRole()));
+        if (request.isEnabled()) {
+            log.info("Updating account status for user ID: {}", userToUpdate.getId());
+            userToUpdate.setEnabled(request.isEnabled());
         }
         
         log.info("Updating enabled status for user ID: {} to {}", userToUpdate.getId(), request.isEnabled());

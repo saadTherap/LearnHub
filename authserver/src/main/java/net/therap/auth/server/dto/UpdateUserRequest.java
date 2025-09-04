@@ -22,5 +22,5 @@ public class UpdateUserRequest implements Serializable {
     
     private String updateAccessToken; // For pass reset case: Not logged-in
     
-    private String loggedInAccessToken; // For account deletion request by user: logged-in
+    private String loggedInAccessToken; // For account deletion request by user case: logged-in
 }

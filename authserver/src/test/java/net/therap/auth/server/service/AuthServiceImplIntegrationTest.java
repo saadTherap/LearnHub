@@ -300,9 +300,7 @@ class AuthServiceImplIntegrationTest {
         verificationTokenRepository.save(verificationToken);
         
         UpdateUserRequest request = new UpdateUserRequest();
-        request.setId(user.getId());
         request.setPassword("NewDemo@123");
-        request.setRole("INSTRUCTOR");
         request.setEnabled(true);
         request.setUpdateAccessToken(testVerificationToken);
         
@@ -314,7 +312,7 @@ class AuthServiceImplIntegrationTest {
         assertThat(updatedUser).isNotNull();
         assertThat(updatedUser.getEmail()).isEqualTo("updated@demo.com");
         assertThat(passwordEncoder.matches("NewDemo@123", user.getPassword())).isTrue();
-        assertThat(updatedUser.getRole()).isEqualTo(UserRole.INSTRUCTOR);
+        assertThat(updatedUser.getRole()).isEqualTo(UserRole.STUDENT);
         assertThat(updatedUser.isEnabled()).isTrue();
     }
 }

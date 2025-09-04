@@ -1,5 +1,6 @@
 package net.therap.auth.server.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -61,9 +62,11 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
     
-    @PostMapping("/verify-update-user")
-    public ResponseEntity<JwtResponse> verifyUpdateUser(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) {
-        JwtResponse response = authService.verifyResetPassword(resetPasswordRequest.getEmail());
+    @PostMapping("/acquire-update-user-token")
+    @Tag(name = "Update user info token generator", description = "Used when user is not logged in. i.e. forgot " +
+            "password")
+    public ResponseEntity<JwtResponse> acquireUpdateAccessToken(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) {
+        JwtResponse response = authService.acquireUpdateAccessToken(resetPasswordRequest.getEmail());
         
         return ResponseEntity.ok(response);
     }

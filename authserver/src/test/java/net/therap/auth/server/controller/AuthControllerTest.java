@@ -147,9 +147,7 @@ class AuthControllerTest {
     @Test
     void updateUser_ShouldReturnUpdatedUser_Success() throws Exception {
         UpdateUserRequest userToUpdate = new UpdateUserRequest();
-        userToUpdate.setId(2L);
         userToUpdate.setPassword("Demo@123");
-        userToUpdate.setRole(UserRole.INSTRUCTOR.name());
         
         JwtResponse response = new JwtResponse(MessageUtil.getMessage("ok.user.updated"));
         
