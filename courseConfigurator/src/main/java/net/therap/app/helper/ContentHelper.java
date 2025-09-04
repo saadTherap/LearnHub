@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import static java.util.Objects.isNull;
 import static net.therap.app.util.CollectionUtil.isEmptyCollection;
+import static net.therap.app.util.CollectionUtil.isSameQuestions;
 
 /**
  * @author gazizafor
@@ -160,17 +161,7 @@ public class ContentHelper {
             newQuiz.setQuestions(new ArrayList<>());
         }
         
-        if (previousQuiz.getQuestions().size() != newQuiz.getQuestions().size()) {
-            return false;
-        }
-        
-        for(int i = 0; i < previousQuiz.getQuestions().size(); i++) {
-            if (!previousQuiz.getQuestions().get(i).equals(newQuiz.getQuestions().get(i))) {
-                return false;
-            }
-        }
-        
-        return true;
+        return isSameQuestions(previousQuiz.getQuestions(), newQuiz.getQuestions());
     }
     
     private void populateQuestions(Quiz quiz, ContentCatalogueDTO contentCatalogueDTO) {
