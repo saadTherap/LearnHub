@@ -60,4 +60,11 @@ public class AuthController {
         
         return ResponseEntity.ok(response);
     }
+    
+    @PostMapping("/verify-update-user")
+    public ResponseEntity<JwtResponse> verifyUpdateUser(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) {
+        JwtResponse response = authService.verifyResetPassword(resetPasswordRequest.getEmail());
+        
+        return ResponseEntity.ok(response);
+    }
 }

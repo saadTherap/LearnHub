@@ -69,7 +69,7 @@ class AuthServiceImplIntegrationTest {
     void register_ShouldCreateUserAndSendVerificationToken() {
         RegisterRequest request = new RegisterRequest();
         request.setEmail("test@demo.com");
-        request.setPassword("password123");
+        request.setPassword("Demo@123");
         request.setRole("STUDENT");
         
         JwtResponse response = authService.register(request);
@@ -81,21 +81,21 @@ class AuthServiceImplIntegrationTest {
         assertThat(savedUser.getEmail()).isEqualTo("test@demo.com");
         assertThat(savedUser.getRole()).isEqualTo(UserRole.STUDENT);
         assertThat(savedUser.isEnabled()).isFalse();
-        assertThat(passwordEncoder.matches("password123", savedUser.getPassword())).isTrue();
+        assertThat(passwordEncoder.matches("Demo@123", savedUser.getPassword())).isTrue();
     }
     
     @Test
     void login_ShouldReturnTokens_WhenCredentialsValid() {
         User user = new User();
         user.setEmail("login@demo.com");
-        user.setPassword(passwordEncoder.encode("password123"));
+        user.setPassword(passwordEncoder.encode("Demo@123"));
         user.setRole(UserRole.INSTRUCTOR);
         user.setEnabled(true);
         userRepository.save(user);
         
         LoginRequest request = new LoginRequest();
         request.setEmail("login@demo.com");
-        request.setPassword("password123");
+        request.setPassword("Demo@123");
         
         LoginResponse response = authService.login(request);
         
@@ -111,14 +111,14 @@ class AuthServiceImplIntegrationTest {
     void login_ShouldThrow_WhenUserDisabled() {
         User user = new User();
         user.setEmail("disabled@demo.com");
-        user.setPassword(passwordEncoder.encode("password123"));
+        user.setPassword(passwordEncoder.encode("Demo@123"));
         user.setRole(UserRole.STUDENT);
         user.setEnabled(false);
         userRepository.save(user);
         
         LoginRequest request = new LoginRequest();
         request.setEmail("disabled@demo.com");
-        request.setPassword("password123");
+        request.setPassword("Demo@123");
         
         assertThatThrownBy(() -> authService.login(request))
                 .isInstanceOf(AuthServerException.class);
@@ -138,7 +138,7 @@ class AuthServiceImplIntegrationTest {
     void delete_ShouldRemoveUser_WhenValidToken() {
         User user = new User();
         user.setEmail("delete@demo.com");
-        user.setPassword(passwordEncoder.encode("password123"));
+        user.setPassword(passwordEncoder.encode("Demo@123"));
         user.setRole(UserRole.STUDENT);
         user.setEnabled(true);
         user = userRepository.save(user);
@@ -170,7 +170,7 @@ class AuthServiceImplIntegrationTest {
     void refreshToken_ShouldGenerateNewAccessToken_WhenValidRefreshToken() {
         User user = new User();
         user.setEmail("refresh@demo.com");
-        user.setPassword(passwordEncoder.encode("password123"));
+        user.setPassword(passwordEncoder.encode("Demo@123"));
         user.setRole(UserRole.INSTRUCTOR);
         user.setEnabled(true);
         user = userRepository.save(user);
@@ -188,7 +188,7 @@ class AuthServiceImplIntegrationTest {
     void refreshToken_ShouldThrow_WhenUserDisabled() {
         User user = new User();
         user.setEmail("disabled-refresh@demo.com");
-        user.setPassword(passwordEncoder.encode("password123"));
+        user.setPassword(passwordEncoder.encode("Demo@123"));
         user.setRole(UserRole.STUDENT);
         user.setEnabled(false);
         user = userRepository.save(user);
@@ -209,7 +209,7 @@ class AuthServiceImplIntegrationTest {
     void verifyEmail_ShouldEnableUserAndSendRegistrationInfo_WhenValidToken() {
         User user = new User();
         user.setEmail("verify@demo.com");
-        user.setPassword(passwordEncoder.encode("password123"));
+        user.setPassword(passwordEncoder.encode("Demo@123"));
         user.setRole(UserRole.STUDENT);
         user.setEnabled(false);
         user = userRepository.save(user);
@@ -237,7 +237,7 @@ class AuthServiceImplIntegrationTest {
     void verifyEmail_ShouldSendInstructorInfo_WhenInstructorVerifies() {
         User user = new User();
         user.setEmail("instructor@demo.com");
-        user.setPassword(passwordEncoder.encode("password123"));
+        user.setPassword(passwordEncoder.encode("Demo@123"));
         user.setRole(UserRole.INSTRUCTOR);
         user.setEnabled(false);
         user = userRepository.save(user);
@@ -266,7 +266,7 @@ class AuthServiceImplIntegrationTest {
     void verifyEmail_ShouldThrow_WhenTokenExpired() {
         User user = new User();
         user.setEmail("expired@demo.com");
-        user.setPassword(passwordEncoder.encode("password123"));
+        user.setPassword(passwordEncoder.encode("Demo@123"));
         user.setRole(UserRole.STUDENT);
         user.setEnabled(false);
         user = userRepository.save(user);
@@ -287,16 +287,24 @@ class AuthServiceImplIntegrationTest {
     void updateUser_ShouldModifyUserDetails() {
         User user = new User();
         user.setEmail("updated@demo.com");
-        user.setPassword(passwordEncoder.encode("oldpassword"));
+        user.setPassword(passwordEncoder.encode("OldDemo@123"));
         user.setRole(UserRole.STUDENT);
         user.setEnabled(false);
         user = userRepository.save(user);
         
+        String testVerificationToken = "valid-verification-token";
+        VerificationToken verificationToken = new VerificationToken();
+        verificationToken.setToken(testVerificationToken);
+        verificationToken.setUser(user);
+        verificationToken.setExpiryDate(LocalDateTime.now().plusHours(1));
+        verificationTokenRepository.save(verificationToken);
+        
         UpdateUserRequest request = new UpdateUserRequest();
         request.setId(user.getId());
-        request.setPassword("newpassword");
+        request.setPassword("NewDemo@123");
         request.setRole("INSTRUCTOR");
         request.setEnabled(true);
+        request.setUpdateAccessToken(testVerificationToken);
         
         JwtResponse response = authService.updateUser(request);
         
@@ -305,7 +313,7 @@ class AuthServiceImplIntegrationTest {
         User updatedUser = userRepository.findById(user.getId()).orElse(null);
         assertThat(updatedUser).isNotNull();
         assertThat(updatedUser.getEmail()).isEqualTo("updated@demo.com");
-        assertThat(updatedUser.getPassword()).isEqualTo("newpassword");
+        assertThat(passwordEncoder.matches("NewDemo@123", user.getPassword())).isTrue();
         assertThat(updatedUser.getRole()).isEqualTo(UserRole.INSTRUCTOR);
         assertThat(updatedUser.isEnabled()).isTrue();
     }

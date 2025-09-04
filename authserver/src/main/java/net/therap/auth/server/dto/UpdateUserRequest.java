@@ -6,21 +6,21 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * @author apurboturjo
  * @since 8/31/25
  */
 @Data
-public class UpdateUserRequest {
-    
-    @NotNull(message = "{user.id.notNull}")
-    private Long id;
+public class UpdateUserRequest implements Serializable {
     
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*#?&]).{8,}$", message = "{user.password.strong}")
     private String password;
     
-    @NotBlank(message = "{user.role.notblank}")
-    private String role;
-    
     private boolean enabled;
+    
+    private String updateAccessToken; // For pass reset case: Not logged-in
+    
+    private String loggedInAccessToken; // For account deletion request by user: logged-in
 }

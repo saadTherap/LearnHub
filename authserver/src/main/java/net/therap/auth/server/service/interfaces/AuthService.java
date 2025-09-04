@@ -1,5 +1,7 @@
 package net.therap.auth.server.service.interfaces;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import net.therap.auth.server.dto.*;
 
 /**
@@ -19,4 +21,6 @@ public interface AuthService {
     JwtResponse verifyEmail(String token);
     
     JwtResponse delete(DeleteRequest request);
+    
+    JwtResponse verifyResetPassword(String email);
 }

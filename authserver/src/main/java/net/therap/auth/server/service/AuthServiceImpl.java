@@ -28,11 +28,11 @@ import static net.therap.auth.server.util.JwtUtil.toSystemFormatUserRole;
 public class AuthServiceImpl implements AuthService {
     
     private final JwtService jwtService;
-    private final VerificationTokenService verificationTokenService;
-    private final PasswordEncoder passwordEncoder;
     private final UserService userService;
-    private final VerificationTokenRepository verificationTokenRepository;
+    private final PasswordEncoder passwordEncoder;
     private final RegistrationService registrationService;
+    private final VerificationTokenService verificationTokenService;
+    private final VerificationTokenRepository verificationTokenRepository;
     
     @Override
     public JwtResponse register(RegisterRequest request) {
@@ -105,15 +105,15 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Override
-    public JwtResponse updateUser(UpdateUserRequest request) {
-        User user = userService.findById(request.getId());
-        user.setPassword(request.getPassword());
-        user.setRole(toSystemFormatUserRole(request.getRole()));
-        user.setEnabled(request.isEnabled());
+    public JwtResponse verifyResetPassword(String email) {
+         User user = userService.findByEmail(email);
         
-        userService.updateUser(user);
+        log.info("Generating and sending reset password token for user ID: {}", user.getId());
+        String token = verificationTokenService.generateAndSendVerificationToken(user);
         
-        return new JwtResponse(MessageUtil.getMessage("ok.user.updated"));
+        log.info("VERIFICATION completed. Sent the reset-password mail for email: {}", email);
+        
+        return new JwtResponse(token);
     }
     
     @Override
@@ -145,32 +145,51 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Transactional
+    @Override
+    public JwtResponse updateUser(UpdateUserRequest request) {
+        log.info("UPDATE USER request received with updateAccessToken");
+        
+        User userToUpdate = verifyToken(
+                request.getUpdateAccessToken(),
+                "err.token.update.invalid",
+                "err.token.update.expired"
+        );
+        
+        log.info("Updating user details for email: {}", userToUpdate.getEmail());
+        
+        if (Objects.nonNull(request.getPassword())) {
+            log.info("Updating password for user ID: {}", userToUpdate.getId());
+            userToUpdate.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        
+        if (Objects.nonNull(request.getRole())) {
+            log.info("Updating role for user ID: {}", userToUpdate.getId());
+            userToUpdate.setRole(toSystemFormatUserRole(request.getRole()));
+        }
+        
+        log.info("Updating enabled status for user ID: {} to {}", userToUpdate.getId(), request.isEnabled());
+        userToUpdate.setEnabled(request.isEnabled());
+        
+        userService.updateUser(userToUpdate);
+        log.info("User details updated successfully for email: {}", userToUpdate.getEmail());
+        
+        return new JwtResponse(MessageUtil.getMessage("ok.user.updated"));
+    }
+    
+    @Transactional
+    @Override
     public JwtResponse verifyEmail(String token) {
         log.info("EMAIL VERIFICATION request received with token");
         
-        log.info("Looking up verification token in database");
-        VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
-                .orElseThrow(() -> {
-                    log.warn("Invalid verification token provided");
-                    return new AuthServerException(MessageUtil.getMessage("err.token.verify.invalid"));
-                });
+        User userToVerify = verifyToken(
+                token,
+                "err.token.verify.invalid",
+                "err.token.verify.expired"
+        );
         
-        log.info("Verification token found for user ID: {}", verificationToken.getUser().getId());
-        
-        if (verificationToken.isExpired()) {
-            log.warn("Expired verification token provided for user ID: {}", verificationToken.getUser().getId());
-            verificationTokenRepository.delete(verificationToken);
-            throw new AuthServerException(MessageUtil.getMessage("err.token.verify.expired"));
-        }
-        
-        User userToVerify = verificationToken.getUser();
         log.info("Enabling user account for email: {}", userToVerify.getEmail());
         userToVerify.setEnabled(true);
         userService.updateUser(userToVerify);
-        log.info("User account enabled successfully for email: {}", userToVerify.getEmail());
-        
-        log.info("Deleting used verification token for user: {}", userToVerify.getEmail());
-        verificationTokenRepository.delete(verificationToken);
         
         if (userToVerify.getRole() == UserRole.STUDENT) {
             log.info("Sending student registration info for email: {}", userToVerify.getEmail());
@@ -182,8 +201,32 @@ public class AuthServiceImpl implements AuthService {
         }
         
         log.info("EMAIL VERIFICATION completed successfully for email: {}", userToVerify.getEmail());
-        
         return new JwtResponse(MessageUtil.getMessage("ok.email.verified"));
+    }
+    
+    private User verifyToken(String token, String invalidMsgKey, String expiredMsgKey) {
+        log.info("Looking up verification token in database");
+        VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
+                .orElseThrow(() -> {
+                    log.warn("Invalid verification token provided");
+                    return new AuthServerException(MessageUtil.getMessage(invalidMsgKey));
+                });
+        
+        log.info("Verification token found for user ID: {}", verificationToken.getUser().getId());
+        
+        if (verificationToken.isExpired()) {
+            log.warn("Expired verification token provided for user ID: {}", verificationToken.getUser().getId());
+            verificationTokenRepository.delete(verificationToken);
+            
+            throw new AuthServerException(MessageUtil.getMessage(expiredMsgKey));
+        }
+        
+        User user = verificationToken.getUser();
+        
+        log.info("Deleting used verification token for user: {}", user.getEmail());
+        verificationTokenRepository.delete(verificationToken);
+        
+        return user;
     }
     
     private User authenticateUser(String email, String password) {

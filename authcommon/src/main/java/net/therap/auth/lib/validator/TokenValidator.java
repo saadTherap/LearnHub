@@ -102,6 +102,7 @@ public class TokenValidator {
             return Objects.isNull(isLoggedIn);
             
         } catch (Exception e) {
+            log.error("There is an error in finding data from cache.");
             return true;
         }
     }
