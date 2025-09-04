@@ -21,4 +21,6 @@ public interface StudentService {
     StudentDto getStudentByEmail(String email);
 
     boolean deleteStudent(Long id);
+
+    void hardDelete(Long id);
 }

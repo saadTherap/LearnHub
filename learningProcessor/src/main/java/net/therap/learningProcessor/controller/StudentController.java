@@ -133,6 +133,20 @@ public class StudentController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/hard/{id}")
+    public ResponseEntity<Void> hardDeleteStudent(@PathVariable Long id, HttpServletRequest request) {
+        log.info("[StudentController] Hard Delete request for student ID {}", id);
+
+        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID, Map.of("studentId", id), request);
+        log.debug("[StudentController] Authorization successful for hard delete of ID {}", id);
+
+        studentService.hardDelete(id);
+
+        log.info("[StudentController] Student ID {} hard deleted successfully", id);
+
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/email/{email}")
     public ResponseEntity<StudentDto> getStudentByEmail(@PathVariable String email, HttpServletRequest request) {
         log.info("[StudentController] Fetch student by email: {}", email);

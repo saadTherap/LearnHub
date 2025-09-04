@@ -89,4 +89,9 @@ public class StudentServiceImpl implements StudentService {
 
         return true;
     }
+
+    @Override
+    public void hardDelete(Long id) {
+        studentRepository.deleteById(id);
+    }
 }
