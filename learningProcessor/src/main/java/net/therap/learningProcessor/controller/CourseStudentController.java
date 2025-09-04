@@ -13,6 +13,7 @@ import net.therap.learningProcessor.eum.AccessLevel;
 import net.therap.learningProcessor.service.AuthorizationService;
 import net.therap.learningProcessor.service.CourseStudentService;
 import net.therap.learningProcessor.service.NotificationService;
+import net.therap.learningProcessor.service.StudentSubmissionService;
 import net.therap.learningProcessor.util.NotificationUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -247,5 +248,18 @@ public class CourseStudentController {
         }
 
         return ResponseEntity.ok(list);
+    }
+
+
+
+    @PostMapping("/unenroll/student/{studentId}")
+    public ResponseEntity<Void> unenrollFromAllCourse(@PathVariable Long studentId,
+                                                      HttpServletRequest request) {
+
+        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID, Map.of("studentId", studentId), request);
+
+        courseStudentService.deleteAllEnrollments(studentId);
+
+        return ResponseEntity.noContent().build();
     }
 }

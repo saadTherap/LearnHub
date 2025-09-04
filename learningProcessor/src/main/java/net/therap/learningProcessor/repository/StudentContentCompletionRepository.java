@@ -24,4 +24,8 @@ public interface StudentContentCompletionRepository extends JpaRepository<Studen
             "FROM StudentContentCompletion sc " +
             "WHERE sc.student.id = :studentId AND sc.isDeleted = false")
     List<StudentContentCompletionDto> getStudentContentStatusByStudentId(@Param("studentId") Long studentId);
+
+    void deleteAllByStudentId(long studentId);
+
+    void deleteAllByStudentIdAndContentId(long studentId, long contentId);
 }
