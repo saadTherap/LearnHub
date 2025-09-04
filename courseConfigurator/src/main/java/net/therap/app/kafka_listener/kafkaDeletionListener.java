@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -17,9 +18,9 @@ import java.util.Optional;
 public class kafkaDeletionListener {
 
     @Autowired
-    private ProducerConsumerTask  producerConsumerTask;
+    private ProducerConsumerTask producerConsumerTask;
 
-    private final InstructorService  instructorService;
+    private final InstructorService instructorService;
 
     public kafkaDeletionListener(InstructorService instructorService) {
         this.instructorService = instructorService;
@@ -34,8 +35,8 @@ public class kafkaDeletionListener {
 
         Optional<Instructor> instructorOptional = instructorService.getByEmail(email);
 
-        if (!instructorOptional.isPresent()) {
-            throw new IllegalArgumentException("instructor with email " + email + " not found");
+        if (instructorOptional.isEmpty()) {
+            throw new NoSuchElementException("instructor with email " + email + " not found");
         }
 
         instructorService.deleteById(instructorOptional.get().getId());

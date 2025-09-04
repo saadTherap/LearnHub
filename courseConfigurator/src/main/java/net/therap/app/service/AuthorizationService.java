@@ -72,6 +72,7 @@ public class AuthorizationService {
     }
     
     public long getInstructorIdFromRequest(HttpServletRequest request) throws BadRequestException {
+        log.info("[getInstructorIdFromRequest] called");
         UserRequestCache.UserInfo userInfo = parseUserInfoFromRequest(request);
         String email = userInfo.email();
 //        String email = "instructor1@gmail.com";

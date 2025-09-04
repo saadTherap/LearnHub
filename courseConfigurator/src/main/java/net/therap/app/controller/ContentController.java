@@ -299,6 +299,7 @@ public class ContentController {
         Course course = oldContentRelease.getContent().getModule().getCourse();
         
         ContentRelease newContentRelease = createNewContentRelease(oldContentRelease, contentCatalogueDTO);
+        log.info("New content release CREATED: {}", newContentRelease);
         
         if (contentHelper.isValidForPublication(oldContentRelease, newContentRelease)) {
             if (course.getCurrentRelease() == ReleaseStatus.DRAFT.getReleaseNumber()) {
@@ -440,9 +441,8 @@ public class ContentController {
         
         if (original instanceof Lecture) {
             if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("LECTURE")) {
-                throw new BadRequestException();
+                throw new BadRequestException(messageSource.getMessage("content.type.mismatch", null, Locale.getDefault()));
             }
-            
             
             newContentRelease = new Lecture();
             BeanUtils.copyProperties(original, newContentRelease, "id");
@@ -450,7 +450,7 @@ public class ContentController {
             
         } else if (original instanceof Quiz) {
             if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("QUIZ")) {
-                throw new BadRequestException();
+                throw new BadRequestException(messageSource.getMessage("content.type.mismatch", null, Locale.getDefault()));
             }
             
             Quiz originalQuiz = (Quiz) original;
@@ -460,6 +460,7 @@ public class ContentController {
             QuizCatalogDTO quizCatalogDTO = (QuizCatalogDTO) contentCatalogueDTO;
             
             if (quizCatalogDTO.getQuestions() == null) {
+                log.error(messageSource.getMessage("quiz.questions.empty", null, Locale.getDefault()));
                 throw new BadRequestException(messageSource.getMessage("bad.request.publish.content", null, Locale.getDefault()));
             }
 
@@ -490,7 +491,7 @@ public class ContentController {
             
         } else {
             if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("SUBMISSION")) {
-                throw new BadRequestException();
+                throw new BadRequestException(messageSource.getMessage("content.type.mismatch", null, Locale.getDefault()));
             }
             
             newContentRelease = new Submission();
