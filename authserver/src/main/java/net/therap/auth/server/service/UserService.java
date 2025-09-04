@@ -11,6 +11,7 @@ import net.therap.cache.support.HazelcastCacheService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -110,6 +111,11 @@ public class UserService {
     public void forceLogout(Long userId) {
         User user = findById(userId);
         
-        hazelcastCacheService.remove("userEpoch", user.getId());
+        if (Objects.isNull(hazelcastCacheService.get("userEpoch", user.getId()))) {
+            throw new AuthServerException(MessageUtil.getMessage("err.user.notLoggedIn"));
+            
+        } else {
+            hazelcastCacheService.remove("userEpoch", user.getId());
+        }
     }
 }
