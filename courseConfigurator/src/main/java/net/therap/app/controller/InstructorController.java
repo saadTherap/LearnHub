@@ -114,7 +114,7 @@ public class InstructorController {
     @GetMapping("/byEmail/{email}")
     public ResponseEntity<InstructorDtoCatalog> getInstructorByEmail(@PathVariable String email, HttpServletRequest request) throws BadRequestException {
         log.info("[GET] /instructors/byEmail/{}", email);
-        Optional<Instructor> instructorOptional = instructorService.getByEmail(email);
+        Optional<Instructor> instructorOptional = instructorService.getByEmailNonDeleted(email);
         
         if (instructorOptional.isPresent()) {
             authorizationService.authorize(AuthorizationLevel.OWNER, instructorOptional.get(), request);

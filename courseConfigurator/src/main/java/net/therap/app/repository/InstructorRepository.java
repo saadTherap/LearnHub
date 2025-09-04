@@ -21,6 +21,9 @@ public interface InstructorRepository extends JpaRepository<Instructor, Long> {
     List<Instructor> findAll();
 
     @Query("FROM Instructor i WHERE i.email = :email AND i.isDeleted = false")
+    Optional<Instructor> findByEmailNonDeleted(@Param("email") String email);
+    
+    @Query("FROM Instructor i WHERE i.email = :email")
     Optional<Instructor> findByEmail(@Param("email") String email);
     
     boolean existsByEmail(String email);

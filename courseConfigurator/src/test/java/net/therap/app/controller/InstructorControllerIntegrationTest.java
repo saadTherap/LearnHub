@@ -255,7 +255,7 @@ class InstructorControllerIntegrationTest {
         InstructorDtoCatalog dto = new InstructorDtoCatalog();
         dto.setEmail(email);
         
-        when(instructorService.getByEmail(email)).thenReturn(Optional.of(instructor));
+        when(instructorService.getByEmailNonDeleted(email)).thenReturn(Optional.of(instructor));
         doNothing().when(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(instructor),
                                                          any(HttpServletRequest.class));
         when(instructorMapper.toInstructorDtoCatalog(any(Instructor.class))).thenReturn(dto);
@@ -263,7 +263,7 @@ class InstructorControllerIntegrationTest {
         // Act & Assert
         mockMvc.perform(get("/instructors/byEmail/{email}", email)).andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andExpect(jsonPath("$.email").value(email));
         
-        verify(instructorService).getByEmail(email);
+        verify(instructorService).getByEmailNonDeleted(email);
         verify(authorizationService).authorize(eq(AuthorizationLevel.OWNER), eq(instructor),
                                                any(HttpServletRequest.class));
         verify(instructorMapper).toInstructorDtoCatalog(any(Instructor.class));
@@ -273,13 +273,13 @@ class InstructorControllerIntegrationTest {
     void getInstructorByEmail_notFound_shouldReturnNotFoundStatus() throws Exception {
         // Arrange
         String email = "notfound@example.com";
-        when(instructorService.getByEmail(email)).thenReturn(Optional.empty());
+        when(instructorService.getByEmailNonDeleted(email)).thenReturn(Optional.empty());
         when(messageSource.getMessage(eq("not.found.instructor"), any(), any(Locale.class))).thenReturn("Instructor not found");
         
         // Act & Assert
         mockMvc.perform(get("/instructors/byEmail/{email}", email)).andExpect(status().isNotFound()).andExpect(jsonPath("$.message").value("Instructor not found"));
         
-        verify(instructorService).getByEmail(email);
+        verify(instructorService).getByEmailNonDeleted(email);
         verify(messageSource).getMessage(eq("not.found.instructor"), any(), any(Locale.class));
     }
 }
