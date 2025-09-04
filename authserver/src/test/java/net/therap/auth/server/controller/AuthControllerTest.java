@@ -149,7 +149,6 @@ class AuthControllerTest {
         UpdateUserRequest userToUpdate = new UpdateUserRequest();
         userToUpdate.setId(2L);
         userToUpdate.setPassword("Demo@123");
-        userToUpdate.setEmail("updated@gmail.com");
         userToUpdate.setRole(UserRole.INSTRUCTOR.name());
         
         JwtResponse response = new JwtResponse(MessageUtil.getMessage("ok.user.updated"));
