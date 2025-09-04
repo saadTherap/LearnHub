@@ -37,4 +37,8 @@ public interface StudentSubmissionRepository extends JpaRepository<StudentSubmis
         WHERE ss.content_id = :contentId
         """, nativeQuery = true)
     List<StudentSubmission> findLatestSubmissionPerStudentByContentId(@Param("contentId") Long contentId);
+
+    void deleteAllByStudentId(long studentId);
+
+    void deleteAllByStudentIdAndContentId(long studentId, long contentId);
 }
