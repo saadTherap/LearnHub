@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 import static java.util.Objects.isNull;
+import static net.therap.app.util.CollectionUtil.isEmptyCollection;
 import static net.therap.app.util.StringUtil.isEmpty;
 
 /**
@@ -453,13 +454,15 @@ public class ContentController {
                 throw new BadRequestException(messageSource.getMessage("content.type.mismatch", null, Locale.getDefault()));
             }
             
-            Quiz originalQuiz = (Quiz) original;
             Quiz newQuiz = new Quiz();
-            BeanUtils.copyProperties(originalQuiz, newQuiz, "id", "questions");
-
+            
             QuizCatalogDTO quizCatalogDTO = (QuizCatalogDTO) contentCatalogueDTO;
             
-            if (quizCatalogDTO.getQuestions() == null) {
+            if (isEmptyCollection(quizCatalogDTO.getQuestions())) {
+                if (original.getRelease() == ReleaseStatus.DRAFT.getReleaseNumber()) {
+                    return original;
+                }
+                
                 log.error(messageSource.getMessage("quiz.questions.empty", null, Locale.getDefault()));
                 throw new BadRequestException(messageSource.getMessage("bad.request.publish.content", null, Locale.getDefault()));
             }
