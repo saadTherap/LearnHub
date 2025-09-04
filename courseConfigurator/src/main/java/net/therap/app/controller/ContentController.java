@@ -303,6 +303,7 @@ public class ContentController {
         log.info("New content release CREATED: {}", newContentRelease);
         
         if (contentHelper.isValidForPublication(oldContentRelease, newContentRelease)) {
+            log.info("Content is valid for publication");
             if (course.getCurrentRelease() == ReleaseStatus.DRAFT.getReleaseNumber()) {
                 log.info("Publishing a COURSE from draft version: courseId => {}", course.getId());
                 newContentRelease.setRelease(ReleaseStatus.INITIAL_PUBLISHED.getReleaseNumber());
@@ -313,7 +314,9 @@ public class ContentController {
                             course.getCurrentRelease());
                 log.info("Content version: {}", oldContentRelease.getRelease());
                 
-                newContentRelease.setId(0L);
+                if (!newContentRelease.equals(oldContentRelease)) {
+                    newContentRelease.setId(0L);
+                }
                 
                 newContentRelease.setRelease(course.getCurrentRelease() + 1);
                 course.setCurrentRelease(course.getCurrentRelease() + 1);
@@ -449,7 +452,7 @@ public class ContentController {
             BeanUtils.copyProperties(original, newContentRelease, "id");
             lectureMapper.updateLectureFromLectureCatalogDto((LectureCatalogDTO) contentCatalogueDTO, (Lecture) newContentRelease);
             
-        } else if (original instanceof Quiz) {
+        } else if (original instanceof Quiz originalQuiz) {
             if (!isEmpty(contentCatalogueDTO.getType()) && !contentCatalogueDTO.getType().equals("QUIZ")) {
                 throw new BadRequestException(messageSource.getMessage("content.type.mismatch", null, Locale.getDefault()));
             }
@@ -460,7 +463,12 @@ public class ContentController {
             
             if (isEmptyCollection(quizCatalogDTO.getQuestions())) {
                 if (original.getRelease() == ReleaseStatus.DRAFT.getReleaseNumber()) {
-                    return original;
+                    
+                    if (isEmptyCollection(originalQuiz.getQuestions())) {
+                        throw new BadRequestException(messageSource.getMessage("bad.request.publish.content", null, Locale.getDefault()));
+                    }
+                    
+                    return originalQuiz;
                 }
                 
                 log.error(messageSource.getMessage("quiz.questions.empty", null, Locale.getDefault()));
@@ -545,11 +553,13 @@ public class ContentController {
         } else if (original instanceof Submission) {
             newContentRelease = new Submission();
             BeanUtils.copyProperties(original, newContentRelease, "id");
+            
         } else {
             throw new IllegalArgumentException("Unsupported ContentRelease type for deep copy.");
         }
         
         newContentRelease.setId(0L);
+        newContentRelease.setOrderIndex(original.getOrderIndex());
         
         return newContentRelease;
     }
