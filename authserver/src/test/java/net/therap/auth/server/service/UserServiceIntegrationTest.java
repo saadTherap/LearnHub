@@ -6,6 +6,7 @@ import net.therap.auth.server.entity.User;
 import net.therap.auth.server.enums.UserRole;
 import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.respository.UserRepository;
+import net.therap.auth.server.util.MessageUtil;
 import net.therap.cache.support.HazelcastCacheService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,7 +52,7 @@ class UserServiceIntegrationTest {
     void saveUser_ShouldPersistNewUser() {
         User user = new User();
         user.setEmail("test@demo.com");
-        user.setPassword("secret");
+        user.setPassword("Demo@123");
         user.setRole(UserRole.STUDENT);
         
         User saved = userService.saveUser(user);
@@ -72,7 +73,7 @@ class UserServiceIntegrationTest {
     void deleteById_ShouldSoftDeleteAndSendMessage_WhenStudent() {
         User user = new User();
         user.setEmail("stud@demo.com");
-        user.setPassword("1234");
+        user.setPassword("Demo@123");
         user.setRole(UserRole.STUDENT);
         user = userRepository.save(user);
         
@@ -89,7 +90,7 @@ class UserServiceIntegrationTest {
     void toggleUserStatus_ShouldFlipEnabledFlag() {
         User user = new User();
         user.setEmail("flip@demo.com");
-        user.setPassword("123");
+        user.setPassword("Demo@123");
         user.setRole(UserRole.INSTRUCTOR);
         user.setEnabled(false);
         user = userRepository.save(user);
@@ -100,16 +101,16 @@ class UserServiceIntegrationTest {
     }
     
     @Test
-    void forceLogout_ShouldCallHazelcastRemoval() {
+    void forceLogout_ShouldNotCallHazelcastRemovalIfNotForcedLoggedout() {
         User user = new User();
         user.setEmail("logout@demo.com");
-        user.setPassword("pass");
+        user.setPassword("Demo@123");
         user.setRole(UserRole.STUDENT);
         user = userRepository.save(user);
         
-        userService.forceLogout(user.getId());
-        
-        verify(hazelcastCacheService, times(1))
-                .remove("userEpoch", user.getId());
+        User finalUser = user;
+        assertThatThrownBy(() -> userService.forceLogout(finalUser.getId()))
+                .isInstanceOf(AuthServerException.class)
+                .hasMessageContaining(MessageUtil.getMessage("err.user.notLoggedIn"));
     }
 }
