@@ -100,7 +100,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             Long userId = (Long) claims.getClaim(CLAIM_USER_ID);
             String email = (String) claims.getSubject();
             String role = (String) claims.getClaim(CLAIM_USER_ROLE);
-            UserRequestCache.put(userId, email, role);
+            UserRequestCache.put(userId, email, role, token);
             request.setAttribute(CLAIM_USER_ID, userId);
             
             System.out.println("Token validated successfully for user: {} ===> " + email);

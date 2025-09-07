@@ -36,13 +36,6 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
     
-    @PostMapping("/refresh")
-    public ResponseEntity<JwtResponse> refreshToken(@Valid @RequestBody RefreshRequest refreshRequest) {
-        JwtResponse response = authService.refreshToken(refreshRequest.getRefreshToken());
-        
-        return ResponseEntity.ok(response);
-    }
-    
     @GetMapping("/verify-email")
     public ResponseEntity<JwtResponse> verifyEmail(@NotBlank @RequestParam String token) {
         JwtResponse response = authService.verifyEmail(token);
@@ -60,6 +53,15 @@ public class AuthController {
     @PostMapping("/acquire-update-user-token")
     public ResponseEntity<JwtResponse> acquireUpdateAccessToken(@Valid @RequestBody UATAcquireRequest UATAcquireRequest) {
         JwtResponse response = authService.acquireUpdateAccessToken(UATAcquireRequest.getEmail());
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/refresh")
+    public ResponseEntity<JwtResponse> refreshToken(HttpServletRequest servletRequest) {
+        Long userId = (Long) servletRequest.getAttribute(userIdAttributeKey);
+        
+        JwtResponse response = authService.refreshToken(userId);
         
         return ResponseEntity.ok(response);
     }

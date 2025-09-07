@@ -109,11 +109,8 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Override
-    public JwtResponse refreshToken(String refreshToken) {
+    public JwtResponse refreshToken(Long userId) {
         log.info("REFRESH TOKEN request received");
-        
-        Long userId = (Long) servletRequest.getAttribute(userIdAttributeKey);
-        log.info("Extracted user ID from token: {}", userId);
         
         User user = getUser(userId);
         
