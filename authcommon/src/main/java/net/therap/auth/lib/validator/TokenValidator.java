@@ -30,7 +30,7 @@ public class TokenValidator {
     private final HazelcastCacheService hazelcastCacheService;
     private final PublicKeyProvider keyProvider;
     
-    public JWTClaimsSet validate(String token) {
+    public JWTClaimsSet verifySignature(String token) {
         try {
             SignedJWT signedJWT = SignedJWT.parse(token);
             String kid = signedJWT.getHeader().getKeyID();
@@ -44,14 +44,14 @@ public class TokenValidator {
             JWSVerifier verifier = new RSASSAVerifier(publicKey);
             
             if (!signedJWT.verify(verifier)) {
-                throw new AuthenticationException("Token signature verification failed");
+                throw new AuthenticationException("Token is not issued from certified authority");
             }
             log.info("Signature verified successfully");
             
             JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
             validateClaims(claims);
             
-            log.info("Token & Claims validated successfully =>{}", claims);
+            log.info("Token Signature & PublicKeyID validated successfully =>{}", claims);
             log.info("---------------------------------------------------------------------------------------------");
             
             return claims;

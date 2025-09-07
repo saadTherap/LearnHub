@@ -16,7 +16,7 @@ public interface AuthService {
     
     JwtResponse acquireUpdateAccessToken(String email);
     
-    JwtResponse refreshToken(Long userId);
+    JwtResponse refreshToken(String refreshToken);
     
     JwtResponse verifyEmail(String token);
     

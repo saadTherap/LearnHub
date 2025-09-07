@@ -15,8 +15,8 @@ public class UserRequestCache {
     
     public static Map<Long, UserInfo> cache = new ConcurrentHashMap<>();
     
-    public static void put(Long userId, String email, String role, String token) {
-        cache.put(userId, new UserInfo(email, role, token));
+    public static void put(Long userId, String email, String role) {
+        cache.put(userId, new UserInfo(email, role));
     }
     
     public static UserInfo get(Long userId) {
@@ -27,7 +27,7 @@ public class UserRequestCache {
         cache.remove(userId);
     }
     
-    public record UserInfo(String email, String role, String token) {}
+    public record UserInfo(String email, String role) {}
     
     @Scheduled(fixedRate = 24*60*60)
     public void clearCachePeriodical() {

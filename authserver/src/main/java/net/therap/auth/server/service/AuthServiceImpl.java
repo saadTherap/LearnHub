@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 
-import static net.therap.auth.server.util.Constants.userIdAttributeKey;
 import static net.therap.auth.server.util.JwtUtil.toSystemFormatUserRole;
 
 /**
@@ -32,6 +31,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final RegistrationService registrationService;
+    private final RefreshTokenService refreshTokenService;
     private final VerificationTokenService verificationTokenService;
     private final VerificationTokenRepository verificationTokenRepository;
     
@@ -109,19 +109,15 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Override
-    public JwtResponse refreshToken(Long userId) {
+    public JwtResponse refreshToken(String refreshToken) {
         log.info("REFRESH TOKEN request received");
         
-        User user = getUser(userId);
+        User user = refreshTokenService.validate(refreshToken);
+        log.info("Refresh token validation successful for user: {}", user.getEmail());
         
-        if (!user.isEnabled()) {
-            log.warn("Token refresh attempt for disabled user: {}", userId);
-            throw new AuthServerException(MessageUtil.getMessage("err.user.not.enabled"));
-        }
-        
-        log.info("Generating new access token for user: {}", userId);
+        log.info("Generating new access token for user: {}", user.getEmail());
         String accessToken = jwtService.generateAccessToken(user);
-        log.info("New access token generated successfully for user: {}", userId);
+        log.info("New access token generated successfully for user: {}", user.getEmail());
         
         return new JwtResponse(accessToken, refreshToken);
     }

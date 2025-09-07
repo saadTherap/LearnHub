@@ -95,12 +95,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         try {
-            JWTClaimsSet claims = tokenValidator.validate(token);
+            JWTClaimsSet claims = tokenValidator.verifySignature(token);
             
             Long userId = (Long) claims.getClaim(CLAIM_USER_ID);
             String email = (String) claims.getSubject();
             String role = (String) claims.getClaim(CLAIM_USER_ROLE);
-            UserRequestCache.put(userId, email, role, token);
+            UserRequestCache.put(userId, email, role);
             request.setAttribute(CLAIM_USER_ID, userId);
             
             System.out.println("Token validated successfully for user: {} ===> " + email);
