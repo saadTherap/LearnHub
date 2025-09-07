@@ -42,6 +42,4 @@ public abstract class Persistence implements Serializable {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-    
-    
 }

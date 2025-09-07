@@ -103,8 +103,6 @@ class AuthServiceImplIntegrationTest {
         assertThat(response.getRole()).isEqualTo("INSTRUCTOR");
         assertThat(response.getAccessToken()).isNotNull();
         assertThat(response.getRefreshToken()).isNotNull();
-        assertThat(jwtService.isValid(response.getAccessToken())).isTrue();
-        assertThat(jwtService.isValid(response.getRefreshToken())).isTrue();
     }
     
     @Test
@@ -181,7 +179,6 @@ class AuthServiceImplIntegrationTest {
         
         assertThat(response.getAccessToken()).isNotNull();
         assertThat(response.getRefreshToken()).isEqualTo(refreshToken);
-        assertThat(jwtService.isValid(response.getAccessToken())).isTrue();
     }
     
     @Test

@@ -3,6 +3,7 @@ package net.therap.auth.server.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.therap.auth.lib.validator.TokenValidator;
 import net.therap.auth.server.dto.*;
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.entity.VerificationToken;
@@ -88,12 +89,6 @@ public class AuthServiceImpl implements AuthService {
     public JwtResponse delete(DeleteRequest request) {
         log.info("DELETE request received");
         
-        log.info("Validating access token for delete operation");
-        if (!jwtService.isValid(request.getAccessToken())) {
-            log.warn("Invalid access token provided for delete operation");
-            throw new AuthServerException(MessageUtil.getMessage("err.token.access.invalid"));
-        }
-        
         Long userId = jwtService.extractUserId(request.getAccessToken());
         log.info("Extracted user ID from token: {}", userId);
         
@@ -123,12 +118,6 @@ public class AuthServiceImpl implements AuthService {
         log.info("Extracting email from refresh token");
         String email = jwtService.extractEmail(refreshToken);
         log.info("Email extracted from refresh token: {}", email);
-        
-        log.info("Validating refresh token for user: {}", email);
-        if (!jwtService.isValid(refreshToken)) {
-            log.warn("Invalid refresh token provided for user: {}", email);
-            throw new AuthServerException(MessageUtil.getMessage("err.token.refresh.invalid"));
-        }
         
         User user = getUser(email);
         
@@ -176,7 +165,6 @@ public class AuthServiceImpl implements AuthService {
         return new JwtResponse(MessageUtil.getMessage("ok.user.updated"));
     }
     
-    @Transactional
     @Override
     public JwtResponse verifyEmail(String token) {
         log.info("EMAIL VERIFICATION request received with token");

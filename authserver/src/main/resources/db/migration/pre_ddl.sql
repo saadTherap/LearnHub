@@ -62,3 +62,19 @@ CREATE TABLE verification_tokens (
 CREATE INDEX idx_verification_tokens_token ON verification_tokens(token);
 CREATE INDEX idx_verification_tokens_user_id ON verification_tokens(user_id);
 CREATE INDEX idx_verification_tokens_expiry_date ON verification_tokens(expiry_date);
+
+
+CREATE SEQUENCE public_key_seq
+    START WITH 1
+    INCREMENT BY 5
+    CACHE 20;
+
+CREATE TABLE auth_keys (
+    id NUMBER(19) PRIMARY KEY,
+    kid VARCHAR(100) UNIQUE NOT NULL,
+    public_key CLOB NOT NULL,
+    private_key CLOB NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NULL
+);

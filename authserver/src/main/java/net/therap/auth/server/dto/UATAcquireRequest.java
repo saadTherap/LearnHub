@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @since 9/4/25
  */
 @Data
-public class ResetPasswordRequest implements Serializable {
+public class UATAcquireRequest implements Serializable {
     
     @Email(message = "{user.email.invalid}")
     @NotBlank(message = "{user.email.notblank}")
