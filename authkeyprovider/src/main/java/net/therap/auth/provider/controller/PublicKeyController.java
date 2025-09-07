@@ -19,7 +19,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PublicKeyController {
     
-    private final String KEYS = "keys";
+    private final String JWK_MAP_KEY = "keys";
     private final PublicKeyProviderService publicKeyProviderService;
     
     @GetMapping("/pk")
@@ -32,7 +32,7 @@ public class PublicKeyController {
     @GetMapping("/jwks.json")
     public ResponseEntity<Map<String, Object>> getJwks() {
         return ResponseEntity.ok(Map.of(
-                KEYS, publicKeyProviderService.getAllActivePublicKeysAsJWK()
+                JWK_MAP_KEY, publicKeyProviderService.getAllActivePublicKeysAsJWK()
         ));
     }
 }

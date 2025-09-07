@@ -6,14 +6,10 @@ import net.therap.auth.provider.repository.PublicKeyRepository;
 import net.therap.auth.provider.util.JwkUtils;
 import org.springframework.stereotype.Service;
 
-import java.security.KeyFactory;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.stream;
 import static net.therap.auth.provider.util.Constants.KEY_STATUS;
 
 /**

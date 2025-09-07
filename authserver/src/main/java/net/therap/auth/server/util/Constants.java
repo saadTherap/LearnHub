@@ -11,6 +11,7 @@ public class Constants {
     public static final List<String> WHITELIST = List.of(
             "/api/login",
             "/api/register",
+            "/api/refresh",
             "/api/verify-email",
             "/api/acquire-update-user-token",
             "/api/update-user",
@@ -23,7 +24,5 @@ public class Constants {
             "/appStatus"
     );
     
-    private static final List<String> FORCE_FILTER = List.of(
-            "/api/acquire-update-user-token"
-    );
+    public static final String userIdAttributeKey = "userId";
 }

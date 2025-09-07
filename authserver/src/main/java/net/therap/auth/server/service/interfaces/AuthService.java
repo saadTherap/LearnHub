@@ -20,5 +20,5 @@ public interface AuthService {
     
     JwtResponse verifyEmail(String token);
     
-    JwtResponse delete(DeleteRequest request);
+    JwtResponse delete(Long userId);
 }

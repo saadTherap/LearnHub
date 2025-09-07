@@ -3,7 +3,6 @@ package net.therap.auth.server.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.therap.auth.lib.validator.TokenValidator;
 import net.therap.auth.server.dto.*;
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.entity.VerificationToken;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 
+import static net.therap.auth.server.util.Constants.userIdAttributeKey;
 import static net.therap.auth.server.util.JwtUtil.toSystemFormatUserRole;
 
 /**
@@ -86,11 +86,8 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Override
-    public JwtResponse delete(DeleteRequest request) {
+    public JwtResponse delete(Long userId) {
         log.info("DELETE request received");
-        
-        Long userId = jwtService.extractUserId(request.getAccessToken());
-        log.info("Extracted user ID from token: {}", userId);
         
         log.info("Deleting user with ID: {}", userId);
         userService.deleteById(userId);
@@ -115,20 +112,19 @@ public class AuthServiceImpl implements AuthService {
     public JwtResponse refreshToken(String refreshToken) {
         log.info("REFRESH TOKEN request received");
         
-        log.info("Extracting email from refresh token");
-        String email = jwtService.extractEmail(refreshToken);
-        log.info("Email extracted from refresh token: {}", email);
+        Long userId = (Long) servletRequest.getAttribute(userIdAttributeKey);
+        log.info("Extracted user ID from token: {}", userId);
         
-        User user = getUser(email);
+        User user = getUser(userId);
         
         if (!user.isEnabled()) {
-            log.warn("Token refresh attempt for disabled user: {}", email);
+            log.warn("Token refresh attempt for disabled user: {}", userId);
             throw new AuthServerException(MessageUtil.getMessage("err.user.not.enabled"));
         }
         
-        log.info("Generating new access token for user: {}", email);
+        log.info("Generating new access token for user: {}", userId);
         String accessToken = jwtService.generateAccessToken(user);
-        log.info("New access token generated successfully for user: {}", email);
+        log.info("New access token generated successfully for user: {}", userId);
         
         return new JwtResponse(accessToken, refreshToken);
     }
@@ -138,11 +134,7 @@ public class AuthServiceImpl implements AuthService {
     public JwtResponse updateUser(UpdateUserRequest request) {
         log.info("UPDATE USER request received with updateAccessToken");
         
-        User userToUpdate = verifyToken(
-                request.getUpdateAccessToken(),
-                "err.token.update.invalid",
-                "err.token.update.expired"
-        );
+        User userToUpdate = verifyToken(request.getUpdateAccessToken());
         
         log.info("Updating user details for email: {}", userToUpdate.getEmail());
         
@@ -169,11 +161,7 @@ public class AuthServiceImpl implements AuthService {
     public JwtResponse verifyEmail(String token) {
         log.info("EMAIL VERIFICATION request received with token");
         
-        User userToVerify = verifyToken(
-                token,
-                "err.token.verify.invalid",
-                "err.token.verify.expired"
-        );
+        User userToVerify = verifyToken(token);
         
         log.info("Enabling user account for email: {}", userToVerify.getEmail());
         userToVerify.setEnabled(true);
@@ -192,12 +180,12 @@ public class AuthServiceImpl implements AuthService {
         return new JwtResponse(MessageUtil.getMessage("ok.email.verified"));
     }
     
-    private User verifyToken(String token, String invalidMsgKey, String expiredMsgKey) {
+    private User verifyToken(String token) {
         log.info("Looking up verification token in database");
         VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
                 .orElseThrow(() -> {
                     log.warn("Invalid verification token provided");
-                    return new AuthServerException(MessageUtil.getMessage(invalidMsgKey));
+                    return new AuthServerException(MessageUtil.getMessage("err.token.verify.invalid"));
                 });
         
         log.info("Verification token found for user ID: {}", verificationToken.getUser().getId());
@@ -206,7 +194,7 @@ public class AuthServiceImpl implements AuthService {
             log.warn("Expired verification token provided for user ID: {}", verificationToken.getUser().getId());
             verificationTokenRepository.delete(verificationToken);
             
-            throw new AuthServerException(MessageUtil.getMessage(expiredMsgKey));
+            throw new AuthServerException(MessageUtil.getMessage("err.token.verify.expired"));
         }
         
         User user = verificationToken.getUser();
