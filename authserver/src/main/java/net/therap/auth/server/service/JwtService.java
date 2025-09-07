@@ -4,34 +4,23 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.RSASSASigner;
-import com.nimbusds.jose.crypto.RSASSAVerifier;
-import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.annotation.PostConstruct;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.therap.auth.lib.provider.PublicKeyProvider;
 import net.therap.auth.server.entity.AuthKey;
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.util.JwtProperties;
 import net.therap.auth.server.util.JwtUtil;
-import net.therap.auth.server.util.MessageUtil;
 import net.therap.cache.support.HazelcastCacheService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.Date;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -55,7 +44,7 @@ public class JwtService {
         AuthKey activeKey = keyService.getActiveKey();
         this.keyId = activeKey.getKid();
         
-        RSAPrivateKey privateKey = JwtUtil.decodeKey(activeKey.getPrivateKey());
+        RSAPrivateKey privateKey = JwtUtil.getRSAPrivateKey(activeKey.getPrivateKey());
         
         this.signer = new RSASSASigner(privateKey);
         log.info("JWT signer initialized successfully with key ID: {}", keyId);
