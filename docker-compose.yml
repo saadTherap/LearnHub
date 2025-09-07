@@ -110,10 +110,11 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_NUM_PARTITIONS: 3
     volumes:
-      - ./kafka:/kapp-networkafka
+      - ./kafka:/kafka
       - broker1-data:/var/lib/kafka/data
     env_file:
       - ./kafka/cluster-id.env
+
 
   broker-2:
     image: apache/kafka:latest

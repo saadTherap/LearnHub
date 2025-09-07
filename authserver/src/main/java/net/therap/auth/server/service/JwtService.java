@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.auth.lib.provider.PublicKeyProvider;
+import net.therap.auth.server.entity.AuthKey;
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.util.JwtProperties;
@@ -22,10 +23,13 @@ import net.therap.cache.support.HazelcastCacheService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
@@ -40,33 +44,21 @@ import java.util.UUID;
 public class JwtService {
     
     private final JwtProperties jwtProperties;
-    private final UserService userService;
-    private final PublicKeyProvider publicKeyProvider;
     private final HazelcastCacheService hazelcastCacheService;
+    private final AuthKeyService keyService;
     
-    @Value("${jwt.private-key-path}")
-    private String privateKeyPath;
-    
-    @Getter
-    @Value("${jwt.key-id.default-key}")
     private String keyId;
-    
-    private RSAKey rsaKey;
     private JWSSigner signer;
     
     @PostConstruct
     public void loadKeys() throws Exception {
-        RSAPrivateKey privateKey = JwtUtil.getPrivateKey(privateKeyPath);
+        AuthKey activeKey = keyService.getActiveKey();
+        this.keyId = activeKey.getKid();
         
-        RSAPublicKey publicKey = publicKeyProvider.getPublicKey(keyId);
-        
-        this.rsaKey = new RSAKey.Builder(publicKey)
-                .privateKey(privateKey)
-                .keyID(keyId)
-                .build();
+        RSAPrivateKey privateKey = JwtUtil.decodeKey(activeKey.getPrivateKey());
         
         this.signer = new RSASSASigner(privateKey);
-        log.info("JWT keys loaded successfully with key ID: {}", keyId);
+        log.info("JWT signer initialized successfully with key ID: {}", keyId);
     }
     
     public String generateAccessToken(User user) {

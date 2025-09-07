@@ -3,6 +3,7 @@
 -- Cleaning up the Database
 -- DROP TABLE verification_tokens CASCADE CONSTRAINTS;
 -- DROP TABLE users CASCADE CONSTRAINTS;
+-- DROP TABLE auth_keys;
 --
 -- -- Drop sequences
 -- DROP SEQUENCE users_seq;
@@ -71,10 +72,13 @@ CREATE SEQUENCE public_key_seq
 
 CREATE TABLE auth_keys (
     id NUMBER(19) PRIMARY KEY,
-    kid VARCHAR(100) UNIQUE NOT NULL,
+    kid VARCHAR2(100) UNIQUE NOT NULL,
     public_key CLOB NOT NULL,
     private_key CLOB NOT NULL,
-    status VARCHAR(20) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP NULL
+    status VARCHAR2(20) NOT NULL CHECK (status IN ('ACTIVE','INACTIVE','RETIRED')),
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    is_deleted NUMBER(1) DEFAULT 0,
+    version NUMBER(10)
 );

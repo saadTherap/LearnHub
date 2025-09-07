@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.auth.server.entity.AuthKey;
 import net.therap.auth.server.enums.KeyStatus;
+import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.respository.AuthKeyRepository;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +29,6 @@ public class AuthKeyService {
     
     public AuthKey generateAndSaveKeyPair() {
         try {
-            // generate RSA keypair
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
             keyGen.initialize(2048);
             KeyPair pair = keyGen.generateKeyPair();
@@ -43,25 +43,24 @@ public class AuthKeyService {
                     .publicKey(Base64.getEncoder().encodeToString(publicKey.getEncoded()))
                     .privateKey(Base64.getEncoder().encodeToString(privateKey.getEncoded()))
                     .status(KeyStatus.ACTIVE)
-                    .createdAt(Instant.now())
                     .build();
             
             log.info("Generated new RSA keypair with kid={}", kid);
             return authKeyRepository.save(authKey);
             
         } catch (Exception e) {
-            throw new RuntimeException("Key generation failed", e);
+            throw new AuthServerException("Key generation failed", e);
         }
     }
     
     public AuthKey getActiveKey() {
         return authKeyRepository.findByStatus(KeyStatus.ACTIVE)
-                .orElseThrow(() -> new RuntimeException("No active signing key found"));
+                .orElseThrow(() -> new AuthServerException("No active signing key found"));
     }
     
     public void retireKey(String kid) {
         AuthKey key = authKeyRepository.findByKid(kid)
-                .orElseThrow(() -> new RuntimeException("Key not found"));
+                .orElseThrow(() -> new AuthServerException("Key not found"));
         
         key.setStatus(KeyStatus.RETIRED);
         authKeyRepository.save(key);
