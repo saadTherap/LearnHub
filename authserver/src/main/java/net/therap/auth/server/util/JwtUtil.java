@@ -7,8 +7,12 @@ import net.therap.auth.server.exception.AuthServerException;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAKey;
 import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+
+import static net.therap.auth.server.util.Constants.ENC_ALGO;
 
 /**
  * @author apurboturjo
@@ -32,12 +36,18 @@ public class JwtUtil {
         }
     }
     
-    public static RSAKey getRSAKey(String key, String type) throws Exception {
+    public static RSAPrivateKey getRSAPrivateKey(String key) throws Exception {
         byte[] privateBytes = Base64.getDecoder().decode(key);
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateBytes);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
+        KeyFactory kf = KeyFactory.getInstance(ENC_ALGO);
         
-        return "public".equalsIgnoreCase(type) ? (RSAKey) kf.generatePublic(keySpec) :
-                (RSAKey) kf.generatePrivate(keySpec);
+        return (RSAPrivateKey) kf.generatePrivate(keySpec);
+    }
+    
+    public static RSAPublicKey getRSAPublicKey(String base64Key) throws Exception {
+        byte[] keyBytes = Base64.getDecoder().decode(base64Key);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        
+        return (RSAPublicKey) KeyFactory.getInstance(ENC_ALGO).generatePublic(spec);
     }
 }

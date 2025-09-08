@@ -1,6 +1,5 @@
 package net.therap.auth.server.service;
 
-import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -37,7 +36,7 @@ public class RefreshTokenService {
         AuthKey publicKey = authKeyRepository.findByKid(kid)
                 .orElseThrow(() -> new AuthServerException("Key not found with kid:" + kid));
         
-        return (RSAPublicKey) JwtUtil.getRSAKey(publicKey.getPublicKey(), "public");
+        return JwtUtil.getRSAPublicKey(publicKey.getPublicKey());
     }
     
     public User validate(String refreshToken) {

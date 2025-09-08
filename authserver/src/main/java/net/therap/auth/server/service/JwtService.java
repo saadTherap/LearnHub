@@ -87,7 +87,7 @@ public class JwtService {
         AuthKey activeKey = keyService.getActiveKey();
         this.keyId = activeKey.getKid();
         
-        RSAPrivateKey privateKey = (RSAPrivateKey) JwtUtil.getRSAKey(activeKey.getPrivateKey(), "private");
+        RSAPrivateKey privateKey = JwtUtil.getRSAPrivateKey(activeKey.getPrivateKey());
         
         this.signer = new RSASSASigner(privateKey);
         log.info("JWT signer initialized successfully with key ID: {}", keyId);
