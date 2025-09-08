@@ -55,8 +55,8 @@ public class AuthKeyService {
     }
     
     public AuthKey getActiveKey() {
-        return authKeyRepository.findByStatus(KeyStatus.ACTIVE)
-                .orElseThrow(() -> new AuthServerException("No active signing key found"));
+            return authKeyRepository.findFirstByStatusOrderByCreatedAtDesc(KeyStatus.ACTIVE)
+                    .orElseThrow(() -> new AuthServerException("No active signing key found"));
     }
     
     public void retireKey(String kid) {

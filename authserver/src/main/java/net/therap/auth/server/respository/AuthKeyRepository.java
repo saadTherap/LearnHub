@@ -13,5 +13,8 @@ import java.util.Optional;
 public interface AuthKeyRepository extends JpaRepository<AuthKey, Long> {
     
     Optional<AuthKey> findByKid(String kid);
+    
     Optional<AuthKey> findByStatus(KeyStatus status);
+    
+    Optional<AuthKey> findFirstByStatusOrderByCreatedAtDesc(KeyStatus keyStatus);
 }

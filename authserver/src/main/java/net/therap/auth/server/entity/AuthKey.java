@@ -1,8 +1,11 @@
 package net.therap.auth.server.entity;
 
+
+
 import jakarta.persistence.*;
 import lombok.*;
 import net.therap.auth.server.enums.KeyStatus;
+import net.therap.auth.server.entity.interfaces.Persistence;
 
 /**
  * @author apurboturjo
