@@ -1,6 +1,7 @@
 package net.therap.auth.server.service;
 
 import jakarta.transaction.Transactional;
+import net.therap.auth.lib.exception.AuthenticationException;
 import net.therap.auth.server.config.TestServiceConfig;
 import net.therap.auth.server.dto.*;
 import net.therap.auth.server.entity.AuthKey;
@@ -68,6 +69,8 @@ class AuthServiceImplIntegrationTest {
     void setUp() throws Exception {
         userRepository.deleteAll();
         verificationTokenRepository.deleteAll();
+        
+        when(hazelcastCacheService.get(anyString(), anyLong())).thenReturn(true);
     }
     
     @BeforeAll
@@ -203,7 +206,8 @@ class AuthServiceImplIntegrationTest {
     @Test
     void refreshToken_ShouldThrow_WhenInvalidToken() {
         assertThatThrownBy(() -> authService.refreshToken("invalid-refresh-token"))
-                .isInstanceOf(AuthServerException.class);
+                .isInstanceOf(AuthenticationException.class)
+                .hasMessageContaining("Invalid token format");
     }
     
     @Test

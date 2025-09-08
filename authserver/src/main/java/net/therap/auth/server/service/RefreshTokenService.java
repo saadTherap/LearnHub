@@ -49,9 +49,10 @@ public class RefreshTokenService {
     
     private JWTClaimsSet authServerSideValidation(String token) {
         try {
-            
+            log.info("Received token:{}", token);
             SignedJWT signedJWT = SignedJWT.parse(token);
             String kid = signedJWT.getHeader().getKeyID();
+            log.info("Key ID found from REFRESH token:{}", kid);
             
             if (Objects.isNull(kid)) {
                 throw new AuthenticationException("Missing key ID in token header");
@@ -76,11 +77,11 @@ public class RefreshTokenService {
             
         } catch (ParseException e) {
             log.error("Failed to parse JWT token", e);
-            throw new AuthenticationException("Invalid token format", e);
+            throw new AuthenticationException("Invalid token format");
             
         } catch (Exception e) {
             log.error("JOSE processing error", e);
-            throw new AuthenticationException("Token processing error", e);
+            throw new AuthenticationException("Token processing error");
         }
     }
 }

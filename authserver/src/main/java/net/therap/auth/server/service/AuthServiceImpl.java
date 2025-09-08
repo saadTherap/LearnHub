@@ -115,6 +115,10 @@ public class AuthServiceImpl implements AuthService {
         User user = refreshTokenService.validate(refreshToken);
         log.info("Refresh token validation successful for user: {}", user.getEmail());
         
+        if (!user.isEnabled()) {
+            throw new AuthServerException(MessageUtil.getMessage("err.user.not.enabled"));
+        }
+        
         log.info("Generating new access token for user: {}", user.getEmail());
         String accessToken = jwtService.generateAccessToken(user);
         log.info("New access token generated successfully for user: {}", user.getEmail());
