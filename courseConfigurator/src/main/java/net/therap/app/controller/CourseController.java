@@ -200,7 +200,10 @@ public class CourseController {
         log.info("[POST] /courses/draft\nBody: \n{}", courseDTO);
         authorizationService.authorize(AuthorizationLevel.INSTRUCTOR, null, request);
         
-        courseDTO.setInstructorId(authorizationService.getInstructorIdFromRequest(request));
+        long instructorId = authorizationService.getInstructorIdFromRequest(request);
+        log.info("Parsed Instructor id {}", instructorId);
+        
+        courseDTO.setInstructorId(instructorId);
         Course course = courseMapper.toCourse(courseDTO);
         course.setModules(new ArrayList<>());
         course.setCurrentRelease(0L);

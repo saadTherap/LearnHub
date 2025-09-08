@@ -13,6 +13,7 @@ import net.therap.learningProcessor.eum.AccessLevel;
 import net.therap.learningProcessor.service.AuthorizationService;
 import net.therap.learningProcessor.service.CourseStudentService;
 import net.therap.learningProcessor.service.NotificationService;
+import net.therap.learningProcessor.service.StudentSubmissionService;
 import net.therap.learningProcessor.util.NotificationUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -177,13 +178,14 @@ public class CourseStudentController {
     public ResponseEntity<CourseDetailWithProgressDto> getStudentCourseProgressDetail(@PathVariable Long studentId,
                                                                                       @RequestBody CourseDetailWithProgressDto courseDetailWithProgressDto,
                                                                                       HttpServletRequest request) {
-
-        log.info("[CourseStudentController] Fetch detailed course progress for studentId={}, courseId={}", studentId, courseDetailWithProgressDto.getId());
+        Long courseId = courseDetailWithProgressDto.getId();
+        log.info("[CourseStudentController] Fetch detailed course progress for studentId={}, courseId={}", studentId, courseId);
 
         authorizationService.authorize(AccessLevel.STUDENT_WITH_ID, Map.of("studentId", studentId), request);
+        authorizationService.authorize(AccessLevel.STUDENT_ENROLLED_IN_COURSE, Map.of("courseId", courseId), request);
 
         CourseDetailWithProgressDto dto = courseStudentService.getCourseDetailWithProgress(studentId, courseDetailWithProgressDto);
-        log.info("[CourseStudentController] Detailed progress fetched for studentId={}, courseId={}", studentId, courseDetailWithProgressDto.getId());
+        log.info("[CourseStudentController] Detailed progress fetched for studentId={}, courseId={}", studentId, courseId);
 
         return ResponseEntity.ok(dto);
     }
@@ -198,6 +200,7 @@ public class CourseStudentController {
         log.info("[CourseStudentController] Fetch course progress for studentId={}, courseId={}", studentId, courseId);
 
         authorizationService.authorize(AccessLevel.STUDENT_WITH_ID, Map.of("studentId", studentId), request);
+        authorizationService.authorize(AccessLevel.STUDENT_ENROLLED_IN_COURSE, Map.of("courseId", courseId), request);
 
         String cacheKey = studentId + ":" + courseId;
         StudentCourseProgressDto cached = hazelcastCacheService.get(CacheConstants.STUDENT_COURSE_PROGRESS, cacheKey);
@@ -245,5 +248,18 @@ public class CourseStudentController {
         }
 
         return ResponseEntity.ok(list);
+    }
+
+
+
+    @PostMapping("/unenroll/student/{studentId}")
+    public ResponseEntity<Void> unenrollFromAllCourse(@PathVariable Long studentId,
+                                                      HttpServletRequest request) {
+
+        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID, Map.of("studentId", studentId), request);
+
+        courseStudentService.deleteAllEnrollments(studentId);
+
+        return ResponseEntity.noContent().build();
     }
 }

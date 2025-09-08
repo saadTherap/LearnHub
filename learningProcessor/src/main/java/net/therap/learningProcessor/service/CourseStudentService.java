@@ -4,6 +4,7 @@ import net.therap.learningProcessor.dto.CourseDetailWithProgressDto;
 import net.therap.learningProcessor.dto.StudentContentCompletionDto;
 import net.therap.learningProcessor.dto.StudentCourseProgressDto;
 import net.therap.learningProcessor.dto.StudentDto;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -32,4 +33,6 @@ public interface CourseStudentService {
     public StudentCourseProgressDto getStudentCourseProgress(Long studentId, CourseDetailWithProgressDto courseDetailWithProgressDto);
 
     public List<StudentCourseProgressDto> getAllStudentProgressForCourse(CourseDetailWithProgressDto courseDetailWithProgressDto);
+
+    public void deleteAllEnrollments(Long studentId);
 }

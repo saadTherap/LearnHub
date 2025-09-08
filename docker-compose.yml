@@ -30,9 +30,9 @@ services:
       CLAMAV_HOST: clamav
       CLAMAV_PORT: 3310
     volumes:
-      - /home/app-rnd01/storage/FileStorage:/var/lib/secureFileStorage/uploads
+      - /home/app-rnd01/storage/FileStorage:/home/app-rnd01/secureFileStorage/uploads
     networks:
-      - app-network
+      - app-network-updated
 
   clamav:
     image: mkodockx/docker-clamav:alpine
@@ -41,7 +41,7 @@ services:
       - "3310:3310"
     restart: unless-stopped
     networks:
-      - app-network
+      - app-network-updated
 
   course-configurator:
     build:
@@ -175,5 +175,5 @@ volumes:
 
 
 networks:
-  app-network:
+  app-network-updated:
     driver: bridge

@@ -18,6 +18,7 @@ import net.therap.learningProcessor.mapper.StudentMapper;
 import net.therap.learningProcessor.repository.CourseEnrollmentRepository;
 import net.therap.learningProcessor.repository.StudentContentCompletionRepository;
 import net.therap.learningProcessor.repository.StudentRepository;
+import net.therap.learningProcessor.repository.StudentSubmissionRepository;
 import net.therap.learningProcessor.util.CourseProgressUtil;
 import net.therap.learningProcessor.validator.StudentValidator;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,7 @@ public class CourseStudentServiceImpl implements CourseStudentService {
     private final StudentRepository studentRepository;
     private final CourseEnrollmentRepository courseEnrollmentRepository;
     private final StudentContentCompletionRepository studentContentCompletionRepository;
+    private final StudentSubmissionRepository studentSubmissionRepository;
     private final CacheInvalidationUtil cacheInvalidationUtil;
 
     private final StudentValidator studentValidator;
@@ -166,6 +168,15 @@ public class CourseStudentServiceImpl implements CourseStudentService {
         return students.stream()
                 .map(student -> createStudentCourseProgressDto(student, courseDetail))
                 .toList();
+    }
+
+    @Transactional
+    @Override
+    public void deleteAllEnrollments(Long studentId) {
+
+        studentSubmissionRepository.deleteAllByStudentId(studentId);
+        studentContentCompletionRepository.deleteAllByStudentId(studentId);
+        courseEnrollmentRepository.deleteAllByStudentId(studentId);
     }
 
     private List<Student> getEnrolledStudents(Long courseId) {

@@ -72,13 +72,14 @@ public class AuthorizationService {
     }
     
     public long getInstructorIdFromRequest(HttpServletRequest request) throws BadRequestException {
+        log.info("[getInstructorIdFromRequest] called");
         UserRequestCache.UserInfo userInfo = parseUserInfoFromRequest(request);
         String email = userInfo.email();
 //        String email = "instructor1@gmail.com";
-        Optional<Instructor> instructorOptional = instructorRepository.findByEmail(email);
+        Optional<Instructor> instructorOptional = instructorRepository.findByEmailNonDeleted(email);
         
         if (instructorOptional.isEmpty()) {
-            throw new NoSuchElementException(messageSource.getMessage("not.found.instructor", null, Locale.getDefault()));
+            throw new NoSuchElementException(messageSource.getMessage("deleted.instructor", null, Locale.getDefault()));
         }
         
         return instructorOptional.get().getId();
@@ -213,7 +214,7 @@ public class AuthorizationService {
     
     
     private boolean isOwnProfile(Instructor instructor, String userEmail) {
-        Optional<Instructor> instructorOptional = instructorRepository.findByEmail(userEmail);
+        Optional<Instructor> instructorOptional = instructorRepository.findByEmailNonDeleted(userEmail);
         
         return instructorOptional.map(value -> value.equals(instructor)).orElse(false);
     }

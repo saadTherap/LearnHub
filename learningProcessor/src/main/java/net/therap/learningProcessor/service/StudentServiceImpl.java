@@ -89,4 +89,11 @@ public class StudentServiceImpl implements StudentService {
 
         return true;
     }
+
+    @Override
+    @Transactional
+    public void hardDelete(Long id) {
+        studentRepository.deleteById(id);
+        cacheInvalidationUtil.invalidateCachesAfterCommit(id, CacheConstants.STUDENTS);
+    }
 }

@@ -54,12 +54,12 @@ public class ModuleService {
 
     public boolean isPublishable(Module module) {
         for (Content content : module.getContents()) {
-            if (contentService.isPublishable(content)) {
-                return true;
+            if (!contentService.isPublishable(content)) {
+                return false;
             }
         }
         
-        return false;
+        return true;
     }
 
     private void validateContentForReordering(Map<Long,Content> contentMap) throws BadRequestException {
