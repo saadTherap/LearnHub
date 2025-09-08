@@ -95,7 +95,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         try {
-            JWTClaimsSet claims = tokenValidator.verifySignature(token);
+            JWTClaimsSet claims = tokenValidator.validate(token);
             
             Long userId = (Long) claims.getClaim(CLAIM_USER_ID);
             String email = (String) claims.getSubject();

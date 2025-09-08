@@ -25,4 +25,6 @@ public class Constants {
     );
     
     public static final String userIdAttributeKey = "userId";
+    
+    public static final String ENC_ALGO = "RSA";
 }

@@ -39,17 +39,6 @@ public class JwtService {
     private String keyId;
     private JWSSigner signer;
     
-    @PostConstruct
-    public void loadKeys() throws Exception {
-        AuthKey activeKey = keyService.getActiveKey();
-        this.keyId = activeKey.getKid();
-        
-        RSAPrivateKey privateKey = JwtUtil.getRSAPrivateKey(activeKey.getPrivateKey());
-        
-        this.signer = new RSASSASigner(privateKey);
-        log.info("JWT signer initialized successfully with key ID: {}", keyId);
-    }
-    
     public String generateAccessToken(User user) {
         return generateToken(user, jwtProperties.getAccessTokenExpiration(), "access");
     }
@@ -60,6 +49,8 @@ public class JwtService {
     
     private String generateToken(User user, Duration expiration, String tokenType) {
         try {
+            loadKeys();
+            
             Instant now = Instant.now();
             Instant expiry = now.plus(expiration);
             
@@ -91,5 +82,15 @@ public class JwtService {
             log.error("Failed to generate {} token for user: {}", tokenType, user.getEmail(), e);
             throw new AuthServerException("Token generation failed");
         }
+    }
+    
+    private void loadKeys() throws Exception {
+        AuthKey activeKey = keyService.getActiveKey();
+        this.keyId = activeKey.getKid();
+        
+        RSAPrivateKey privateKey = JwtUtil.getRSAPrivateKey(activeKey.getPrivateKey());
+        
+        this.signer = new RSASSASigner(privateKey);
+        log.info("JWT signer initialized successfully with key ID: {}", keyId);
     }
 }

@@ -3,14 +3,17 @@ package net.therap.auth.server.service;
 import jakarta.transaction.Transactional;
 import net.therap.auth.server.config.TestServiceConfig;
 import net.therap.auth.server.dto.*;
+import net.therap.auth.server.entity.AuthKey;
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.entity.VerificationToken;
+import net.therap.auth.server.enums.KeyStatus;
 import net.therap.auth.server.enums.UserRole;
 import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.respository.UserRepository;
 import net.therap.auth.server.respository.VerificationTokenRepository;
 import net.therap.auth.server.service.interfaces.AuthService;
 import net.therap.cache.support.HazelcastCacheService;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +23,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.time.LocalDateTime;
+import java.util.Base64;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 /**
  * @author apurboturjo
@@ -64,6 +69,12 @@ class AuthServiceImplIntegrationTest {
         userRepository.deleteAll();
         verificationTokenRepository.deleteAll();
     }
+    
+    @BeforeAll
+    static void setup(@Autowired AuthKeyService authKeyService) throws Exception {
+        authKeyService.generateAndSaveKeyPair();
+    }
+    
     
     @Test
     void register_ShouldCreateUserAndSendVerificationToken() {
@@ -141,12 +152,7 @@ class AuthServiceImplIntegrationTest {
         user.setEnabled(true);
         user = userRepository.save(user);
         
-        String accessToken = jwtService.generateAccessToken(user);
-        
-        DeleteRequest request = new DeleteRequest();
-        request.setAccessToken(accessToken);
-        
-        JwtResponse response = authService.delete(request);
+        JwtResponse response = authService.delete(user.getId());
         
         assertThat(response.getMessage()).isNotNull();
         
@@ -156,14 +162,13 @@ class AuthServiceImplIntegrationTest {
     }
     
     @Test
-    void delete_ShouldThrow_WhenInvalidToken() {
-        DeleteRequest request = new DeleteRequest();
-        request.setAccessToken("invalid-token");
+    void delete_ShouldThrow_WhenInvalidUserId() {
+        Long invalidUserId = 9999L;
         
-        assertThatThrownBy(() -> authService.delete(request))
+        assertThatThrownBy(() -> authService.delete(invalidUserId))
                 .isInstanceOf(AuthServerException.class);
     }
-    
+
     @Test
     void refreshToken_ShouldGenerateNewAccessToken_WhenValidRefreshToken() {
         User user = new User();

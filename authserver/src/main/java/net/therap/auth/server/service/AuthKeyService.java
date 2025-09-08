@@ -15,6 +15,8 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
 import java.util.UUID;
 
+import static net.therap.auth.server.util.Constants.ENC_ALGO;
+
 /**
  * @author apurboturjo
  * @since 9/7/25
@@ -28,7 +30,7 @@ public class AuthKeyService {
     
     public AuthKey generateAndSaveKeyPair() {
         try {
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance(ENC_ALGO);
             keyGen.initialize(2048);
             KeyPair pair = keyGen.generateKeyPair();
             

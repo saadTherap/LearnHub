@@ -127,7 +127,10 @@ public class AuthServiceImpl implements AuthService {
     public JwtResponse updateUser(UpdateUserRequest request) {
         log.info("UPDATE USER request received with updateAccessToken");
         
-        User userToUpdate = verifyToken(request.getUpdateAccessToken());
+        String token = !request.getUpdateAccessToken().isEmpty() ? request.getUpdateAccessToken() :
+                request.getLoggedInAccessToken();
+        
+        User userToUpdate = verifyToken(token);
         
         log.info("Updating user details for email: {}", userToUpdate.getEmail());
         

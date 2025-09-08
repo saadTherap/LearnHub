@@ -30,7 +30,7 @@ public class TokenValidator {
     private final HazelcastCacheService hazelcastCacheService;
     private final PublicKeyProvider keyProvider;
     
-    public JWTClaimsSet verifySignature(String token) {
+    public JWTClaimsSet validate(String token) {
         try {
             SignedJWT signedJWT = SignedJWT.parse(token);
             String kid = signedJWT.getHeader().getKeyID();
@@ -51,7 +51,7 @@ public class TokenValidator {
             JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
             validateClaims(claims);
             
-            log.info("Token Signature & PublicKeyID validated successfully =>{}", claims);
+            log.info("Token Signature & Claims validated successfully =>{}", claims);
             log.info("---------------------------------------------------------------------------------------------");
             
             return claims;
