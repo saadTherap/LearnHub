@@ -71,6 +71,11 @@ public class AuthServiceImpl implements AuthService {
             throw new AuthServerException(MessageUtil.getMessage("err.user.not.enabled"));
         }
         
+        if (user.isDeleted()) {
+            log.warn("Login attempt for deleted user: {}", request.getEmail());
+            throw new AuthServerException(MessageUtil.getMessage("err.user.deleted"));
+        }
+        
         log.info("Generating JWT token pair for user ID: {}", user.getId());
         JwtResponse jwt = generateTokenPair(user.getId());
         
