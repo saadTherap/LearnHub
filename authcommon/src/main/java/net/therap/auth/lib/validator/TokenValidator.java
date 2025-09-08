@@ -44,14 +44,14 @@ public class TokenValidator {
             JWSVerifier verifier = new RSASSAVerifier(publicKey);
             
             if (!signedJWT.verify(verifier)) {
-                throw new AuthenticationException("Token signature verification failed");
+                throw new AuthenticationException("Token is not issued from certified authority");
             }
             log.info("Signature verified successfully");
             
             JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
             validateClaims(claims);
             
-            log.info("Token & Claims validated successfully =>{}", claims);
+            log.info("Token Signature & Claims validated successfully =>{}", claims);
             log.info("---------------------------------------------------------------------------------------------");
             
             return claims;
@@ -66,7 +66,7 @@ public class TokenValidator {
         }
     }
     
-    private void validateClaims(JWTClaimsSet claims) {
+    public void validateClaims(JWTClaimsSet claims) {
         Date now = Date.from(Instant.now());
         
         Date expirationTime = claims.getExpirationTime();
@@ -93,7 +93,7 @@ public class TokenValidator {
         }
     }
     
-    private boolean isForceLoggedOut(JWTClaimsSet claims) {
+    public boolean isForceLoggedOut(JWTClaimsSet claims) {
         try {
             Long userId = (Long) claims.getClaim("userId");
             
@@ -102,6 +102,7 @@ public class TokenValidator {
             return Objects.isNull(isLoggedIn);
             
         } catch (Exception e) {
+            log.error("There is an error in finding data from cache.");
             return true;
         }
     }

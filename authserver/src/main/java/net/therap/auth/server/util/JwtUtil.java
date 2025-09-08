@@ -4,16 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import net.therap.auth.server.enums.UserRole;
 import net.therap.auth.server.exception.AuthServerException;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
+import java.security.interfaces.RSAKey;
 import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
-import java.util.Objects;
-import java.util.stream.Collectors;
+
+import static net.therap.auth.server.util.Constants.ENC_ALGO;
 
 /**
  * @author apurboturjo
@@ -36,31 +35,19 @@ public class JwtUtil {
             throw new AuthServerException(MessageUtil.getMessage("err.role.invalid"));
         }
     }
-
-
-    public static RSAPrivateKey getPrivateKey(String classpathPath) throws Exception {
-        String key = readKeyFromClasspath(classpathPath, "PRIVATE KEY");
-        byte[] keyBytes = Base64.getDecoder().decode(key);
-        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-
-        return (RSAPrivateKey) kf.generatePrivate(spec);
+    
+    public static RSAPrivateKey getRSAPrivateKey(String key) throws Exception {
+        byte[] privateBytes = Base64.getDecoder().decode(key);
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateBytes);
+        KeyFactory kf = KeyFactory.getInstance(ENC_ALGO);
+        
+        return (RSAPrivateKey) kf.generatePrivate(keySpec);
     }
-
-    private static String readKeyFromClasspath(String path, String keyType) throws Exception {
-        InputStream is = JwtUtil.class.getClassLoader().getResourceAsStream(path);
-
-        if (Objects.isNull(is)) {
-            throw new IllegalArgumentException("Key not found in classpath: " + path);
-        }
-
-        String raw = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
-                .lines()
-                .collect(Collectors.joining());
-
-        return raw
-                .replaceAll("-----BEGIN " + keyType + "-----", "")
-                .replaceAll("-----END " + keyType + "-----", "")
-                .replaceAll("\\s+", "");
+    
+    public static RSAPublicKey getRSAPublicKey(String base64Key) throws Exception {
+        byte[] keyBytes = Base64.getDecoder().decode(base64Key);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        
+        return (RSAPublicKey) KeyFactory.getInstance(ENC_ALGO).generatePublic(spec);
     }
 }

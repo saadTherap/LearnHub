@@ -5,63 +5,42 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.http.HttpServletRequest;
-import net.therap.app.config.JacksonConfig;
 import net.therap.app.constants.CacheConstants;
 import net.therap.app.dto.ContentCatalogueDTO;
 import net.therap.app.dto.ModuleDTO;
 import net.therap.app.dto.ReorderDTO;
 import net.therap.app.exception.GlobalExceptionHandler;
-import net.therap.app.service.AuthorizationService;
 import net.therap.app.helper.DtoHelper;
 import net.therap.app.mapper.ModuleMapper;
 import net.therap.app.model.Content;
 import net.therap.app.model.Course;
 import net.therap.app.model.Module;
 import net.therap.app.model.enums.AuthorizationLevel;
+import net.therap.app.service.AuthorizationService;
 import net.therap.app.service.ContentService;
 import net.therap.app.service.CourseService;
 import net.therap.app.service.ModuleService;
-import net.therap.app.util.CollectionUtil; // Import CollectionUtil
+import net.therap.app.util.CollectionUtil;
 import net.therap.cache.support.HazelcastCacheService;
-import org.apache.coyote.BadRequestException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.MessageSource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
-import static jdk.dynalink.linker.support.Guards.isNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * @author gazizafor

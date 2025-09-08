@@ -9,7 +9,12 @@ import java.util.List;
 public class Constants {
 
     public static final List<String> WHITELIST = List.of(
-            "/api/",
+            "/api/login",
+            "/api/register",
+            "/api/refresh",
+            "/api/verify-email",
+            "/api/acquire-update-user-token",
+            "/api/update-user",
             "/pk",
             "/swagger-ui/",
             "/v3/api-docs",
@@ -18,4 +23,8 @@ public class Constants {
             "/public/",
             "/appStatus"
     );
+    
+    public static final String userIdAttributeKey = "userId";
+    
+    public static final String ENC_ALGO = "RSA";
 }

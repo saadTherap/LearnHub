@@ -4,30 +4,22 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.RSASSASigner;
-import com.nimbusds.jose.crypto.RSASSAVerifier;
-import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import jakarta.annotation.PostConstruct;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.therap.auth.lib.provider.PublicKeyProvider;
+import net.therap.auth.server.entity.AuthKey;
 import net.therap.auth.server.entity.User;
 import net.therap.auth.server.exception.AuthServerException;
 import net.therap.auth.server.util.JwtProperties;
 import net.therap.auth.server.util.JwtUtil;
-import net.therap.auth.server.util.MessageUtil;
 import net.therap.cache.support.HazelcastCacheService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -40,34 +32,11 @@ import java.util.UUID;
 public class JwtService {
     
     private final JwtProperties jwtProperties;
-    private final UserService userService;
-    private final PublicKeyProvider publicKeyProvider;
     private final HazelcastCacheService hazelcastCacheService;
+    private final AuthKeyService keyService;
     
-    @Value("${jwt.private-key-path}")
-    private String privateKeyPath;
-    
-    @Getter
-    @Value("${jwt.key-id.default-key}")
     private String keyId;
-    
-    private RSAKey rsaKey;
     private JWSSigner signer;
-    
-    @PostConstruct
-    public void loadKeys() throws Exception {
-        RSAPrivateKey privateKey = JwtUtil.getPrivateKey(privateKeyPath);
-        
-        RSAPublicKey publicKey = publicKeyProvider.getPublicKey(keyId);
-        
-        this.rsaKey = new RSAKey.Builder(publicKey)
-                .privateKey(privateKey)
-                .keyID(keyId)
-                .build();
-        
-        this.signer = new RSASSASigner(privateKey);
-        log.info("JWT keys loaded successfully with key ID: {}", keyId);
-    }
     
     public String generateAccessToken(User user) {
         return generateToken(user, jwtProperties.getAccessTokenExpiration(), "access");
@@ -77,109 +46,10 @@ public class JwtService {
         return generateToken(user, jwtProperties.getRefreshTokenExpiration(), "refresh");
     }
     
-    public String extractEmail(String token) {
-        try {
-            JWTClaimsSet claims = parseAndValidateToken(token);
-            return claims.getSubject();
-            
-        } catch (Exception e) {
-            log.error("Failed to extract email from token", e);
-            
-            throw new AuthServerException(MessageUtil.getMessage("err.token.refresh.invalid"));
-        }
-    }
-    
-    public Long extractUserId(String token) {
-        try {
-            JWTClaimsSet claims = parseAndValidateToken(token);
-            return claims.getLongClaim("userId");
-            
-        } catch (Exception e) {
-            log.error("Failed to extract user ID from token", e);
-            throw new RuntimeException("Invalid token", e);
-        }
-    }
-    
-    public String extractRole(String token) {
-        try {
-            JWTClaimsSet claims = parseAndValidateToken(token);
-            return claims.getStringClaim("role");
-            
-        } catch (Exception e) {
-            log.error("Failed to extract role from token", e);
-            throw new RuntimeException("Invalid token", e);
-        }
-    }
-    
-    public Date extractExpiration(String token) {
-        try {
-            JWTClaimsSet claims = parseAndValidateToken(token);
-            return claims.getExpirationTime();
-            
-        } catch (Exception e) {
-            log.error("Failed to extract expiration from token", e);
-            throw new RuntimeException("Invalid token", e);
-        }
-    }
-    
-    public boolean isValid(String token) {
-        try {
-            JWTClaimsSet claims = parseAndValidateToken(token);
-            
-            if (isExpired(token)) {
-                log.debug("Token is expired");
-                return false;
-            }
-            
-            String email = claims.getSubject();
-            if (Objects.isNull(email) || email.trim().isEmpty()) {
-                log.debug("Token has no subject (email)");
-                return false;
-            }
-            
-            User user = userService.findByEmail(email);
-            if (Objects.isNull(user)) {
-                log.debug("User not found for email: {}", email);
-                return false;
-            }
-            
-            if (!user.isEnabled()) {
-                log.debug("User is disabled for email: {}", email);
-                return false;
-            }
-            
-            return true;
-            
-        } catch (Exception e) {
-            log.debug("Token validation failed: {}", e.getMessage());
-            return false;
-        }
-    }
-    
-    public boolean isExpired(String token) {
-        try {
-            Date expiration = extractExpiration(token);
-            return expiration.before(new Date());
-            
-        } catch (Exception e) {
-            log.debug("Failed to check token expiration: {}", e.getMessage());
-            return true;
-        }
-    }
-    
-    private JWTClaimsSet parseAndValidateToken(String token) throws Exception {
-        SignedJWT signedJWT = SignedJWT.parse(token);
-        
-        RSASSAVerifier verifier = new RSASSAVerifier(rsaKey.toRSAPublicKey());
-        if (!signedJWT.verify(verifier)) {
-            throw new AuthServerException("Token signature verification failed");
-        }
-        
-        return signedJWT.getJWTClaimsSet();
-    }
-    
     private String generateToken(User user, Duration expiration, String tokenType) {
         try {
+            loadKeys();
+            
             Instant now = Instant.now();
             Instant expiry = now.plus(expiration);
             
@@ -211,5 +81,15 @@ public class JwtService {
             log.error("Failed to generate {} token for user: {}", tokenType, user.getEmail(), e);
             throw new AuthServerException("Token generation failed");
         }
+    }
+    
+    private void loadKeys() throws Exception {
+        AuthKey activeKey = keyService.getActiveKey();
+        this.keyId = activeKey.getKid();
+        
+        RSAPrivateKey privateKey = JwtUtil.getRSAPrivateKey(activeKey.getPrivateKey());
+        
+        this.signer = new RSASSASigner(privateKey);
+        log.info("JWT signer initialized successfully with key ID: {}", keyId);
     }
 }

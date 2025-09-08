@@ -1,5 +1,6 @@
 package net.therap.auth.server.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +8,8 @@ import net.therap.auth.server.dto.*;
 import net.therap.auth.server.service.interfaces.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import static net.therap.auth.server.util.Constants.userIdAttributeKey;
 
 /**
  * @author apurbo
@@ -33,13 +36,6 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
     
-    @DeleteMapping("/delete")
-    public ResponseEntity<JwtResponse> delete(@Valid @RequestBody DeleteRequest request) {
-        JwtResponse response = authService.delete(request);
-        
-        return ResponseEntity.ok(response);
-    }
-    
     @PostMapping("/refresh")
     public ResponseEntity<JwtResponse> refreshToken(@Valid @RequestBody RefreshRequest refreshRequest) {
         JwtResponse response = authService.refreshToken(refreshRequest.getRefreshToken());
@@ -57,6 +53,22 @@ public class AuthController {
     @PutMapping("/update-user")
     public ResponseEntity<JwtResponse> updateUser(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
         JwtResponse response = authService.updateUser(updateUserRequest);
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    @PostMapping("/acquire-update-user-token")
+    public ResponseEntity<JwtResponse> acquireUpdateAccessToken(@Valid @RequestBody UATAcquireRequest UATAcquireRequest) {
+        JwtResponse response = authService.acquireUpdateAccessToken(UATAcquireRequest.getEmail());
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    @DeleteMapping("/delete")
+    public ResponseEntity<JwtResponse> delete(HttpServletRequest servletRequest) {
+        Long userId = (Long) servletRequest.getAttribute(userIdAttributeKey);
+        
+        JwtResponse response = authService.delete(userId);
         
         return ResponseEntity.ok(response);
     }

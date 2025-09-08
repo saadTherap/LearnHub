@@ -1,312 +1,323 @@
-// package net.therap.auth.server.service;
+package net.therap.auth.server.service;
 
-// import jakarta.transaction.Transactional;
-// import net.therap.auth.server.config.TestServiceConfig;
-// import net.therap.auth.server.dto.*;
-// import net.therap.auth.server.entity.User;
-// import net.therap.auth.server.entity.VerificationToken;
-// import net.therap.auth.server.enums.UserRole;
-// import net.therap.auth.server.exception.AuthServerException;
-// import net.therap.auth.server.respository.UserRepository;
-// import net.therap.auth.server.respository.VerificationTokenRepository;
-// import net.therap.auth.server.service.interfaces.AuthService;
-// import net.therap.cache.support.HazelcastCacheService;
-// import org.junit.jupiter.api.BeforeEach;
-// import org.junit.jupiter.api.Test;
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.boot.test.context.SpringBootTest;
-// import org.springframework.context.annotation.Import;
-// import org.springframework.security.crypto.password.PasswordEncoder;
-// import org.springframework.test.context.ActiveProfiles;
-// import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import jakarta.transaction.Transactional;
+import net.therap.auth.lib.exception.AuthenticationException;
+import net.therap.auth.server.config.TestServiceConfig;
+import net.therap.auth.server.dto.*;
+import net.therap.auth.server.entity.AuthKey;
+import net.therap.auth.server.entity.User;
+import net.therap.auth.server.entity.VerificationToken;
+import net.therap.auth.server.enums.KeyStatus;
+import net.therap.auth.server.enums.UserRole;
+import net.therap.auth.server.exception.AuthServerException;
+import net.therap.auth.server.respository.UserRepository;
+import net.therap.auth.server.respository.VerificationTokenRepository;
+import net.therap.auth.server.service.interfaces.AuthService;
+import net.therap.cache.support.HazelcastCacheService;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-// import java.time.LocalDateTime;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.time.LocalDateTime;
+import java.util.Base64;
 
-// import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-// import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-// import static org.junit.jupiter.api.Assertions.assertNotNull;
-// import static org.mockito.Mockito.times;
-// import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.*;
 
-// /**
-//  * @author apurboturjo
-//  * @since 9/1/25
-//  */
-// @SpringBootTest
-// @Transactional
-// @ActiveProfiles("test")
-// @Import(TestServiceConfig.class)
-// class AuthServiceImplIntegrationTest {
+/**
+ * @author apurboturjo
+ * @since 9/1/25
+ */
+@SpringBootTest
+@Transactional
+@ActiveProfiles("test")
+@Import(TestServiceConfig.class)
+class AuthServiceImplIntegrationTest {
     
-//     @MockitoBean
-//     private RegistrationService registrationService;
+    @MockitoBean
+    private RegistrationService registrationService;
     
-//     @Autowired
-//     private JwtService jwtService;
+    @Autowired
+    private JwtService jwtService;
     
-//     @MockitoBean
-//     private HazelcastCacheService hazelcastCacheService;
+    @MockitoBean
+    private HazelcastCacheService hazelcastCacheService;
     
-//     @Autowired
-//     private AuthService authService;
+    @Autowired
+    private AuthService authService;
     
-//     @Autowired
-//     private UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
     
-//     @Autowired
-//     private VerificationTokenRepository verificationTokenRepository;
+    @Autowired
+    private VerificationTokenRepository verificationTokenRepository;
     
-//     @Autowired
-//     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     
-//     @BeforeEach
-//     void setUp() throws Exception {
-//         userRepository.deleteAll();
-//         verificationTokenRepository.deleteAll();
-//     }
+    @BeforeEach
+    void setUp() throws Exception {
+        userRepository.deleteAll();
+        verificationTokenRepository.deleteAll();
+        
+        when(hazelcastCacheService.get(anyString(), anyLong())).thenReturn(true);
+    }
     
-//     @Test
-//     void register_ShouldCreateUserAndSendVerificationToken() {
-//         RegisterRequest request = new RegisterRequest();
-//         request.setEmail("test@demo.com");
-//         request.setPassword("password123");
-//         request.setRole("STUDENT");
-        
-//         JwtResponse response = authService.register(request);
-        
-//         assertThat(response.getMessage()).isNotNull();
-        
-//         User savedUser = userRepository.findByEmail("test@demo.com");
-//         assertThat(savedUser).isNotNull();
-//         assertThat(savedUser.getEmail()).isEqualTo("test@demo.com");
-//         assertThat(savedUser.getRole()).isEqualTo(UserRole.STUDENT);
-//         assertThat(savedUser.isEnabled()).isFalse();
-//         assertThat(passwordEncoder.matches("password123", savedUser.getPassword())).isTrue();
-//     }
+    @BeforeAll
+    static void setup(@Autowired AuthKeyService authKeyService) throws Exception {
+        authKeyService.generateAndSaveKeyPair();
+    }
     
-//     @Test
-//     void login_ShouldReturnTokens_WhenCredentialsValid() {
-//         User user = new User();
-//         user.setEmail("login@demo.com");
-//         user.setPassword(passwordEncoder.encode("password123"));
-//         user.setRole(UserRole.INSTRUCTOR);
-//         user.setEnabled(true);
-//         userRepository.save(user);
+    @Test
+    void register_ShouldCreateUserAndSendVerificationToken() {
+        RegisterRequest request = new RegisterRequest();
+        request.setEmail("test@demo.com");
+        request.setPassword("Demo@123");
+        request.setRole("STUDENT");
         
-//         LoginRequest request = new LoginRequest();
-//         request.setEmail("login@demo.com");
-//         request.setPassword("password123");
+        JwtResponse response = authService.register(request);
         
-//         LoginResponse response = authService.login(request);
+        assertThat(response.getMessage()).isNotNull();
         
-//         assertThat(response.getEmail()).isEqualTo("login@demo.com");
-//         assertThat(response.getRole()).isEqualTo("INSTRUCTOR");
-//         assertThat(response.getAccessToken()).isNotNull();
-//         assertThat(response.getRefreshToken()).isNotNull();
-//         assertThat(jwtService.isValid(response.getAccessToken())).isTrue();
-//         assertThat(jwtService.isValid(response.getRefreshToken())).isTrue();
-//     }
+        User savedUser = userRepository.findByEmail("test@demo.com");
+        assertThat(savedUser).isNotNull();
+        assertThat(savedUser.getEmail()).isEqualTo("test@demo.com");
+        assertThat(savedUser.getRole()).isEqualTo(UserRole.STUDENT);
+        assertThat(savedUser.isEnabled()).isFalse();
+        assertThat(passwordEncoder.matches("Demo@123", savedUser.getPassword())).isTrue();
+    }
     
-//     @Test
-//     void login_ShouldThrow_WhenUserDisabled() {
-//         User user = new User();
-//         user.setEmail("disabled@demo.com");
-//         user.setPassword(passwordEncoder.encode("password123"));
-//         user.setRole(UserRole.STUDENT);
-//         user.setEnabled(false);
-//         userRepository.save(user);
+    @Test
+    void login_ShouldReturnTokens_WhenCredentialsValid() {
+        User user = new User();
+        user.setEmail("login@demo.com");
+        user.setPassword(passwordEncoder.encode("Demo@123"));
+        user.setRole(UserRole.INSTRUCTOR);
+        user.setEnabled(true);
+        userRepository.save(user);
         
-//         LoginRequest request = new LoginRequest();
-//         request.setEmail("disabled@demo.com");
-//         request.setPassword("password123");
+        LoginRequest request = new LoginRequest();
+        request.setEmail("login@demo.com");
+        request.setPassword("Demo@123");
         
-//         assertThatThrownBy(() -> authService.login(request))
-//                 .isInstanceOf(AuthServerException.class);
-//     }
+        LoginResponse response = authService.login(request);
+        
+        assertThat(response.getEmail()).isEqualTo("login@demo.com");
+        assertThat(response.getRole()).isEqualTo("INSTRUCTOR");
+        assertThat(response.getAccessToken()).isNotNull();
+        assertThat(response.getRefreshToken()).isNotNull();
+    }
     
-//     @Test
-//     void login_ShouldThrow_WhenInvalidCredentials() {
-//         LoginRequest request = new LoginRequest();
-//         request.setEmail("nonexistent@demo.com");
-//         request.setPassword("wrongpassword");
+    @Test
+    void login_ShouldThrow_WhenUserDisabled() {
+        User user = new User();
+        user.setEmail("disabled@demo.com");
+        user.setPassword(passwordEncoder.encode("Demo@123"));
+        user.setRole(UserRole.STUDENT);
+        user.setEnabled(false);
+        userRepository.save(user);
         
-//         assertThatThrownBy(() -> authService.login(request))
-//                 .isInstanceOf(AuthServerException.class);
-//     }
+        LoginRequest request = new LoginRequest();
+        request.setEmail("disabled@demo.com");
+        request.setPassword("Demo@123");
+        
+        assertThatThrownBy(() -> authService.login(request))
+                .isInstanceOf(AuthServerException.class);
+    }
     
-//     @Test
-//     void delete_ShouldRemoveUser_WhenValidToken() {
-//         User user = new User();
-//         user.setEmail("delete@demo.com");
-//         user.setPassword(passwordEncoder.encode("password123"));
-//         user.setRole(UserRole.STUDENT);
-//         user.setEnabled(true);
-//         user = userRepository.save(user);
+    @Test
+    void login_ShouldThrow_WhenInvalidCredentials() {
+        LoginRequest request = new LoginRequest();
+        request.setEmail("nonexistent@demo.com");
+        request.setPassword("wrongpassword");
         
-//         String accessToken = jwtService.generateAccessToken(user);
-        
-//         DeleteRequest request = new DeleteRequest();
-//         request.setAccessToken(accessToken);
-        
-//         JwtResponse response = authService.delete(request);
-        
-//         assertThat(response.getMessage()).isNotNull();
-        
-//         User deletedUser = userRepository.findById(user.getId()).orElse(null);
-//         assertNotNull(deletedUser);
-//         assertThat(deletedUser.isDeleted()).isTrue();
-//     }
+        assertThatThrownBy(() -> authService.login(request))
+                .isInstanceOf(AuthServerException.class);
+    }
     
-//     @Test
-//     void delete_ShouldThrow_WhenInvalidToken() {
-//         DeleteRequest request = new DeleteRequest();
-//         request.setAccessToken("invalid-token");
+    @Test
+    void delete_ShouldRemoveUser_WhenValidToken() {
+        User user = new User();
+        user.setEmail("delete@demo.com");
+        user.setPassword(passwordEncoder.encode("Demo@123"));
+        user.setRole(UserRole.STUDENT);
+        user.setEnabled(true);
+        user = userRepository.save(user);
         
-//         assertThatThrownBy(() -> authService.delete(request))
-//                 .isInstanceOf(AuthServerException.class);
-//     }
+        JwtResponse response = authService.delete(user.getId());
+        
+        assertThat(response.getMessage()).isNotNull();
+        
+        User deletedUser = userRepository.findById(user.getId()).orElse(null);
+        assertNotNull(deletedUser);
+        assertThat(deletedUser.isDeleted()).isTrue();
+    }
     
-//     @Test
-//     void refreshToken_ShouldGenerateNewAccessToken_WhenValidRefreshToken() {
-//         User user = new User();
-//         user.setEmail("refresh@demo.com");
-//         user.setPassword(passwordEncoder.encode("password123"));
-//         user.setRole(UserRole.INSTRUCTOR);
-//         user.setEnabled(true);
-//         user = userRepository.save(user);
+    @Test
+    void delete_ShouldThrow_WhenInvalidUserId() {
+        Long invalidUserId = 9999L;
         
-//         String refreshToken = jwtService.generateRefreshToken(user);
+        assertThatThrownBy(() -> authService.delete(invalidUserId))
+                .isInstanceOf(AuthServerException.class);
+    }
+
+    @Test
+    void refreshToken_ShouldGenerateNewAccessToken_WhenValidRefreshToken() {
+        User user = new User();
+        user.setEmail("refresh@demo.com");
+        user.setPassword(passwordEncoder.encode("Demo@123"));
+        user.setRole(UserRole.INSTRUCTOR);
+        user.setEnabled(true);
+        user = userRepository.save(user);
         
-//         JwtResponse response = authService.refreshToken(refreshToken);
+        String refreshToken = jwtService.generateRefreshToken(user);
         
-//         assertThat(response.getAccessToken()).isNotNull();
-//         assertThat(response.getRefreshToken()).isEqualTo(refreshToken);
-//         assertThat(jwtService.isValid(response.getAccessToken())).isTrue();
-//     }
+        JwtResponse response = authService.refreshToken(refreshToken);
+        
+        assertThat(response.getAccessToken()).isNotNull();
+        assertThat(response.getRefreshToken()).isEqualTo(refreshToken);
+    }
     
-//     @Test
-//     void refreshToken_ShouldThrow_WhenUserDisabled() {
-//         User user = new User();
-//         user.setEmail("disabled-refresh@demo.com");
-//         user.setPassword(passwordEncoder.encode("password123"));
-//         user.setRole(UserRole.STUDENT);
-//         user.setEnabled(false);
-//         user = userRepository.save(user);
+    @Test
+    void refreshToken_ShouldThrow_WhenUserDisabled() {
+        User user = new User();
+        user.setEmail("disabled-refresh@demo.com");
+        user.setPassword(passwordEncoder.encode("Demo@123"));
+        user.setRole(UserRole.STUDENT);
+        user.setEnabled(false);
+        user = userRepository.save(user);
         
-//         String refreshToken = jwtService.generateRefreshToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
         
-//         assertThatThrownBy(() -> authService.refreshToken(refreshToken))
-//                 .isInstanceOf(AuthServerException.class);
-//     }
+        assertThatThrownBy(() -> authService.refreshToken(refreshToken))
+                .isInstanceOf(AuthServerException.class);
+    }
     
-//     @Test
-//     void refreshToken_ShouldThrow_WhenInvalidToken() {
-//         assertThatThrownBy(() -> authService.refreshToken("invalid-refresh-token"))
-//                 .isInstanceOf(AuthServerException.class);
-//     }
+    @Test
+    void refreshToken_ShouldThrow_WhenInvalidToken() {
+        assertThatThrownBy(() -> authService.refreshToken("invalid-refresh-token"))
+                .isInstanceOf(AuthenticationException.class)
+                .hasMessageContaining("Invalid token format");
+    }
     
-//     @Test
-//     void verifyEmail_ShouldEnableUserAndSendRegistrationInfo_WhenValidToken() {
-//         User user = new User();
-//         user.setEmail("verify@demo.com");
-//         user.setPassword(passwordEncoder.encode("password123"));
-//         user.setRole(UserRole.STUDENT);
-//         user.setEnabled(false);
-//         user = userRepository.save(user);
+    @Test
+    void verifyEmail_ShouldEnableUserAndSendRegistrationInfo_WhenValidToken() {
+        User user = new User();
+        user.setEmail("verify@demo.com");
+        user.setPassword(passwordEncoder.encode("Demo@123"));
+        user.setRole(UserRole.STUDENT);
+        user.setEnabled(false);
+        user = userRepository.save(user);
         
-//         VerificationToken verificationToken = new VerificationToken();
-//         verificationToken.setToken("valid-verification-token");
-//         verificationToken.setUser(user);
-//         verificationToken.setExpiryDate(LocalDateTime.now().plusHours(1));
-//         verificationTokenRepository.save(verificationToken);
+        VerificationToken verificationToken = new VerificationToken();
+        verificationToken.setToken("valid-verification-token");
+        verificationToken.setUser(user);
+        verificationToken.setExpiryDate(LocalDateTime.now().plusHours(1));
+        verificationTokenRepository.save(verificationToken);
         
-//         JwtResponse response = authService.verifyEmail("valid-verification-token");
+        JwtResponse response = authService.verifyEmail("valid-verification-token");
         
-//         assertThat(response.getMessage()).isNotNull();
+        assertThat(response.getMessage()).isNotNull();
         
-//         User verifiedUser = userRepository.findByEmail("verify@demo.com");
-//         assertThat(verifiedUser.isEnabled()).isTrue();
+        User verifiedUser = userRepository.findByEmail("verify@demo.com");
+        assertThat(verifiedUser.isEnabled()).isTrue();
         
-//         assertThat(verificationTokenRepository.findByToken("valid-verification-token")).isEmpty();
+        assertThat(verificationTokenRepository.findByToken("valid-verification-token")).isEmpty();
         
-//         verify(registrationService, times(1))
-//                 .sendStudentRegistrationInfo("verify@demo.com");
-//     }
+        verify(registrationService, times(1))
+                .sendStudentRegistrationInfo("verify@demo.com");
+    }
     
-//     @Test
-//     void verifyEmail_ShouldSendInstructorInfo_WhenInstructorVerifies() {
-//         User user = new User();
-//         user.setEmail("instructor@demo.com");
-//         user.setPassword(passwordEncoder.encode("password123"));
-//         user.setRole(UserRole.INSTRUCTOR);
-//         user.setEnabled(false);
-//         user = userRepository.save(user);
+    @Test
+    void verifyEmail_ShouldSendInstructorInfo_WhenInstructorVerifies() {
+        User user = new User();
+        user.setEmail("instructor@demo.com");
+        user.setPassword(passwordEncoder.encode("Demo@123"));
+        user.setRole(UserRole.INSTRUCTOR);
+        user.setEnabled(false);
+        user = userRepository.save(user);
         
-//         VerificationToken verificationToken = new VerificationToken();
-//         verificationToken.setToken("instructor-verification-token");
-//         verificationToken.setUser(user);
-//         verificationToken.setExpiryDate(LocalDateTime.now().plusHours(1));
-//         verificationTokenRepository.save(verificationToken);
+        VerificationToken verificationToken = new VerificationToken();
+        verificationToken.setToken("instructor-verification-token");
+        verificationToken.setUser(user);
+        verificationToken.setExpiryDate(LocalDateTime.now().plusHours(1));
+        verificationTokenRepository.save(verificationToken);
         
-//         JwtResponse response = authService.verifyEmail("instructor-verification-token");
+        JwtResponse response = authService.verifyEmail("instructor-verification-token");
         
-//         assertThat(response.getMessage()).isNotNull();
+        assertThat(response.getMessage()).isNotNull();
         
-//         verify(registrationService, times(1))
-//                 .sendInstructorRegistrationInfo("instructor@demo.com");
-//     }
+        verify(registrationService, times(1))
+                .sendInstructorRegistrationInfo("instructor@demo.com");
+    }
     
-//     @Test
-//     void verifyEmail_ShouldThrow_WhenTokenNotFound() {
-//         assertThatThrownBy(() -> authService.verifyEmail("nonexistent-token"))
-//                 .isInstanceOf(AuthServerException.class);
-//     }
+    @Test
+    void verifyEmail_ShouldThrow_WhenTokenNotFound() {
+        assertThatThrownBy(() -> authService.verifyEmail("nonexistent-token"))
+                .isInstanceOf(AuthServerException.class);
+    }
     
-//     @Test
-//     void verifyEmail_ShouldThrow_WhenTokenExpired() {
-//         User user = new User();
-//         user.setEmail("expired@demo.com");
-//         user.setPassword(passwordEncoder.encode("password123"));
-//         user.setRole(UserRole.STUDENT);
-//         user.setEnabled(false);
-//         user = userRepository.save(user);
+    @Test
+    void verifyEmail_ShouldThrow_WhenTokenExpired() {
+        User user = new User();
+        user.setEmail("expired@demo.com");
+        user.setPassword(passwordEncoder.encode("Demo@123"));
+        user.setRole(UserRole.STUDENT);
+        user.setEnabled(false);
+        user = userRepository.save(user);
         
-//         VerificationToken expiredToken = new VerificationToken();
-//         expiredToken.setToken("expired-token");
-//         expiredToken.setUser(user);
-//         expiredToken.setExpiryDate(LocalDateTime.now().minusHours(1));
-//         verificationTokenRepository.save(expiredToken);
+        VerificationToken expiredToken = new VerificationToken();
+        expiredToken.setToken("expired-token");
+        expiredToken.setUser(user);
+        expiredToken.setExpiryDate(LocalDateTime.now().minusHours(1));
+        verificationTokenRepository.save(expiredToken);
         
-//         assertThatThrownBy(() -> authService.verifyEmail("expired-token"))
-//                 .isInstanceOf(AuthServerException.class);
+        assertThatThrownBy(() -> authService.verifyEmail("expired-token"))
+                .isInstanceOf(AuthServerException.class);
         
-//         assertThat(verificationTokenRepository.findByToken("expired-token")).isEmpty();
-//     }
+        assertThat(verificationTokenRepository.findByToken("expired-token")).isEmpty();
+    }
     
-//     @Test
-//     void updateUser_ShouldModifyUserDetails() {
-//         User user = new User();
-//         user.setEmail("updated@demo.com");
-//         user.setPassword(passwordEncoder.encode("oldpassword"));
-//         user.setRole(UserRole.STUDENT);
-//         user.setEnabled(false);
-//         user = userRepository.save(user);
+    @Test
+    void updateUser_ShouldModifyUserDetails() {
+        User user = new User();
+        user.setEmail("updated@demo.com");
+        user.setPassword(passwordEncoder.encode("OldDemo@123"));
+        user.setRole(UserRole.STUDENT);
+        user.setEnabled(false);
+        user = userRepository.save(user);
         
-//         UpdateUserRequest request = new UpdateUserRequest();
-//         request.setId(user.getId());
-//         request.setPassword("newpassword");
-//         request.setRole("INSTRUCTOR");
-//         request.setEnabled(true);
+        String testVerificationToken = "valid-verification-token";
+        VerificationToken verificationToken = new VerificationToken();
+        verificationToken.setToken(testVerificationToken);
+        verificationToken.setUser(user);
+        verificationToken.setExpiryDate(LocalDateTime.now().plusHours(1));
+        verificationTokenRepository.save(verificationToken);
         
-//         JwtResponse response = authService.updateUser(request);
+        UpdateUserRequest request = new UpdateUserRequest();
+        request.setPassword("NewDemo@123");
+        request.setEnabled(true);
+        request.setUpdateAccessToken(testVerificationToken);
         
-//         assertThat(response.getMessage()).isNotNull();
+        JwtResponse response = authService.updateUser(request);
         
-//         User updatedUser = userRepository.findById(user.getId()).orElse(null);
-//         assertThat(updatedUser).isNotNull();
-//         assertThat(updatedUser.getEmail()).isEqualTo("updated@demo.com");
-//         assertThat(updatedUser.getPassword()).isEqualTo("newpassword");
-//         assertThat(updatedUser.getRole()).isEqualTo(UserRole.INSTRUCTOR);
-//         assertThat(updatedUser.isEnabled()).isTrue();
-//     }
-// }
+        assertThat(response.getMessage()).isNotNull();
+        
+        User updatedUser = userRepository.findById(user.getId()).orElse(null);
+        assertThat(updatedUser).isNotNull();
+        assertThat(updatedUser.getEmail()).isEqualTo("updated@demo.com");
+        assertThat(passwordEncoder.matches("NewDemo@123", user.getPassword())).isTrue();
+        assertThat(updatedUser.getRole()).isEqualTo(UserRole.STUDENT);
+        assertThat(updatedUser.isEnabled()).isTrue();
+    }
+}

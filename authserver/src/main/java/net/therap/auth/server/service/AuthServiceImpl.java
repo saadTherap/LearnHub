@@ -28,11 +28,12 @@ import static net.therap.auth.server.util.JwtUtil.toSystemFormatUserRole;
 public class AuthServiceImpl implements AuthService {
     
     private final JwtService jwtService;
-    private final VerificationTokenService verificationTokenService;
-    private final PasswordEncoder passwordEncoder;
     private final UserService userService;
-    private final VerificationTokenRepository verificationTokenRepository;
+    private final PasswordEncoder passwordEncoder;
     private final RegistrationService registrationService;
+    private final RefreshTokenService refreshTokenService;
+    private final VerificationTokenService verificationTokenService;
+    private final VerificationTokenRepository verificationTokenRepository;
     
     @Override
     public JwtResponse register(RegisterRequest request) {
@@ -85,17 +86,8 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Override
-    public JwtResponse delete(DeleteRequest request) {
+    public JwtResponse delete(Long userId) {
         log.info("DELETE request received");
-        
-        log.info("Validating access token for delete operation");
-        if (!jwtService.isValid(request.getAccessToken())) {
-            log.warn("Invalid access token provided for delete operation");
-            throw new AuthServerException(MessageUtil.getMessage("err.token.access.invalid"));
-        }
-        
-        Long userId = jwtService.extractUserId(request.getAccessToken());
-        log.info("Extracted user ID from token: {}", userId);
         
         log.info("Deleting user with ID: {}", userId);
         userService.deleteById(userId);
@@ -105,49 +97,90 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Override
-    public JwtResponse updateUser(UpdateUserRequest request) {
-        User user = userService.findById(request.getId());
-        user.setPassword(request.getPassword());
-        user.setRole(toSystemFormatUserRole(request.getRole()));
-        user.setEnabled(request.isEnabled());
+    public JwtResponse acquireUpdateAccessToken(String email) {
+         User user = userService.findByEmail(email);
         
-        userService.updateUser(user);
+        log.info("Generating and sending update access token token for user ID: {}", user.getId());
+        String token = verificationTokenService.generateAndSendVerificationToken(user);
         
-        return new JwtResponse(MessageUtil.getMessage("ok.user.updated"));
+        log.info("VERIFICATION completed. Sent the update access token for email: {}", email);
+        
+        return new JwtResponse(token);
     }
     
     @Override
     public JwtResponse refreshToken(String refreshToken) {
         log.info("REFRESH TOKEN request received");
         
-        log.info("Extracting email from refresh token");
-        String email = jwtService.extractEmail(refreshToken);
-        log.info("Email extracted from refresh token: {}", email);
-        
-        log.info("Validating refresh token for user: {}", email);
-        if (!jwtService.isValid(refreshToken)) {
-            log.warn("Invalid refresh token provided for user: {}", email);
-            throw new AuthServerException(MessageUtil.getMessage("err.token.refresh.invalid"));
-        }
-        
-        User user = getUser(email);
+        User user = refreshTokenService.validate(refreshToken);
+        log.info("Refresh token validation successful for user: {}", user.getEmail());
         
         if (!user.isEnabled()) {
-            log.warn("Token refresh attempt for disabled user: {}", email);
             throw new AuthServerException(MessageUtil.getMessage("err.user.not.enabled"));
         }
         
-        log.info("Generating new access token for user: {}", email);
+        log.info("Generating new access token for user: {}", user.getEmail());
         String accessToken = jwtService.generateAccessToken(user);
-        log.info("New access token generated successfully for user: {}", email);
+        log.info("New access token generated successfully for user: {}", user.getEmail());
         
         return new JwtResponse(accessToken, refreshToken);
     }
     
     @Transactional
+    @Override
+    public JwtResponse updateUser(UpdateUserRequest request) {
+        log.info("UPDATE USER request received with updateAccessToken");
+        
+        String token = !request.getUpdateAccessToken().isEmpty() ? request.getUpdateAccessToken() :
+                request.getLoggedInAccessToken();
+        
+        User userToUpdate = verifyToken(token);
+        
+        log.info("Updating user details for email: {}", userToUpdate.getEmail());
+        
+        if (Objects.nonNull(request.getPassword())) {
+            log.info("Updating password for user ID: {}", userToUpdate.getId());
+            userToUpdate.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        
+        if (request.isEnabled()) {
+            log.info("Updating account status for user ID: {}", userToUpdate.getId());
+            userToUpdate.setEnabled(request.isEnabled());
+        }
+        
+        log.info("Updating enabled status for user ID: {} to {}", userToUpdate.getId(), request.isEnabled());
+        userToUpdate.setEnabled(request.isEnabled());
+        
+        userService.updateUser(userToUpdate);
+        log.info("User details updated successfully for email: {}", userToUpdate.getEmail());
+        
+        return new JwtResponse(MessageUtil.getMessage("ok.user.updated"));
+    }
+    
+    @Override
     public JwtResponse verifyEmail(String token) {
         log.info("EMAIL VERIFICATION request received with token");
         
+        User userToVerify = verifyToken(token);
+        
+        log.info("Enabling user account for email: {}", userToVerify.getEmail());
+        userToVerify.setEnabled(true);
+        userService.updateUser(userToVerify);
+        
+        if (userToVerify.getRole() == UserRole.STUDENT) {
+            log.info("Sending student registration info for email: {}", userToVerify.getEmail());
+            registrationService.sendStudentRegistrationInfo(userToVerify.getEmail());
+            
+        } else if (userToVerify.getRole() == UserRole.INSTRUCTOR) {
+            log.info("Sending instructor registration info for email: {}", userToVerify.getEmail());
+            registrationService.sendInstructorRegistrationInfo(userToVerify.getEmail());
+        }
+        
+        log.info("EMAIL VERIFICATION completed successfully for email: {}", userToVerify.getEmail());
+        return new JwtResponse(MessageUtil.getMessage("ok.email.verified"));
+    }
+    
+    private User verifyToken(String token) {
         log.info("Looking up verification token in database");
         VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
                 .orElseThrow(() -> {
@@ -160,30 +193,16 @@ public class AuthServiceImpl implements AuthService {
         if (verificationToken.isExpired()) {
             log.warn("Expired verification token provided for user ID: {}", verificationToken.getUser().getId());
             verificationTokenRepository.delete(verificationToken);
+            
             throw new AuthServerException(MessageUtil.getMessage("err.token.verify.expired"));
         }
         
-        User userToVerify = verificationToken.getUser();
-        log.info("Enabling user account for email: {}", userToVerify.getEmail());
-        userToVerify.setEnabled(true);
-        userService.updateUser(userToVerify);
-        log.info("User account enabled successfully for email: {}", userToVerify.getEmail());
+        User user = verificationToken.getUser();
         
-        log.info("Deleting used verification token for user: {}", userToVerify.getEmail());
+        log.info("Deleting used verification token for user: {}", user.getEmail());
         verificationTokenRepository.delete(verificationToken);
         
-        if (userToVerify.getRole() == UserRole.STUDENT) {
-            log.info("Sending student registration info for email: {}", userToVerify.getEmail());
-            registrationService.sendStudentRegistrationInfo(userToVerify.getEmail());
-            
-        } else if (userToVerify.getRole() == UserRole.INSTRUCTOR) {
-            log.info("Sending instructor registration info for email: {}", userToVerify.getEmail());
-            registrationService.sendInstructorRegistrationInfo(userToVerify.getEmail());
-        }
-        
-        log.info("EMAIL VERIFICATION completed successfully for email: {}", userToVerify.getEmail());
-        
-        return new JwtResponse(MessageUtil.getMessage("ok.email.verified"));
+        return user;
     }
     
     private User authenticateUser(String email, String password) {
