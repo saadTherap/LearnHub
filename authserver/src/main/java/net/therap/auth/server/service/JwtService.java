@@ -6,7 +6,6 @@ import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.therap.auth.server.entity.AuthKey;
@@ -88,7 +87,7 @@ public class JwtService {
         AuthKey activeKey = keyService.getActiveKey();
         this.keyId = activeKey.getKid();
         
-        RSAPrivateKey privateKey = JwtUtil.getRSAPrivateKey(activeKey.getPrivateKey());
+        RSAPrivateKey privateKey = (RSAPrivateKey) JwtUtil.getRSAKey(activeKey.getPrivateKey(), "private");
         
         this.signer = new RSASSASigner(privateKey);
         log.info("JWT signer initialized successfully with key ID: {}", keyId);

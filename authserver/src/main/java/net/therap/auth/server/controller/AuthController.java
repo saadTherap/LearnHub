@@ -36,7 +36,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
     
-    @GetMapping("/refresh")
+    @PostMapping("/refresh")
     public ResponseEntity<JwtResponse> refreshToken(@Valid @RequestBody RefreshRequest refreshRequest) {
         JwtResponse response = authService.refreshToken(refreshRequest.getRefreshToken());
         

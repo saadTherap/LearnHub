@@ -66,7 +66,7 @@ public class TokenValidator {
         }
     }
     
-    private void validateClaims(JWTClaimsSet claims) {
+    public void validateClaims(JWTClaimsSet claims) {
         Date now = Date.from(Instant.now());
         
         Date expirationTime = claims.getExpirationTime();
@@ -93,7 +93,7 @@ public class TokenValidator {
         }
     }
     
-    private boolean isForceLoggedOut(JWTClaimsSet claims) {
+    public boolean isForceLoggedOut(JWTClaimsSet claims) {
         try {
             Long userId = (Long) claims.getClaim("userId");
             

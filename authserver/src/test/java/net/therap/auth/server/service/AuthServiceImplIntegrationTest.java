@@ -75,7 +75,6 @@ class AuthServiceImplIntegrationTest {
         authKeyService.generateAndSaveKeyPair();
     }
     
-    
     @Test
     void register_ShouldCreateUserAndSendVerificationToken() {
         RegisterRequest request = new RegisterRequest();
