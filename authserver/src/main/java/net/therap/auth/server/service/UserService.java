@@ -91,6 +91,8 @@ public class UserService {
         userRepository.save(user);
         log.info("USER with email: {}, deleted (soft) from authentication server.", user.getEmail());
         
+        hazelcastCacheService.remove("userEpoch", user.getId());
+        
         if (user.getRole() == UserRole.STUDENT) {
             log.info("Sending student deletion info for email: {}", user.getEmail());
             deletionService.sendStudentDeletionInfo(user.getEmail());
@@ -104,6 +106,10 @@ public class UserService {
     public User toggleUserStatus(Long userId) {
         User user = findById(userId);
         user.setEnabled(!user.isEnabled());
+        
+        if (!user.isEnabled()) {
+            hazelcastCacheService.remove("userEpoch", user.getId());
+        }
         
         return userRepository.save(user);
     }
