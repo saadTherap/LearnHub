@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.therap.auth.server.entity.interfaces.Persistence;
 
 import java.time.LocalDateTime;
 
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class VerificationToken {
+public class VerificationToken extends Persistence {
     
     private static final int EXPIRATION_MINUTES = 15;
     
