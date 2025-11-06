@@ -2,10 +2,7 @@ global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'telegraf'
+  - job_name: 'docker'
+    metrics_path: '/metrics'
     static_configs:
-      - targets: ['telegraf:9273']
-
-# Prometheus remote_write configuration to accept data from Telegraf
-remote_write:
-  - url: "http://localhost:9080/api/v1/write"   # Ensure this points to your Prometheus service's URL
+      - targets: ['cadvisor:8080']

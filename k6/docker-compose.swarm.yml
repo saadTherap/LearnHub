@@ -1,0 +1,24 @@
+version: '3.8'
+
+networks:
+  monitoring:
+    external: true
+    name: k6_monitoring
+
+services:
+  k6:
+    entrypoint: [ "k6" ]
+    command: [ "run", "/scripts/load.js" ]
+    image: ghcr.io/anonto355/k6-test-image:latest
+    networks:
+      - monitoring
+    environment:
+      - BASE_URL=https://app-rnd01.therapdev.net
+      - AUTH_USER=instructor1@gmail.com
+      - AUTH_PASS=Demo@123
+      - K6_OUT=influxdb=http://influxdb:8086/k6
+    deploy:
+      mode: replicated
+      replicas: 10
+      restart_policy:
+        condition: none
