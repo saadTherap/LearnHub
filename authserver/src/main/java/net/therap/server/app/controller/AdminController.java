@@ -30,6 +30,11 @@ public class AdminController {
         
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/refresh-user")
+    public ResponseEntity<User> update(@Valid @RequestBody User user) {
+        return ResponseEntity.ok(userService.refreshUser(user));
+    }
     
     @GetMapping("/logout-force")
     public ResponseEntity<JwtResponse> forceLogout() {
