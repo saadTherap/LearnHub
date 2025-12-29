@@ -1,0 +1,1 @@
+The count.py code is going to count the number of the word "WRONG" in all files.
