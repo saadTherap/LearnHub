@@ -37,4 +37,18 @@ public class AdminController {
         
         return null;
     }
+
+    @PostMapping("/certificate/claim")
+    public ResponseEntity<Void> claimCertificate(@RequestParam Long studentId,
+                                                 @RequestParam Long courseId,
+                                                 HttpServletRequest request) {
+        
+        log.info("[CourseStudentController] Claim certificate request: studentId={}, courseId={}", studentId, courseId);
+
+        authorizationService.authorize(AccessLevel.STUDENT_WITH_ID, Map.of("studentId", studentId), request);
+
+        courseStudentService.issueCertificate(studentId, courseId);
+
+        return ResponseEntity.ok().build();
+    }
 }
