@@ -241,6 +241,16 @@ public class ContentController {
         
         return ResponseEntity.ok(dtoHelper.toCourseCatalogDTO(contentReleaseOptional.get().getContent().getModule().getCourse()));
     }
+
+    @GetMapping("/version")
+    public ResponseEntity<List<ContentReleaseDTO>> getVersionContentReleases(HttpServletRequest request) throws BadRequestException {
+        log.info("[GET] /contents/version");
+        authorizationService.authorize(AuthorizationLevel.INSTRUCTOR, null, request);
+        long instructorId = authorizationService.getInstructorIdFromRequest(request);
+        List<ContentRelease> contentReleases = contentReleaseService.findAllVersion(instructorId);
+        
+        return ResponseEntity.ok(contentReleases.stream().map(dtoHelper::toContentReleaseDTO).toList());
+    }
     
     @PostMapping("/draft")
     public ResponseEntity<ContentReleaseDTO> createContent(@RequestBody @Validated(OnCreate.class) ContentCatalogueDTO contentCatalogueDTO,
